@@ -94,3 +94,7 @@ create policy storage_registro_read on storage.objects for select
 --    'Nombre Apellido', 'correo@dominio.com', 'admin');
 -- Roles válidos: admin | coordinador | comprador | aprobador | area_usuaria
 -- ============================================================
+
+-- Aprobaciones de cuadros (agregado 10/07/26, ya aplicado en producción)
+create policy w_aprobaciones on aprobaciones for insert with check (empresa_id = mi_empresa());
+create policy w_aprobaciones_upd on aprobaciones for update using (empresa_id = mi_empresa());

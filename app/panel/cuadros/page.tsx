@@ -1,59 +1,109 @@
-export default function CuadrosPage() {
-  const bondades = [
-    {
-      t: "Trazabilidad total",
-      d: "Del ticket de requerimiento (AvanDesk) al cuadro, las cotizaciones en PDF, la aprobación y la orden final. Todo enlazado y auditable.",
-    },
-    {
-      t: "Solo proveedores confiables",
-      d: "El comprador únicamente puede cotizar con proveedores en estado Confiable de la categoría — la regla del procedimiento, aplicada por el sistema.",
-    },
-    {
-      t: "Mínimo 3 cotizaciones",
-      d: "Exigido automáticamente en requerimientos rutinarios; los de emergencia quedan eximidos con sustento (LOG-GN-P-02).",
-    },
-    {
-      t: "Matriz ponderada del comparativo",
-      d: "Precio, lugar y tiempo de entrega, condiciones de pago, garantía y feedback del usuario — con pesos configurables (LOG-GN-F-P02-07).",
-    },
-    {
-      t: "Aprobación por correo",
-      d: "El aprobador recibe el resumen ejecutivo en el cuerpo del correo con botones Aprobar / Rechazar, y un link al detalle con las cotizaciones.",
-    },
-    {
-      t: "Niveles por monto",
-      d: "Coordinación de Compras hasta S/ 50,000; Dirección de Logística por encima — matriz de aprobación configurable.",
-    },
-  ];
+import Link from "next/link";
+import { Scale, FileCheck2, Clock3, XCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
+
+const ESTADO: Record<string, { cls: string; label: string; Icon: any }> = {
+  borrador: { cls: "badge bg-page text-ink-600", label: "Borrador", Icon: Clock3 },
+  enviado: { cls: "badge-medianamente", label: "Pend. aprobación", Icon: Clock3 },
+  aprobado: { cls: "badge-confiable", label: "Aprobado", Icon: FileCheck2 },
+  rechazado: { cls: "badge-no-confiable", label: "Rechazado", Icon: XCircle },
+  reenviado: { cls: "badge-medianamente", label: "Reenviado", Icon: Clock3 },
+};
+
+export default async function CuadrosPage() {
+  const supabase = createClient();
+  const { data: cuadros } = await supabase
+    .from("cuadros")
+    .select(
+      "id, codigo, estado, moneda, creado_en, requerimientos(ticket_avandesk, tipo, area_solicitante), proveedores(razon_social)"
+    )
+    .order("creado_en", { ascending: false })
+    .limit(100);
+
+  const rows = (cuadros ?? []) as any[];
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-          Módulo en propuesta · fase 2
+    <div>
+      <div className="page-head flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Cuadros Comparativos
+          </h1>
+          <p className="text-[12px] text-ink-400">
+            {rows.length} cuadros · del requerimiento a la aprobación, con
+            sustento
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Cuadros Comparativos
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          La siguiente etapa del sistema: gestión del cuadro comparativo de
-          cotizaciones con trazabilidad documentaria desde el requerimiento
-          hasta la selección final del proveedor.
-        </p>
+        <Link href="/panel/cuadros/nuevo" className="btn">
+          + Nuevo cuadro
+        </Link>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {bondades.map((b) => (
-          <div key={b.t} className="card">
-            <h3 className="mb-1 font-semibold">{b.t}</h3>
-            <p className="text-sm text-slate-500">{b.d}</p>
-          </div>
-        ))}
-      </div>
-      <p className="text-xs text-slate-400">
-        La base de datos del sistema ya contempla este módulo (requerimientos,
-        cuadros, cotizaciones, aprobaciones y auditoría). Su activación se
-        planificará según los tiempos que se establezcan tras la entrega del
-        módulo de Evaluación y Selección.
-      </p>
+
+      {rows.length === 0 ? (
+        <div className="card mt-3 py-14 text-center">
+          <Scale className="mx-auto mb-3 h-10 w-10 text-ink-400" />
+          <h2 className="text-lg font-semibold">Aún no hay cuadros</h2>
+          <p className="mx-auto mt-1 max-w-md text-sm text-ink-400">
+            Crea el primero: ticket de AvanDesk, ítems, cotizaciones de
+            proveedores confiables y el sistema calcula el recomendado con la
+            matriz ponderada.
+          </p>
+          <Link href="/panel/cuadros/nuevo" className="btn mt-5">
+            + Nuevo cuadro
+          </Link>
+        </div>
+      ) : (
+        <div className="card mt-3 overflow-hidden p-0">
+          <table className="w-full">
+            <thead className="border-b border-line bg-page">
+              <tr>
+                <th className="th">Código</th>
+                <th className="th">Ticket</th>
+                <th className="th">Área</th>
+                <th className="th">Tipo</th>
+                <th className="th">Recomendado</th>
+                <th className="th">Estado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {rows.map((c) => {
+                const e = ESTADO[c.estado] ?? ESTADO.borrador;
+                return (
+                  <tr key={c.id} className="transition hover:bg-brand-100/40">
+                    <td className="td py-3">
+                      <Link
+                        href={`/panel/cuadros/${c.id}`}
+                        className="font-mono text-[11px] font-bold text-brand-900 hover:underline"
+                      >
+                        {c.codigo}
+                      </Link>
+                    </td>
+                    <td className="td py-3 font-bold">
+                      {c.requerimientos?.ticket_avandesk}
+                    </td>
+                    <td className="td py-3 text-ink-600">
+                      {c.requerimientos?.area_solicitante ?? "—"}
+                    </td>
+                    <td className="td py-3 capitalize text-ink-600">
+                      {c.requerimientos?.tipo}
+                    </td>
+                    <td className="td max-w-[220px] truncate py-3 font-semibold">
+                      {c.proveedores?.razon_social ?? "—"}
+                    </td>
+                    <td className="td py-3">
+                      <span className={e.cls}>
+                        <e.Icon className="h-3.5 w-3.5" /> {e.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
