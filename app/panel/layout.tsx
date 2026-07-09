@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
+import UserMenu from "@/components/UserMenu";
 
 export default async function PanelLayout({
   children,
@@ -52,16 +53,10 @@ export default async function PanelLayout({
               ))}
             </nav>
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-white/60 sm:block">
-              {perfil?.nombre ?? user.email}
-            </span>
-            {perfil?.rol && (
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-bold capitalize text-white">
-                {perfil.rol}
-              </span>
-            )}
-          </div>
+          <UserMenu
+            nombre={perfil?.nombre ?? user.email ?? "Usuario"}
+            rol={perfil?.rol}
+          />
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
