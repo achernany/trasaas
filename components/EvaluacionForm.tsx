@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -31,6 +31,16 @@ type Matriz = {
   criterios: Criterio[];
   matriz_documentos: Doc[];
 };
+type Prov = { id: string; ruc: string; razon_social: string };
+
+const CAL_UI: Record<string, { cls: string; label: string }> = {
+  confiable: { cls: "badge-confiable", label: "✓ CONFIABLE" },
+  medianamente_confiable: {
+    cls: "badge-medianamente",
+    label: "! MEDIANAMENTE CONFIABLE",
+  },
+  no_confiable: { cls: "badge-no-confiable", label: "✕ NO CONFIABLE" },
+};
 
 export default function EvaluacionForm({
   proveedores,
@@ -39,7 +49,7 @@ export default function EvaluacionForm({
   matrices,
   preseleccion,
 }: {
-  proveedores: { id: string; ruc: string; razon_social: string }[];
+  proveedores: Prov[];
   categorias: { id: string; nombre: string }[];
   proyectos: { id: string; nombre: string }[];
   matrices: Matriz[];
@@ -54,7 +64,6 @@ export default function EvaluacionForm({
   const [respuestas, setRespuestas] = useState<Record<string, string>>({});
   const [docs, setDocs] = useState<Record<string, boolean | null>>({});
   const [observacion, setObservacion] = useState("");
-  const [filtro, setFiltro] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,16 +72,14 @@ export default function EvaluacionForm({
     [matrices, proceso]
   );
   const criterios = useMemo(
-    () =>
-      [...(matriz?.criterios ?? [])].sort((a, b) => a.orden - b.orden),
+    () => [...(matriz?.criterios ?? [])].sort((a, b) => a.orden - b.orden),
     [matriz]
   );
 
   const nota = useMemo(() => {
     let total = 0;
     for (const c of criterios) {
-      const opId = respuestas[c.id];
-      const op = c.criterio_opciones.find((o) => o.id === opId);
+      const op = c.criterio_opciones.find((o) => o.id === respuestas[c.id]);
       if (op) total += Number(op.puntos);
     }
     return total;
@@ -94,27 +101,20 @@ export default function EvaluacionForm({
     return "no_confiable";
   }, [matriz, nota, docsIncumplidos]);
 
-  const provFiltrados = useMemo(() => {
-    if (!filtro) return proveedores;
-    const f = filtro.toLowerCase();
-    return proveedores.filter(
-      (p) => p.razon_social.toLowerCase().includes(f) || p.ruc.includes(f)
-    );
-  }, [proveedores, filtro]);
-
+  const respondidos = criterios.filter((c) => respuestas[c.id]).length;
+  const docsListos = (matriz?.matriz_documentos ?? []).every(
+    (d) => docs[d.id] !== undefined && docs[d.id] !== null
+  );
   const completo =
-    proveedorId &&
-    categoriaId &&
-    matriz &&
-    criterios.every((c) => respuestas[c.id]) &&
-    (matriz.matriz_documentos ?? []).every((d) => docs[d.id] !== undefined && docs[d.id] !== null);
+    Boolean(proveedorId && categoriaId && matriz) &&
+    respondidos === criterios.length &&
+    docsListos;
 
   async function guardar() {
     if (!completo || !matriz || !calificacion) return;
     setGuardando(true);
     setError(null);
     const supabase = createClient();
-
     try {
       const { data: auth } = await supabase.auth.getUser();
       const { data: perfil } = await supabase
@@ -124,7 +124,6 @@ export default function EvaluacionForm({
         .single();
       const empresaId = perfil!.empresa_id;
 
-      // proveedor_categoria: buscar o crear
       let { data: pc } = await supabase
         .from("proveedor_categorias")
         .select("id")
@@ -146,7 +145,6 @@ export default function EvaluacionForm({
         pc = nuevo;
       }
 
-      // código: DD.MM.YY-S/E-RUC
       const prov = proveedores.find((p) => p.id === proveedorId)!;
       const d = new Date();
       const dd = String(d.getDate()).padStart(2, "0");
@@ -163,7 +161,6 @@ export default function EvaluacionForm({
       const proxima = new Date();
       proxima.setMonth(proxima.getMonth() + meses);
 
-      // insertar evaluación (reintento con sufijo si el código ya existe)
       let evalId: string | null = null;
       for (let intento = 0; intento < 2; intento++) {
         const { data: ev, error: e2 } = await supabase
@@ -196,7 +193,6 @@ export default function EvaluacionForm({
       }
       if (!evalId) throw new Error("No se pudo generar el código");
 
-      // respuestas
       const filas = criterios.map((c) => {
         const op = c.criterio_opciones.find((o) => o.id === respuestas[c.id])!;
         return {
@@ -211,19 +207,19 @@ export default function EvaluacionForm({
         .insert(filas);
       if (e3) throw e3;
 
-      // checklist documental
       if ((matriz.matriz_documentos ?? []).length) {
-        const { error: e4 } = await supabase.from("evaluacion_documentos").insert(
-          matriz.matriz_documentos.map((doc) => ({
-            evaluacion_id: evalId,
-            matriz_documento_id: doc.id,
-            cumple: docs[doc.id],
-          }))
-        );
+        const { error: e4 } = await supabase
+          .from("evaluacion_documentos")
+          .insert(
+            matriz.matriz_documentos.map((doc) => ({
+              evaluacion_id: evalId,
+              matriz_documento_id: doc.id,
+              cumple: docs[doc.id],
+            }))
+          );
         if (e4) throw e4;
       }
 
-      // actualizar calificación vigente del proveedor-categoría
       const { error: e5 } = await supabase
         .from("proveedor_categorias")
         .update({
@@ -235,7 +231,6 @@ export default function EvaluacionForm({
         .eq("id", pc!.id);
       if (e5) throw e5;
 
-      // auditoría
       await supabase.from("audit_log").insert({
         empresa_id: empresaId,
         usuario_id: auth.user!.id,
@@ -252,20 +247,12 @@ export default function EvaluacionForm({
     }
   }
 
-  const CAL_UI: Record<string, { cls: string; label: string }> = {
-    confiable: { cls: "badge-confiable", label: "CONFIABLE" },
-    medianamente_confiable: {
-      cls: "badge-medianamente",
-      label: "MEDIANAMENTE CONFIABLE",
-    },
-    no_confiable: { cls: "badge-no-confiable", label: "NO CONFIABLE" },
-  };
-
   return (
-    <div className="space-y-5">
-      <div className="card space-y-4">
-        <h2 className="font-semibold">1 · Datos del proceso</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+    <div className="space-y-6 pb-28">
+      {/* 1 · Datos del proceso */}
+      <section className="card space-y-5">
+        <h2 className="text-xl font-semibold">1 · Datos del proceso</h2>
+        <div className="grid gap-5 sm:grid-cols-2">
           <div>
             <label className="label">Tipo de proceso</label>
             <div className="flex gap-2">
@@ -278,10 +265,10 @@ export default function EvaluacionForm({
                     setRespuestas({});
                     setDocs({});
                   }}
-                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium capitalize transition ${
+                  className={`min-h-[44px] flex-1 rounded-lg border px-3 text-sm font-semibold transition ${
                     proceso === p
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-800"
-                      : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                      ? "border-brand-900 bg-brand-100 text-brand-900"
+                      : "border-line bg-white text-ink-600 hover:bg-page"
                   }`}
                 >
                   {p === "seleccion" ? "Selección (nuevo)" : "Evaluación"}
@@ -306,24 +293,11 @@ export default function EvaluacionForm({
           </div>
           <div className="sm:col-span-2">
             <label className="label">Proveedor</label>
-            <input
-              className="input mb-2"
-              placeholder="Filtrar por razón social o RUC…"
-              value={filtro}
-              onChange={(e) => setFiltro(e.target.value)}
-            />
-            <select
-              className="input"
+            <ComboboxProveedor
+              proveedores={proveedores}
               value={proveedorId}
-              onChange={(e) => setProveedorId(e.target.value)}
-              size={Math.min(6, Math.max(2, provFiltrados.length))}
-            >
-              {provFiltrados.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.razon_social} — {p.ruc}
-                </option>
-              ))}
-            </select>
+              onChange={setProveedorId}
+            />
           </div>
           <div>
             <label className="label">Categoría</label>
@@ -350,93 +324,103 @@ export default function EvaluacionForm({
             />
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="card space-y-5">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold">2 · Criterios de la matriz</h2>
-          <span className="text-xs text-slate-400">{matriz?.nombre}</span>
+      {/* 2 · Grilla de calificación */}
+      <section className="card space-y-1">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-xl font-semibold">2 · Criterios</h2>
+          <span className="text-xs text-ink-400">{matriz?.nombre}</span>
         </div>
-        {criterios.map((c, i) => (
-          <div key={c.id} className="rounded-xl border border-slate-200 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="font-medium">
-                {i + 1}. {c.nombre}
-              </span>
-              <span className="text-xs font-semibold text-slate-400">
-                máx. {Number(c.peso_max)} pts
-              </span>
-            </div>
-            <div className="space-y-2">
-              {[...c.criterio_opciones]
-                .sort((a, b) => a.orden - b.orden)
-                .map((o) => (
-                  <label
-                    key={o.id}
-                    className={`flex cursor-pointer items-start justify-between gap-3 rounded-lg border px-3 py-2 text-sm transition ${
-                      respuestas[c.id] === o.id
-                        ? "border-emerald-600 bg-emerald-50"
-                        : "border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <span className="flex items-start gap-2">
-                      <input
-                        type="radio"
-                        name={c.id}
-                        className="mt-0.5"
-                        checked={respuestas[c.id] === o.id}
-                        onChange={() =>
+        <div className="divide-y divide-line">
+          {criterios.map((c, i) => (
+            <div key={c.id} className="grid gap-3 py-4 md:grid-cols-[220px_1fr] md:items-center">
+              <div>
+                <div className="text-sm font-bold">
+                  {i + 1}. {c.nombre}
+                </div>
+                <div className="text-xs text-ink-400">
+                  máx. {Number(c.peso_max)} pts
+                </div>
+              </div>
+              <div
+                className="grid gap-2"
+                style={{
+                  gridTemplateColumns: `repeat(${c.criterio_opciones.length}, minmax(0,1fr))`,
+                }}
+              >
+                {[...c.criterio_opciones]
+                  .sort((a, b) => a.orden - b.orden)
+                  .map((o) => {
+                    const activo = respuestas[c.id] === o.id;
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        title={o.descripcion ?? o.etiqueta}
+                        onClick={() =>
                           setRespuestas((r) => ({ ...r, [c.id]: o.id }))
                         }
-                      />
-                      <span>
-                        <span className="font-semibold">{o.etiqueta}</span>
-                        {o.descripcion && (
-                          <span className="text-slate-500">
-                            {" "}
-                            — {o.descripcion}
-                          </span>
-                        )}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-sm font-semibold text-slate-500">
-                      {Number(o.puntos)}
-                    </span>
-                  </label>
-                ))}
+                        className={`min-h-[48px] rounded-lg border px-2 py-1.5 text-center transition ${
+                          activo
+                            ? "border-brand-900 bg-brand-100"
+                            : "border-line bg-white hover:bg-page"
+                        }`}
+                      >
+                        <div
+                          className={`text-xs font-bold ${activo ? "text-brand-900" : "text-ink-600"}`}
+                        >
+                          {o.etiqueta}
+                        </div>
+                        <div
+                          className={`text-xs tabular-nums ${activo ? "font-bold text-brand-900" : "text-ink-400"}`}
+                        >
+                          {Number(o.puntos)} pts
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+              {respuestas[c.id] && (
+                <p className="text-xs text-ink-400 md:col-start-2">
+                  {
+                    c.criterio_opciones.find((o) => o.id === respuestas[c.id])
+                      ?.descripcion
+                  }
+                </p>
+              )}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </section>
 
+      {/* 3 · Documentos de legalidad */}
       {(matriz?.matriz_documentos ?? []).length > 0 && (
-        <div className="card space-y-3">
-          <h2 className="font-semibold">3 · Documentos de legalidad</h2>
-          <p className="text-xs text-slate-500">
-            Eliminatorios: si el proveedor no cumple alguno, la clasificación
-            será NO CONFIABLE sin importar el puntaje.
+        <section className="card space-y-3">
+          <h2 className="text-xl font-semibold">3 · Documentos de legalidad</h2>
+          <p className="text-xs text-ink-400">
+            Eliminatorios: un solo "No cumple" clasifica al proveedor como NO
+            CONFIABLE sin importar el puntaje.
           </p>
           {matriz!.matriz_documentos.map((d) => (
             <div
               key={d.id}
-              className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 px-3 py-2"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line px-4 py-3"
             >
               <span className="text-sm">{d.descripcion}</span>
               <div className="flex shrink-0 gap-2">
                 {[
-                  { v: true, t: "Cumple" },
-                  { v: false, t: "No cumple" },
-                ].map(({ v, t }) => (
+                  { v: true, t: "✓ Cumple", on: "border-ok-600 bg-ok-600 text-white" },
+                  { v: false, t: "✕ No cumple", on: "border-danger-600 bg-danger-600 text-white" },
+                ].map(({ v, t, on }) => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => setDocs((x) => ({ ...x, [d.id]: v }))}
-                    className={`rounded-lg border px-3 py-1 text-xs font-semibold transition ${
+                    className={`min-h-[40px] rounded-lg border px-4 text-xs font-bold transition ${
                       docs[d.id] === v
-                        ? v
-                          ? "border-emerald-600 bg-emerald-600 text-white"
-                          : "border-red-600 bg-red-600 text-white"
-                        : "border-slate-300 text-slate-500 hover:bg-slate-50"
+                        ? on
+                        : "border-line text-ink-600 hover:bg-page"
                     }`}
                   >
                     {t}
@@ -445,48 +429,141 @@ export default function EvaluacionForm({
               </div>
             </div>
           ))}
-        </div>
+          {docsIncumplidos.length > 0 && (
+            <div className="rounded-lg bg-danger-100 px-4 py-3 text-sm font-semibold text-danger-600">
+              ⚠ {docsIncumplidos.length} documento(s) sin cumplir — la
+              clasificación será NO CONFIABLE.
+            </div>
+          )}
+        </section>
       )}
 
-      <div className="card">
-        <h2 className="mb-3 font-semibold">Resultado</h2>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="text-4xl font-bold tracking-tight">
-            {nota}
-            <span className="text-lg font-medium text-slate-400"> / 100</span>
+      {/* Observaciones */}
+      <section className="card">
+        <label className="label">Observaciones</label>
+        <textarea
+          className="input"
+          rows={2}
+          value={observacion}
+          onChange={(e) => setObservacion(e.target.value)}
+        />
+        {error && <p className="mt-3 text-sm text-danger-600">{error}</p>}
+      </section>
+
+      {/* Barra de resultado sticky */}
+      <div className="fixed inset-x-0 bottom-14 z-20 px-4 md:bottom-4">
+        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white/95 px-5 py-3 shadow-lg backdrop-blur">
+          <div className="flex items-center gap-4">
+            <div>
+              <div className="font-display text-2xl font-semibold leading-7 tabular-nums">
+                {nota}
+                <span className="text-sm font-normal text-ink-400"> /100</span>
+              </div>
+              <div className="text-[11px] text-ink-400">
+                {respondidos}/{criterios.length} criterios
+              </div>
+            </div>
+            {respondidos > 0 && calificacion && (
+              <span className={CAL_UI[calificacion].cls}>
+                {CAL_UI[calificacion].label}
+              </span>
+            )}
           </div>
-          {calificacion && (
-            <span className={CAL_UI[calificacion].cls}>
-              {CAL_UI[calificacion].label}
-            </span>
-          )}
-          {docsIncumplidos.length > 0 && (
-            <span className="text-sm text-red-600">
-              ⚠ {docsIncumplidos.length} documento(s) eliminatorio(s) sin
-              cumplir
-            </span>
-          )}
-        </div>
-        <div className="mt-4">
-          <label className="label">Observaciones</label>
-          <textarea
-            className="input"
-            rows={2}
-            value={observacion}
-            onChange={(e) => setObservacion(e.target.value)}
-          />
-        </div>
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-        <div className="mt-4 flex justify-end">
-          <button
-            className="btn"
-            disabled={!completo || guardando}
-            onClick={guardar}
-          >
-            {guardando ? "Guardando…" : "Guardar evaluación y generar ficha"}
+          <button className="btn" disabled={!completo || guardando} onClick={guardar}>
+            {guardando ? "Guardando…" : "Guardar y generar ficha"}
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ComboboxProveedor({
+  proveedores,
+  value,
+  onChange,
+}: {
+  proveedores: Prov[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [texto, setTexto] = useState("");
+  const [abierto, setAbierto] = useState(false);
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const seleccionado = proveedores.find((p) => p.id === value);
+
+  const matches = useMemo(() => {
+    const f = texto.toLowerCase().trim();
+    if (!f) return proveedores.slice(0, 8);
+    return proveedores
+      .filter(
+        (p) => p.razon_social.toLowerCase().includes(f) || p.ruc.includes(f)
+      )
+      .slice(0, 8);
+  }, [proveedores, texto]);
+
+  if (seleccionado) {
+    return (
+      <div className="flex min-h-[48px] items-center justify-between rounded-lg border border-brand-900 bg-brand-100 px-4 py-2">
+        <div>
+          <div className="text-sm font-bold text-brand-900">
+            {seleccionado.razon_social}
+          </div>
+          <div className="text-xs text-brand-700">RUC {seleccionado.ruc}</div>
+        </div>
+        <button
+          type="button"
+          className="text-xs font-bold text-brand-900 underline"
+          onClick={() => {
+            onChange("");
+            setTexto("");
+          }}
+        >
+          Cambiar
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <input
+        className="input"
+        placeholder="Escribe razón social o RUC…"
+        value={texto}
+        onChange={(e) => {
+          setTexto(e.target.value);
+          setAbierto(true);
+        }}
+        onFocus={() => setAbierto(true)}
+        onBlur={() => {
+          blurTimer.current = setTimeout(() => setAbierto(false), 150);
+        }}
+      />
+      {abierto && matches.length > 0 && (
+        <ul className="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded-xl border border-line bg-white py-1 shadow-lg">
+          {matches.map((p) => (
+            <li key={p.id}>
+              <button
+                type="button"
+                className="w-full px-4 py-2.5 text-left transition hover:bg-brand-100"
+                onMouseDown={() => {
+                  if (blurTimer.current) clearTimeout(blurTimer.current);
+                  onChange(p.id);
+                }}
+              >
+                <div className="text-sm font-semibold">{p.razon_social}</div>
+                <div className="text-xs text-ink-400">RUC {p.ruc}</div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {abierto && texto && matches.length === 0 && (
+        <div className="absolute z-10 mt-1 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-400 shadow-lg">
+          Sin coincidencias — el proveedor debe estar registrado primero
+        </div>
+      )}
     </div>
   );
 }

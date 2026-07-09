@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 const CAL = [
-  { key: "confiable", label: "Confiables", badge: "badge-confiable" },
-  {
-    key: "medianamente_confiable",
-    label: "Medianamente confiables",
-    badge: "badge-medianamente",
-  },
-  { key: "no_confiable", label: "No confiables", badge: "badge-no-confiable" },
+  { key: "confiable", label: "Confiables", badge: "badge-confiable", icon: "✓", bar: "bg-ok-600" },
+  { key: "medianamente_confiable", label: "Medianamente", badge: "badge-medianamente", icon: "!", bar: "bg-warn-700" },
+  { key: "no_confiable", label: "No confiables", badge: "badge-no-confiable", icon: "✕", bar: "bg-danger-600" },
 ];
 
 export default async function DashboardPage() {
@@ -18,14 +16,26 @@ export default async function DashboardPage() {
     .toISOString()
     .slice(0, 10);
 
-  const [{ count: totalProveedores }, { data: pcs }, { count: totalEvals }] =
-    await Promise.all([
-      supabase.from("proveedores").select("*", { count: "exact", head: true }),
-      supabase
-        .from("proveedor_categorias")
-        .select("calificacion_actual, proxima_evaluacion"),
-      supabase.from("evaluaciones").select("*", { count: "exact", head: true }),
-    ]);
+  const [
+    { count: totalProveedores },
+    { data: pcs },
+    { count: totalEvals },
+    { data: proximas },
+  ] = await Promise.all([
+    supabase.from("proveedores").select("*", { count: "exact", head: true }),
+    supabase
+      .from("proveedor_categorias")
+      .select("calificacion_actual, proxima_evaluacion"),
+    supabase.from("evaluaciones").select("*", { count: "exact", head: true }),
+    supabase
+      .from("proveedor_categorias")
+      .select(
+        "id, proxima_evaluacion, calificacion_actual, proveedores(razon_social, ruc), categorias(nombre)"
+      )
+      .not("proxima_evaluacion", "is", null)
+      .order("proxima_evaluacion", { ascending: true })
+      .limit(5),
+  ]);
 
   const porCal: Record<string, number> = {};
   let vencidas = 0;
@@ -42,10 +52,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="mt-1 text-sm text-ink-600">
             Estado general de la base de proveedores
           </p>
         </div>
@@ -54,82 +64,103 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
         <Kpi label="Proveedores registrados" value={totalProveedores ?? 0} />
         <Kpi label="Evaluaciones históricas" value={totalEvals ?? 0} />
-        <Kpi
-          label="Re-evaluaciones vencidas"
-          value={vencidas}
-          alert={vencidas > 0}
+        <Link
           href="/panel/proveedores?filtro=vencidas"
-        />
+          className="rounded-2xl border border-danger-600/20 bg-danger-100/60 p-6 shadow-card transition hover:shadow-md"
+        >
+          <div className="font-display text-[34px] font-semibold leading-10 tabular-nums text-danger-600">
+            {vencidas}
+          </div>
+          <div className="mt-1 text-sm font-semibold text-danger-600">
+            Re-evaluaciones vencidas
+          </div>
+          <div className="mt-2 text-xs font-bold text-danger-600">
+            Ver vencidas →
+          </div>
+        </Link>
         <Kpi label="Vencen en 30 días" value={proximas30} />
       </div>
 
-      <div className="card">
-        <h2 className="mb-4 font-semibold">
-          Clasificación vigente por proveedor-categoría
-        </h2>
-        <div className="mb-4 flex h-3 w-full overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="bg-emerald-500"
-            style={{ width: `${((porCal["confiable"] ?? 0) / totalPc) * 100}%` }}
-          />
-          <div
-            className="bg-amber-400"
-            style={{
-              width: `${((porCal["medianamente_confiable"] ?? 0) / totalPc) * 100}%`,
-            }}
-          />
-          <div
-            className="bg-red-500"
-            style={{
-              width: `${((porCal["no_confiable"] ?? 0) / totalPc) * 100}%`,
-            }}
-          />
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="card lg:col-span-3">
+          <h2 className="mb-5 text-xl font-semibold">
+            Clasificación vigente
+          </h2>
+          <div className="mb-5 flex h-4 w-full overflow-hidden rounded-full bg-page">
+            {CAL.map((c) => (
+              <div
+                key={c.key}
+                className={c.bar}
+                style={{ width: `${((porCal[c.key] ?? 0) / totalPc) * 100}%` }}
+                title={`${c.label}: ${porCal[c.key] ?? 0}`}
+              />
+            ))}
+          </div>
+          <div className="space-y-3">
+            {CAL.map((c) => (
+              <div key={c.key} className="flex items-center justify-between">
+                <span className={c.badge}>
+                  {c.icon} {c.label}
+                </span>
+                <span className="font-display text-xl font-semibold tabular-nums">
+                  {porCal[c.key] ?? 0}
+                  <span className="ml-2 text-sm font-normal text-ink-400">
+                    {Math.round(((porCal[c.key] ?? 0) / totalPc) * 100)}%
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-5 text-xs leading-relaxed text-ink-400">
+            Umbrales LOG-P-03: Confiable ≥ 71 · Medianamente 31–70 · No
+            confiable ≤ 30. Re-evaluación a 6 / 3 / 1 meses.
+          </p>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {CAL.map((c) => (
-            <div
-              key={c.key}
-              className="flex items-center justify-between rounded-xl border border-slate-200 p-4"
-            >
-              <span className={c.badge}>{c.label}</span>
-              <span className="text-2xl font-semibold">
-                {porCal[c.key] ?? 0}
-              </span>
-            </div>
-          ))}
+
+        <div className="card lg:col-span-2">
+          <h2 className="mb-4 text-xl font-semibold">Próximas re-evaluaciones</h2>
+          <ul className="divide-y divide-line">
+            {(proximas ?? []).map((p: any) => {
+              const vencida = p.proxima_evaluacion < hoy;
+              return (
+                <li key={p.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">
+                      {p.proveedores?.razon_social}
+                    </div>
+                    <div className="text-xs text-ink-400">
+                      {p.categorias?.nombre} ·{" "}
+                      <span className={vencida ? "font-bold text-danger-600" : ""}>
+                        {p.proxima_evaluacion}
+                      </span>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/panel/evaluaciones/nueva?pc=${p.id}`}
+                    className="shrink-0 rounded-lg bg-brand-100 px-3 py-2 text-xs font-bold text-brand-900 transition hover:bg-brand-900 hover:text-white"
+                  >
+                    Evaluar
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </div>
-        <p className="mt-4 text-xs text-slate-400">
-          Umbrales LOG-P-03: Confiable ≥ 71 · Medianamente confiable 31–70 · No
-          confiable ≤ 30. Re-evaluación a 6 / 3 / 1 meses según calificación.
-        </p>
       </div>
     </div>
   );
 }
 
-function Kpi({
-  label,
-  value,
-  alert,
-  href,
-}: {
-  label: string;
-  value: number;
-  alert?: boolean;
-  href?: string;
-}) {
-  const inner = (
-    <div className="card transition hover:shadow-md">
-      <div
-        className={`text-3xl font-semibold tracking-tight ${alert ? "text-red-600" : ""}`}
-      >
+function Kpi({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="card">
+      <div className="font-display text-[34px] font-semibold leading-10 tabular-nums">
         {value}
       </div>
-      <div className="mt-1 text-sm text-slate-500">{label}</div>
+      <div className="mt-1 text-sm text-ink-600">{label}</div>
     </div>
   );
-  return href ? <Link href={href}>{inner}</Link> : inner;
 }

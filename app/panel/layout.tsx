@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import BottomNav from "@/components/BottomNav";
 
 export default async function PanelLayout({
   children,
@@ -27,16 +28,16 @@ export default async function PanelLayout({
   ];
 
   return (
-    <div className="min-h-screen">
-      <header className="no-print sticky top-0 z-20 border-b border-slate-800 bg-slate-950">
+    <div className="min-h-screen pb-20 md:pb-0">
+      <header className="no-print sticky top-0 z-20 border-b border-brand-700/30 bg-brand-900">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-8">
             <Link href="/panel" className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-sm font-bold text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 font-display text-sm font-bold text-white">
                 S
               </span>
-              <span className="font-semibold tracking-tight text-white">
-                Scorecard de Proveedores
+              <span className="font-display font-semibold tracking-tight text-white">
+                Scorecard
               </span>
             </Link>
             <nav className="hidden gap-1 md:flex">
@@ -44,7 +45,7 @@ export default async function PanelLayout({
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                  className="rounded-lg px-3 py-2.5 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
                   {l.label}
                 </Link>
@@ -52,11 +53,11 @@ export default async function PanelLayout({
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-400 sm:block">
+            <span className="hidden text-white/60 sm:block">
               {perfil?.nombre ?? user.email}
             </span>
             {perfil?.rol && (
-              <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs font-medium capitalize text-emerald-400">
+              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-bold capitalize text-white">
                 {perfil.rol}
               </span>
             )}
@@ -64,6 +65,7 @@ export default async function PanelLayout({
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <BottomNav />
     </div>
   );
 }

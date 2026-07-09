@@ -93,7 +93,15 @@ export default async function FichaEvaluacionPage({
           <Dato k="Matriz aplicada" v={e.matrices?.nombre} />
         </dl>
 
-        <div className="mb-6 flex items-center justify-between rounded-xl border-2 border-slate-900 p-4">
+        <div
+          className={`mb-6 flex items-center justify-between rounded-xl border p-5 ${
+            e.calificacion === "confiable"
+              ? "border-ok-600/30 bg-ok-100/50"
+              : e.calificacion === "medianamente_confiable"
+                ? "border-warn-700/30 bg-warn-100/50"
+                : "border-danger-600/30 bg-danger-100/50"
+          }`}
+        >
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Resultado
@@ -102,7 +110,9 @@ export default async function FichaEvaluacionPage({
             <p className="mt-2 max-w-md text-xs text-slate-500">{cal.nota}</p>
           </div>
           <div className="text-right">
-            <div className="text-5xl font-bold tracking-tight">{e.nota}</div>
+            <div className="font-display text-5xl font-bold tracking-tight tabular-nums">
+              {e.nota}
+            </div>
             <div className="text-xs text-slate-400">de 100 puntos</div>
             {pc?.proxima_evaluacion && (
               <div className="mt-1 text-xs text-slate-500">
