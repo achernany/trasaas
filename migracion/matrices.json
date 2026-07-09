@@ -1,0 +1,428 @@
+[
+  {
+    "hoja": "BIENES",
+    "tipo": "seleccion",
+    "categoria": "Bienes",
+    "criterios": [
+      {
+        "nombre": "Precios",
+        "peso_max": 35.0,
+        "opciones": [
+          "Menor que el promedio del mercado",
+          "Igual al promedio del mercado",
+          "Mayor que el promedio del mercado"
+        ]
+      },
+      {
+        "nombre": "Restricciones de despachos",
+        "peso_max": 15.0,
+        "opciones": [
+          "No posee",
+          "Posee restricción - mínimo de compra"
+        ]
+      },
+      {
+        "nombre": "Forma de pago",
+        "peso_max": 25.0,
+        "opciones": [
+          "Superior a 30 días o más",
+          "Crédito a 30 días",
+          "Crédito a 15 días",
+          "Inferior a 15 días o sin Plazos"
+        ]
+      },
+      {
+        "nombre": "Garantías",
+        "peso_max": 10.0,
+        "opciones": [
+          "Otorga garantía total",
+          "Otorga garantía parcial",
+          "No otorga garantía"
+        ]
+      }
+    ],
+    "documentos_legalidad": [
+      "1. Fotocopia del documento del representante legal y/o personal natural",
+      "2. Ficha RUC actualizado, fecha de generación menor 30 días",
+      "3. Formato de Deuda Coactiva (SUNAT), no mayor a 30 días",
+      "4. Cotización y/o propuesta económica"
+    ]
+  },
+  {
+    "hoja": "S. GENERALES",
+    "tipo": "seleccion",
+    "categoria": "Servicios Generales",
+    "criterios": [
+      {
+        "nombre": "Precios",
+        "peso_max": 20.0,
+        "opciones": [
+          "Menor que el promedio del mercado",
+          "Igual al promedio del mercado",
+          "Mayor que el promedio del mercado"
+        ]
+      },
+      {
+        "nombre": "Calidad certificada (ISO o similar)",
+        "peso_max": 15.0,
+        "opciones": [
+          "Certificado",
+          "En proceso o posee controles internos",
+          "No posee"
+        ]
+      },
+      {
+        "nombre": "Forma de pago",
+        "peso_max": 5.0,
+        "opciones": [
+          "Crédito a 30 días o más",
+          "Crédito a 15 días",
+          "Crédito a 7 días",
+          "Inferior a 7 días o sin Plazos"
+        ]
+      },
+      {
+        "nombre": "Garantías",
+        "peso_max": 30.0,
+        "opciones": [
+          "Otorga garantía total",
+          "Otorga garantía parcial",
+          "No otorga garantía"
+        ]
+      }
+    ],
+    "documentos_legalidad": [
+      "1. Fotocopia del documento del representante legal y/o personal natural",
+      "2. Ficha RUC actualizado, fecha de generación menor 30 días",
+      "3. Formato de Deuda Coactiva (SUNAT), no mayor a 30 días",
+      "4. Cotización y/o propuesta económica"
+    ]
+  },
+  {
+    "hoja": "S. TRANSPORTES",
+    "tipo": "seleccion",
+    "categoria": "Servicios de Transporte",
+    "criterios": [
+      {
+        "nombre": "Precios",
+        "peso_max": 20.0,
+        "opciones": [
+          "Menor que el promedio del mercado",
+          "Igual al promedio del mercado",
+          "Mayor que el promedio del mercado"
+        ]
+      },
+      {
+        "nombre": "Calidad certificada (ISO o similar)",
+        "peso_max": 15.0,
+        "opciones": [
+          "Certificado",
+          "En proceso o posee controles internos",
+          "No posee"
+        ]
+      },
+      {
+        "nombre": "Forma de pago",
+        "peso_max": 20.0,
+        "opciones": [
+          "Crédito a 30 días o más",
+          "Crédito a 15 días",
+          "Crédito a 7 días",
+          "Inferior a 7 días o sin Plazos"
+        ]
+      },
+      {
+        "nombre": "Garantías",
+        "peso_max": 20.0,
+        "opciones": [
+          "Otorga garantía total",
+          "Otorga garantía parcial",
+          "No otorga garantía"
+        ]
+      }
+    ],
+    "documentos_legalidad": [
+      "1. Fotocopia del documento del representante legal y/o personal natural",
+      "2. Ficha RUC actualizado, fecha de generación menor 30 días",
+      "3. Formato de Deuda Coactiva (SUNAT), no mayor a 30 días",
+      "4. Cotización y/o propuesta económica"
+    ]
+  },
+  {
+    "hoja": "S. MAQUINARIAS",
+    "tipo": "seleccion",
+    "categoria": "Servicios de Maquinaria",
+    "criterios": [
+      {
+        "nombre": "Precios",
+        "peso_max": 20.0,
+        "opciones": [
+          "Menor que el promedio del mercado",
+          "Igual al promedio del mercado",
+          "Mayor que el promedio del mercado"
+        ]
+      },
+      {
+        "nombre": "Calidad certificada (ISO o similar)",
+        "peso_max": 15.0,
+        "opciones": [
+          "Certificado",
+          "En proceso o posee controles internos",
+          "No posee"
+        ]
+      },
+      {
+        "nombre": "Forma de pago",
+        "peso_max": 0.0,
+        "opciones": [
+          "Crédito a 30 días o más",
+          "Crédito a 15 días",
+          "Crédito a 7 días",
+          "Inferior a 7 días o sin Plazos"
+        ]
+      },
+      {
+        "nombre": "Garantías",
+        "peso_max": 30.0,
+        "opciones": [
+          "Otorga garantía total",
+          "Otorga garantía parcial",
+          "No otorga garantía"
+        ]
+      }
+    ],
+    "documentos_legalidad": [
+      "1. Fotocopia del documento del representante legal y/o personal natural",
+      "2. Ficha RUC actualizado, fecha de generación menor 30 días",
+      "3. Formato de Deuda Coactiva (SUNAT), no mayor a 30 días",
+      "4. Cotización y/o propuesta económica",
+      "Maquinaria Pesada o Equipo Poder"
+    ]
+  },
+  {
+    "hoja": "S. SALUD.",
+    "tipo": "seleccion",
+    "categoria": "Servicios de Salud",
+    "criterios": [
+      {
+        "nombre": "Precios",
+        "peso_max": 35.0,
+        "opciones": [
+          "Menor que el promedio del mercado",
+          "Igual al promedio del mercado",
+          "Mayor que el promedio del mercado"
+        ]
+      },
+      {
+        "nombre": "Calidad certificada (ISO o similar)",
+        "peso_max": 0.0,
+        "opciones": [
+          "Certificado",
+          "En proceso o posee controles internos",
+          "No posee"
+        ]
+      },
+      {
+        "nombre": "Forma de pago",
+        "peso_max": 20.0,
+        "opciones": [
+          "Crédito a 30 días o más",
+          "Crédito a 15 días",
+          "Crédito a 7 días",
+          "Inferior a 7 días o sin Plazos"
+        ]
+      },
+      {
+        "nombre": "Garantías",
+        "peso_max": 30.0,
+        "opciones": [
+          "Otorga garantía total",
+          "Otorga garantía parcial",
+          "No otorga garantía"
+        ]
+      }
+    ],
+    "documentos_legalidad": [
+      "1. Fotocopia del documento del representante legal y/o personal natural",
+      "2. Ficha RUC actualizado, fecha de generación menor 30 días",
+      "3. Formato de Deuda Coactiva (SUNAT), no mayor a 30 días",
+      "4. Cotización y/o propuesta económica",
+      "5. Registro de Acreditación del Servicio de Apoyo al Médico Ocupacional"
+    ]
+  },
+  {
+    "hoja": "LOG-F-P03-01",
+    "tipo": "seleccion",
+    "categoria": "Bienes Generales",
+    "criterios": [
+      {
+        "nombre": "Precios",
+        "peso_max": 35.0,
+        "opciones": [
+          "Menor que el promedio del mercado",
+          "Igual al promedio del mercado",
+          "Mayor que el promedio del mercado"
+        ]
+      },
+      {
+        "nombre": "Restricciones de despachos",
+        "peso_max": 15.0,
+        "opciones": [
+          "No posee",
+          "Posee restricción - mínimo de compra"
+        ]
+      },
+      {
+        "nombre": "Forma de pago",
+        "peso_max": 35.0,
+        "opciones": [
+          "Superior a 30 días o más",
+          "Crédito a 30 días",
+          "Crédito a 15 días",
+          "Inferior a 15 días o sin Plazos"
+        ]
+      },
+      {
+        "nombre": "Garantías",
+        "peso_max": 15.0,
+        "opciones": [
+          "Otorga garantía total",
+          "Otorga garantía parcial",
+          "No otorga garantía"
+        ]
+      }
+    ],
+    "documentos_legalidad": [
+      "1. Fotocopia del documento del representante legal y/o personal natural",
+      "2. Ficha RUC actualizado, fecha de generación menor 30 días",
+      "3. Formato de Deuda Coactiva (SUNAT), no mayor a 30 días",
+      "4. Cotización y/o propuesta económica"
+    ]
+  },
+  {
+    "hoja": "EVAL. BIENES",
+    "tipo": "evaluacion",
+    "categoria": "Bienes",
+    "criterios": [
+      {
+        "nombre": "Precios",
+        "peso_max": 15.0,
+        "opciones": [
+          "EXCELENTE: El precio es inferior a la oferta del mercado",
+          "BUENO: El precio  es competitivo",
+          "NO CUMPLE: el  precio no es competitivo"
+        ]
+      },
+      {
+        "nombre": "Calidad de los bienes adquiridos",
+        "peso_max": 10.0,
+        "opciones": [
+          "EXCELENTE (Supera las expectativas y mejora las especificaciones técnicas establecidas).",
+          "BUENO (Cumplió con los requisitos y especificaciones técnicas establecidas).",
+          "MALO (Presentó inconformidades en la calidad y especificaciones técnicas)."
+        ]
+      },
+      {
+        "nombre": "Cumplimiento cantidad y entrega",
+        "peso_max": 15.0,
+        "opciones": [
+          "EXCELENTE (Entrega cantidades pactadas antes de la fecha estipulada).",
+          "BUENO (Entrega cantidades pactadas de acuerdo a la fecha estipulada)"
+        ]
+      },
+      {
+        "nombre": "Forma de pago",
+        "peso_max": 15.0,
+        "opciones": [
+          "Superior a 30 días o más",
+          "Crédito a 30 días",
+          "Crédito a 15 días",
+          "Inferior a 15 días o sin Plazos"
+        ]
+      },
+      {
+        "nombre": "Entrega de Documentación",
+        "peso_max": 10.0,
+        "opciones": [
+          "Entrega de manera oportuna la información y mantiene actualizada su documentación con la empresa.",
+          "Entrega y actualiza parcialmente la documentación solicitada en fecha posterior al término pactado.",
+          "No entrega ni actualiza la documentación solicitada por la empresa."
+        ]
+      },
+      {
+        "nombre": "Servicio Posventa / Garantías",
+        "peso_max": 10.0,
+        "opciones": [
+          "EXCELENTE (Otorga Garantía total, lleva control postventa sobre la calidad y/o correcto funcionamiento del bien y/o servicio contratado)",
+          "BUENO (Otorga Garantía Parcial, se preocupa por garantizar la calidad y/o funcionamiento del bien y/o servicio contratado)",
+          "NO CUMPLE (No otorga garantía y  atiende tardíamente las peticiones de la empresa frente a la calidad y correcto funcionamiento del bien y/o servicio contratado)"
+        ]
+      }
+    ],
+    "documentos_legalidad": []
+  },
+  {
+    "hoja": "EVAL. SERVICIOS",
+    "tipo": "evaluacion",
+    "categoria": "Servicios",
+    "criterios": [
+      {
+        "nombre": "Precios",
+        "peso_max": 10.0,
+        "opciones": [
+          "EXCELENTE: El precio es inferior a la oferta del mercado",
+          "BUENO: El precio  es competitivo",
+          "NO CUMPLE: el  precio no es competitivo"
+        ]
+      },
+      {
+        "nombre": "Cumplimiento en Calidad y entrega",
+        "peso_max": 30.0,
+        "opciones": [
+          "EXCELENTE (Supera las expectativas y cumple con la fecha estipulada).",
+          "BUENO (Cumple con los requisitos mínimos y la fecha estipulada)",
+          "REGULAR (Cumple con los requisitos, pero posterior a la fecha estipulada )",
+          "MALO (No cumple con requisitos mínimos  e incumple fecha estipulada)"
+        ]
+      },
+      {
+        "nombre": "Forma de pago",
+        "peso_max": 5.0,
+        "opciones": [
+          "Superior a 30 días o más",
+          "Crédito a 30 días",
+          "Crédito a 15 días",
+          "Inferior a 15 días o sin Plazos"
+        ]
+      },
+      {
+        "nombre": "Entrega de Documentación",
+        "peso_max": 10.0,
+        "opciones": [
+          "Entrega de manera oportuna la información y mantiene actualizada su documentación con la empresa.",
+          "Entrega y actualiza parcialmente la documentación solicitada en fecha posterior al término pactado.",
+          "No entrega ni actualiza la documentación solicitada por la empresa."
+        ]
+      },
+      {
+        "nombre": "Servicio Posventa / Garantías",
+        "peso_max": 10.0,
+        "opciones": [
+          "EXCELENTE (Otorga Garantía total, lleva control postventa sobre la calidad y/o correcto funcionamiento del bien y/o servicio contratado)",
+          "BUENO (Otorga Garantía Parcial, se preocupa por garantizar la calidad y/o funcionamiento del bien y/o servicio contratado)",
+          "NO CUMPLE (No otorga garantía y  atiende tardíamente las peticiones de la empresa frente a la calidad y correcto funcionamiento del bien y/o servicio contratado)"
+        ]
+      },
+      {
+        "nombre": "OTRAS ESPECIFICACIONES",
+        "peso_max": 15.0,
+        "opciones": [
+          "Logística: conto con la logística necesaria en cuanto transporte, equipos y herramientas menores para cumplir con el objeto.",
+          "Durante la ejecución del servicio contó con personal técnico calificado para cumplir las actividades propias del servicio.",
+          "El servicio se presto de acuerdo a lo pactado con el contratista o proveedor del servicio y dando cumplimiento a los estándares del SGI"
+        ]
+      }
+    ],
+    "documentos_legalidad": []
+  }
+]
