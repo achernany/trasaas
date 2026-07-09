@@ -43,37 +43,33 @@ export default async function NuevaEvaluacionPage({
   }
 
   return (
-    <div className="overlay overflow-y-auto">
-      <div className="mx-auto my-6 w-full max-w-3xl px-4">
-        <div className="step-enter rounded-2xl border border-line bg-page shadow-2xl">
-          <div className="flex items-center justify-between rounded-t-2xl border-b border-line bg-white px-6 py-4">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">
-                Nueva evaluación
-              </h1>
-              <p className="text-[12px] text-ink-400">
-                Formato LOG-F-P03-01 · clasificación automática según matriz
-                vigente
-              </p>
-            </div>
-            <Link
-              href="/panel/evaluaciones"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-ink-400 transition hover:bg-page hover:text-ink-900"
-              aria-label="Cerrar y volver a evaluaciones"
-            >
-              <X className="h-5 w-5" />
-            </Link>
+    <div className="fixed inset-0 z-40 flex justify-center bg-ink-900/45 px-4 py-10 backdrop-blur-sm">
+      <div className="step-enter flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-3">
+          <div>
+            <h1 className="text-base font-semibold leading-6 tracking-tight">
+              Nueva evaluación
+            </h1>
+            <p className="text-[11px] leading-4 text-ink-400">
+              Formato LOG-F-P03-01 · clasificación automática según matriz
+              vigente
+            </p>
           </div>
-          <div className="p-6">
-            <EvaluacionForm
-              proveedores={proveedores ?? []}
-              categorias={categorias ?? []}
-              proyectos={proyectos ?? []}
-              matrices={(matrices ?? []) as any}
-              preseleccion={preseleccion}
-            />
-          </div>
+          <Link
+            href="/panel/evaluaciones"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 transition hover:bg-page hover:text-ink-900"
+            aria-label="Cerrar y volver a evaluaciones"
+          >
+            <X className="h-[18px] w-[18px]" />
+          </Link>
         </div>
+        <EvaluacionForm
+          proveedores={proveedores ?? []}
+          categorias={categorias ?? []}
+          proyectos={proyectos ?? []}
+          matrices={(matrices ?? []) as any}
+          preseleccion={preseleccion}
+        />
       </div>
     </div>
   );

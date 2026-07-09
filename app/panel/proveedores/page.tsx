@@ -1,4 +1,12 @@
 import Link from "next/link";
+import {
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  AlarmClock,
+  CalendarClock,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Paginator from "@/components/Paginator";
 import ProveedoresTabla, { type PcRow } from "@/components/ProveedoresTabla";
@@ -76,15 +84,32 @@ export default async function ProveedoresPage({
   const visibles = rows.slice((page - 1) * per, page * per);
 
   const chips = [
-    { key: "todas", label: `Todas (${conteos.todas})` },
-    { key: "confiable", label: `Confiables (${conteos.confiable})` },
+    { key: "todas", label: `Todas (${conteos.todas})`, Icon: Users },
+    {
+      key: "confiable",
+      label: `Confiables (${conteos.confiable})`,
+      Icon: CheckCircle2,
+    },
     {
       key: "medianamente_confiable",
       label: `Medianamente (${conteos.medianamente_confiable})`,
+      Icon: AlertTriangle,
     },
-    { key: "no_confiable", label: `No confiables (${conteos.no_confiable})` },
-    { key: "vencidas", label: `Vencidas (${conteos.vencidas})` },
-    { key: "por_vencer", label: `Vencen en 30d (${conteos.por_vencer})` },
+    {
+      key: "no_confiable",
+      label: `No confiables (${conteos.no_confiable})`,
+      Icon: XCircle,
+    },
+    {
+      key: "vencidas",
+      label: `Vencidas (${conteos.vencidas})`,
+      Icon: AlarmClock,
+    },
+    {
+      key: "por_vencer",
+      label: `Vencen en 30d (${conteos.por_vencer})`,
+      Icon: CalendarClock,
+    },
   ];
 
   return (
@@ -126,7 +151,7 @@ export default async function ProveedoresPage({
               href={`/panel/proveedores?filtro=${c.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
               className={`${filtro === c.key ? "chip-active" : "chip"} min-h-[30px] px-3 text-[12px]`}
             >
-              {c.label}
+              <c.Icon className="h-3.5 w-3.5" /> {c.label}
             </Link>
           ))}
         </div>

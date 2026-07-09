@@ -10,12 +10,13 @@ export default async function NuevoCuadroPage() {
   const [{ data: pcs }, { data: proyectos }] = await Promise.all([
     supabase
       .from("proveedor_categorias")
-      .select("proveedor_id, calificacion_actual, nota_actual, proveedores(razon_social, ruc)")
+      .select(
+        "proveedor_id, calificacion_actual, nota_actual, proveedores(razon_social, ruc)"
+      )
       .eq("calificacion_actual", "confiable"),
     supabase.from("proyectos").select("id, nombre").order("nombre"),
   ]);
 
-  // dedupe por proveedor (puede ser confiable en varias categorías)
   const vistos = new Set<string>();
   const confiables: ProvConfiable[] = [];
   for (const pc of (pcs ?? []) as any[]) {
@@ -32,31 +33,26 @@ export default async function NuevoCuadroPage() {
   confiables.sort((a, b) => a.razon_social.localeCompare(b.razon_social));
 
   return (
-    <div className="overlay overflow-y-auto">
-      <div className="mx-auto my-6 w-full max-w-3xl px-4">
-        <div className="step-enter rounded-2xl border border-line bg-page shadow-2xl">
-          <div className="flex items-center justify-between rounded-t-2xl border-b border-line bg-white px-6 py-4">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">
-                Nuevo cuadro comparativo
-              </h1>
-              <p className="text-[12px] text-ink-400">
-                Formato LOG-GN-F-P02-07 · solo proveedores confiables · matriz
-                ponderada automática
-              </p>
-            </div>
-            <Link
-              href="/panel/cuadros"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-ink-400 transition hover:bg-page hover:text-ink-900"
-              aria-label="Cerrar y volver a comparativos"
-            >
-              <X className="h-5 w-5" />
-            </Link>
+    <div className="fixed inset-0 z-40 flex justify-center bg-ink-900/45 px-4 py-10 backdrop-blur-sm">
+      <div className="step-enter flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-3">
+          <div>
+            <h1 className="text-base font-semibold leading-6 tracking-tight">
+              Nuevo cuadro comparativo
+            </h1>
+            <p className="text-[11px] leading-4 text-ink-400">
+              LOG-GN-F-P02-07 · solo confiables · matriz ponderada automática
+            </p>
           </div>
-          <div className="p-6">
-            <NuevoCuadro confiables={confiables} proyectos={proyectos ?? []} />
-          </div>
+          <Link
+            href="/panel/cuadros"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 transition hover:bg-page hover:text-ink-900"
+            aria-label="Cerrar y volver a comparativos"
+          >
+            <X className="h-[18px] w-[18px]" />
+          </Link>
         </div>
+        <NuevoCuadro confiables={confiables} proyectos={proyectos ?? []} />
       </div>
     </div>
   );

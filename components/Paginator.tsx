@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Paginator({
   total,
@@ -48,19 +49,15 @@ export default function Paginator({
         </span>
       </div>
       <div className="flex items-center gap-1">
-        <PagBtn
-          href={url({ page: String(page - 1) })}
-          disabled={page <= 1}
-          label="← Anterior"
-        />
+        <PagBtn href={url({ page: String(page - 1) })} disabled={page <= 1}>
+          <ChevronLeft className="h-3.5 w-3.5" /> Anterior
+        </PagBtn>
         <span className="px-2 text-[12px] font-bold tabular-nums text-ink-600">
           {page} / {pages}
         </span>
-        <PagBtn
-          href={url({ page: String(page + 1) })}
-          disabled={page >= pages}
-          label="Siguiente →"
-        />
+        <PagBtn href={url({ page: String(page + 1) })} disabled={page >= pages}>
+          Siguiente <ChevronRight className="h-3.5 w-3.5" />
+        </PagBtn>
       </div>
     </div>
   );
@@ -69,24 +66,24 @@ export default function Paginator({
 function PagBtn({
   href,
   disabled,
-  label,
+  children,
 }: {
   href: string;
   disabled: boolean;
-  label: string;
+  children: React.ReactNode;
 }) {
   if (disabled)
     return (
-      <span className="rounded-lg px-3 py-1.5 text-[12px] font-bold text-ink-400/50">
-        {label}
+      <span className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-bold text-ink-400/50">
+        {children}
       </span>
     );
   return (
     <Link
       href={href}
-      className="rounded-lg px-3 py-1.5 text-[12px] font-bold text-brand-900 transition hover:bg-brand-100"
+      className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-bold text-brand-900 transition hover:bg-brand-100"
     >
-      {label}
+      {children}
     </Link>
   );
 }

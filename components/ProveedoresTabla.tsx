@@ -43,14 +43,17 @@ function NotaBar({ nota }: { nota: number | null }) {
   const color =
     nota >= 71 ? "bg-ok-600" : nota >= 31 ? "bg-warn-700" : "bg-danger-600";
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="h-1 w-10 overflow-hidden rounded-full bg-page">
+    <span
+      className="inline-flex items-center gap-2"
+      title={`Nota ${nota} de 100`}
+    >
+      <span className="h-2 w-16 overflow-hidden rounded-full border border-line bg-page">
         <span
-          className={`block h-full rounded-full ${color}`}
+          className={`block h-full rounded-full ${color} transition-all`}
           style={{ width: `${Math.min(100, nota)}%` }}
         />
       </span>
-      <span className="font-bold">{nota}</span>
+      <span className="font-bold tabular-nums">{nota}</span>
     </span>
   );
 }
@@ -76,10 +79,10 @@ export default function ProveedoresTabla({
 
   return (
     <>
-      {/* Desktop */}
-      <div className="hidden md:block">
+      {/* Desktop: scroll interno, el paginador queda fijo abajo */}
+      <div className="hidden max-h-[calc(100vh-380px)] overflow-y-auto md:block">
         <table className="w-full">
-          <thead className="border-b border-line bg-page">
+          <thead className="sticky top-0 z-[5] border-b border-line bg-page">
             <tr>
               <th className="th">Proveedor</th>
               <th className="th">Categoría</th>

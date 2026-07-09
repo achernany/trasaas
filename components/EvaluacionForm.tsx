@@ -2,7 +2,17 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Check,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import Stepper from "@/components/Stepper";
 
 type Opcion = {
   id: string;
@@ -33,14 +43,27 @@ type Matriz = {
 };
 type Prov = { id: string; ruc: string; razon_social: string };
 
-const CAL_UI: Record<string, { cls: string; label: string }> = {
-  confiable: { cls: "badge-confiable", label: "✓ CONFIABLE" },
-  medianamente_confiable: {
-    cls: "badge-medianamente",
-    label: "! MEDIANAMENTE CONFIABLE",
-  },
-  no_confiable: { cls: "badge-no-confiable", label: "✕ NO CONFIABLE" },
-};
+export function CalBadge({ cal }: { cal: string | null }) {
+  if (cal === "confiable")
+    return (
+      <span className="badge-confiable">
+        <CheckCircle2 className="h-3.5 w-3.5" /> CONFIABLE
+      </span>
+    );
+  if (cal === "medianamente_confiable")
+    return (
+      <span className="badge-medianamente">
+        <AlertTriangle className="h-3.5 w-3.5" /> MEDIANAMENTE
+      </span>
+    );
+  if (cal === "no_confiable")
+    return (
+      <span className="badge-no-confiable">
+        <XCircle className="h-3.5 w-3.5" /> NO CONFIABLE
+      </span>
+    );
+  return null;
+}
 
 export default function EvaluacionForm({
   proveedores,
@@ -78,7 +101,6 @@ export default function EvaluacionForm({
     [matriz]
   );
   const tieneDocs = (matriz?.matriz_documentos ?? []).length > 0;
-
   const pasos = useMemo(
     () => ["Datos", "Criterios", ...(tieneDocs ? ["Documentos"] : []), "Resumen"],
     [tieneDocs]
@@ -115,10 +137,10 @@ export default function EvaluacionForm({
   );
 
   function pasoValido(i: number): boolean {
-    const nombre = pasos[i];
-    if (nombre === "Datos") return Boolean(proveedorId && categoriaId && matriz);
-    if (nombre === "Criterios") return respondidos === criterios.length;
-    if (nombre === "Documentos") return docsListos;
+    const n = pasos[i];
+    if (n === "Datos") return Boolean(proveedorId && categoriaId && matriz);
+    if (n === "Criterios") return respondidos === criterios.length;
+    if (n === "Documentos") return docsListos;
     return true;
   }
   const puedeAvanzar = pasoValido(paso);
@@ -126,14 +148,13 @@ export default function EvaluacionForm({
   const listoParaGuardar = pasos.every((_, i) => pasoValido(i));
 
   function irA(destino: number) {
-    if (destino === paso) return;
-    // hacia atrás siempre; hacia adelante solo si los pasos previos están completos
+    if (destino === paso || destino < 0 || destino >= pasos.length) return;
     if (destino > paso) {
       for (let i = paso; i < destino; i++) if (!pasoValido(i)) return;
     }
     setDir(destino > paso ? "fwd" : "back");
     setPaso(destino);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.querySelector(".modal-body")?.scrollTo({ top: 0 });
   }
 
   async function guardar() {
@@ -278,360 +299,330 @@ export default function EvaluacionForm({
   const catSel = categorias.find((c) => c.id === categoriaId);
 
   return (
-    <div className="pb-32">
-      {/* Step bar */}
-      <div className="mb-6 flex items-center">
-        {pasos.map((nombre, i) => {
-          const hecho = i < paso || (i === paso && pasoValido(i) && esUltimo);
-          const activo = i === paso;
-          const alcanzable =
-            i <= paso || pasos.slice(0, i).every((_, j) => pasoValido(j));
-          return (
-            <div key={nombre} className="flex flex-1 items-center last:flex-none">
-              <button
-                type="button"
-                onClick={() => alcanzable && irA(i)}
-                className={`group flex items-center gap-2 ${alcanzable ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
-              >
-                <span
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
-                    activo
-                      ? "scale-110 border-brand-900 bg-brand-900 text-white shadow-lg shadow-brand-900/30"
-                      : hecho || i < paso
-                        ? "border-ok-600 bg-ok-600 text-white"
-                        : "border-line bg-white text-ink-400"
-                  }`}
-                >
-                  {i < paso ? "✓" : i + 1}
-                </span>
-                <span
-                  className={`hidden text-[12px] font-bold sm:block ${
-                    activo ? "text-brand-900" : "text-ink-400"
-                  }`}
-                >
-                  {nombre}
-                </span>
-              </button>
-              {i < pasos.length - 1 && (
-                <div className="mx-2 h-0.5 flex-1 overflow-hidden rounded bg-line">
-                  <div
-                    className="h-full bg-ok-600 transition-all duration-500"
-                    style={{ width: i < paso ? "100%" : "0%" }}
+    <>
+      <div className="modal-body min-h-0 flex-1 overflow-y-auto p-5">
+        <Stepper
+          pasos={pasos}
+          paso={paso}
+          alcanzable={(i) =>
+            i <= paso || pasos.slice(0, i).every((_, j) => pasoValido(j))
+          }
+          onIr={irA}
+        />
+
+        <div key={paso} className={dir === "fwd" ? "step-enter" : "step-enter-back"}>
+          {nombrePaso === "Datos" && (
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="label text-[12px]">Tipo de proceso</label>
+                  <div className="flex gap-2">
+                    {(["seleccion", "evaluacion"] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => {
+                          setProceso(p);
+                          setRespuestas({});
+                          setDocs({});
+                        }}
+                        className={`h-9 flex-1 rounded-lg border px-2 text-[12px] font-semibold transition ${
+                          proceso === p
+                            ? "border-brand-900 bg-brand-100 text-brand-900"
+                            : "border-line bg-white text-ink-600 hover:bg-page"
+                        }`}
+                      >
+                        {p === "seleccion" ? "Selección (nuevo)" : "Evaluación"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="label text-[12px]">Proyecto</label>
+                  <select
+                    className="input h-9 text-[13px]"
+                    value={proyectoId}
+                    onChange={(e) => setProyectoId(e.target.value)}
+                  >
+                    <option value="">— Sin proyecto —</option>
+                    {proyectos.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="label text-[12px]">Proveedor</label>
+                  <ComboboxProveedor
+                    proveedores={proveedores}
+                    value={proveedorId}
+                    onChange={setProveedorId}
                   />
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Contenido del paso */}
-      <div key={paso} className={dir === "fwd" ? "step-enter" : "step-enter-back"}>
-        {nombrePaso === "Datos" && (
-          <section className="card space-y-5">
-            <h2 className="text-xl font-semibold">Datos del proceso</h2>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div>
-                <label className="label">Tipo de proceso</label>
-                <div className="flex gap-2">
-                  {(["seleccion", "evaluacion"] as const).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => {
-                        setProceso(p);
-                        setRespuestas({});
-                        setDocs({});
-                      }}
-                      className={`min-h-[44px] flex-1 rounded-lg border px-3 text-sm font-semibold transition ${
-                        proceso === p
-                          ? "border-brand-900 bg-brand-100 text-brand-900"
-                          : "border-line bg-white text-ink-600 hover:bg-page"
-                      }`}
-                    >
-                      {p === "seleccion" ? "Selección (nuevo)" : "Evaluación"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="label">Proyecto</label>
-                <select
-                  className="input"
-                  value={proyectoId}
-                  onChange={(e) => setProyectoId(e.target.value)}
-                >
-                  <option value="">— Sin proyecto —</option>
-                  {proyectos.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <label className="label">Proveedor</label>
-                <ComboboxProveedor
-                  proveedores={proveedores}
-                  value={proveedorId}
-                  onChange={setProveedorId}
-                />
-              </div>
-              <div>
-                <label className="label">Categoría</label>
-                <select
-                  className="input"
-                  value={categoriaId}
-                  onChange={(e) => setCategoriaId(e.target.value)}
-                >
-                  <option value="">Seleccione…</option>
-                  {categorias.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="label">Suministro (bien/servicio)</label>
-                <input
-                  className="input"
-                  value={suministro}
-                  onChange={(e) => setSuministro(e.target.value)}
-                  placeholder="Ej. Ferretería y fontanería"
-                />
-              </div>
-            </div>
-          </section>
-        )}
-
-        {nombrePaso === "Criterios" && (
-          <section className="card space-y-1">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-xl font-semibold">Criterios de la matriz</h2>
-              <span className="text-xs text-ink-400">{matriz?.nombre}</span>
-            </div>
-            <div className="divide-y divide-line">
-              {criterios.map((c, i) => (
-                <div
-                  key={c.id}
-                  className="grid gap-3 py-4 md:grid-cols-[220px_1fr] md:items-center"
-                >
-                  <div>
-                    <div className="text-sm font-bold">
-                      {i + 1}. {c.nombre}
-                    </div>
-                    <div className="text-xs text-ink-400">
-                      máx. {Number(c.peso_max)} pts
-                    </div>
-                  </div>
-                  <div
-                    className="grid gap-2"
-                    style={{
-                      gridTemplateColumns: `repeat(${c.criterio_opciones.length}, minmax(0,1fr))`,
-                    }}
+                <div>
+                  <label className="label text-[12px]">Categoría</label>
+                  <select
+                    className="input h-9 text-[13px]"
+                    value={categoriaId}
+                    onChange={(e) => setCategoriaId(e.target.value)}
                   >
-                    {[...c.criterio_opciones]
-                      .sort((a, b) => a.orden - b.orden)
-                      .map((o) => {
-                        const activo = respuestas[c.id] === o.id;
-                        return (
-                          <button
-                            key={o.id}
-                            type="button"
-                            title={o.descripcion ?? o.etiqueta}
-                            onClick={() =>
-                              setRespuestas((r) => ({ ...r, [c.id]: o.id }))
-                            }
-                            className={`min-h-[48px] rounded-lg border px-2 py-1.5 text-center transition ${
-                              activo
-                                ? "border-brand-900 bg-brand-100"
-                                : "border-line bg-white hover:bg-page"
-                            }`}
-                          >
-                            <div
-                              className={`text-xs font-bold ${activo ? "text-brand-900" : "text-ink-600"}`}
-                            >
-                              {o.etiqueta}
-                            </div>
-                            <div
-                              className={`text-xs tabular-nums ${activo ? "font-bold text-brand-900" : "text-ink-400"}`}
-                            >
-                              {Number(o.puntos)} pts
-                            </div>
-                          </button>
-                        );
-                      })}
-                  </div>
+                    <option value="">Seleccione…</option>
+                    {categorias.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.nombre}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              ))}
+                <div>
+                  <label className="label text-[12px]">
+                    Suministro (bien/servicio)
+                  </label>
+                  <input
+                    className="input h-9 text-[13px]"
+                    value={suministro}
+                    onChange={(e) => setSuministro(e.target.value)}
+                    placeholder="Ej. Ferretería y fontanería"
+                  />
+                </div>
+              </div>
             </div>
-          </section>
-        )}
+          )}
 
-        {nombrePaso === "Documentos" && (
-          <section className="card space-y-3">
-            <h2 className="text-xl font-semibold">Documentos de legalidad</h2>
-            <p className="text-xs text-ink-400">
-              Eliminatorios: un solo "No cumple" clasifica al proveedor como NO
-              CONFIABLE sin importar el puntaje.
-            </p>
-            {matriz!.matriz_documentos.map((d) => (
-              <div
-                key={d.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line px-4 py-3"
-              >
-                <span className="text-sm">{d.descripcion}</span>
-                <div className="flex shrink-0 gap-2">
-                  {[
-                    { v: true, t: "✓ Cumple", on: "border-ok-600 bg-ok-600 text-white" },
-                    { v: false, t: "✕ No cumple", on: "border-danger-600 bg-danger-600 text-white" },
-                  ].map(({ v, t, on }) => (
+          {nombrePaso === "Criterios" && (
+            <div>
+              <div className="mb-2 text-right text-[10px] text-ink-400">
+                {matriz?.nombre}
+              </div>
+              <div className="divide-y divide-line">
+                {criterios.map((c, i) => (
+                  <div
+                    key={c.id}
+                    className="grid gap-2 py-2.5 md:grid-cols-[170px_1fr] md:items-center"
+                  >
+                    <div>
+                      <div className="text-[12px] font-bold leading-4">
+                        {i + 1}. {c.nombre}
+                      </div>
+                      <div className="text-[10px] text-ink-400">
+                        máx. {Number(c.peso_max)} pts
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[...c.criterio_opciones]
+                        .sort((a, b) => a.orden - b.orden)
+                        .map((o) => {
+                          const activo = respuestas[c.id] === o.id;
+                          return (
+                            <button
+                              key={o.id}
+                              type="button"
+                              title={o.descripcion ?? o.etiqueta}
+                              onClick={() =>
+                                setRespuestas((r) => ({ ...r, [c.id]: o.id }))
+                              }
+                              className={`min-h-[38px] rounded-md border px-1 py-1 text-center transition ${
+                                activo
+                                  ? "border-brand-900 bg-brand-100"
+                                  : "border-line bg-white hover:bg-page"
+                              }`}
+                            >
+                              <div
+                                className={`text-[10px] font-bold leading-3 ${activo ? "text-brand-900" : "text-ink-600"}`}
+                              >
+                                {o.etiqueta}
+                              </div>
+                              <div
+                                className={`text-[10px] leading-3 tabular-nums ${activo ? "font-bold text-brand-900" : "text-ink-400"}`}
+                              >
+                                {Number(o.puntos)} pts
+                              </div>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {nombrePaso === "Documentos" && (
+            <div className="space-y-2.5">
+              <p className="text-[11px] text-ink-400">
+                Eliminatorios: un solo "No cumple" clasifica al proveedor como
+                NO CONFIABLE sin importar el puntaje.
+              </p>
+              {matriz!.matriz_documentos.map((d) => (
+                <div
+                  key={d.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line px-3 py-2.5"
+                >
+                  <span className="flex-1 text-[12px] leading-4">
+                    {d.descripcion}
+                  </span>
+                  <div className="flex shrink-0 gap-1.5">
                     <button
-                      key={t}
                       type="button"
-                      onClick={() => setDocs((x) => ({ ...x, [d.id]: v }))}
-                      className={`min-h-[40px] rounded-lg border px-4 text-xs font-bold transition ${
-                        docs[d.id] === v
-                          ? on
+                      onClick={() => setDocs((x) => ({ ...x, [d.id]: true }))}
+                      className={`inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-[11px] font-bold transition ${
+                        docs[d.id] === true
+                          ? "border-ok-600 bg-ok-600 text-white"
                           : "border-line text-ink-600 hover:bg-page"
                       }`}
                     >
-                      {t}
+                      <Check className="h-3 w-3" /> Cumple
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => setDocs((x) => ({ ...x, [d.id]: false }))}
+                      className={`inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-[11px] font-bold transition ${
+                        docs[d.id] === false
+                          ? "border-danger-600 bg-danger-600 text-white"
+                          : "border-line text-ink-600 hover:bg-page"
+                      }`}
+                    >
+                      <X className="h-3 w-3" /> No cumple
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {docsIncumplidos.length > 0 && (
+                <div className="rounded-lg bg-danger-100 px-3 py-2.5 text-[12px] font-semibold text-danger-600">
+                  ⚠ {docsIncumplidos.length} documento(s) sin cumplir — la
+                  clasificación será NO CONFIABLE.
+                </div>
+              )}
+            </div>
+          )}
+
+          {nombrePaso === "Resumen" && calificacion && (
+            <div className="space-y-3">
+              <div
+                className={`rounded-xl border-2 p-4 text-center ${
+                  calificacion === "confiable"
+                    ? "border-ok-600/40 bg-ok-100/40"
+                    : calificacion === "medianamente_confiable"
+                      ? "border-warn-700/40 bg-warn-100/40"
+                      : "border-danger-600/40 bg-danger-100/40"
+                }`}
+              >
+                <div className="font-display text-4xl font-bold tabular-nums">
+                  {nota}
+                  <span className="text-lg font-normal text-ink-400">/100</span>
+                </div>
+                <div className="mt-1.5 flex justify-center">
+                  <CalBadge cal={calificacion} />
                 </div>
               </div>
-            ))}
-            {docsIncumplidos.length > 0 && (
-              <div className="rounded-lg bg-danger-100 px-4 py-3 text-sm font-semibold text-danger-600">
-                ⚠ {docsIncumplidos.length} documento(s) sin cumplir — la
-                clasificación será NO CONFIABLE.
-              </div>
-            )}
-          </section>
-        )}
 
-        {nombrePaso === "Resumen" && calificacion && (
-          <section className="space-y-4">
-            <div
-              className={`card border-2 text-center ${
-                calificacion === "confiable"
-                  ? "border-ok-600/40 bg-ok-100/40"
-                  : calificacion === "medianamente_confiable"
-                    ? "border-warn-700/40 bg-warn-100/40"
-                    : "border-danger-600/40 bg-danger-100/40"
-              }`}
-            >
-              <div className="font-display text-6xl font-bold tabular-nums">
-                {nota}
-                <span className="text-2xl font-normal text-ink-400">/100</span>
+              <div className="rounded-xl border border-line p-4 text-[12px]">
+                <div className="mb-2 grid gap-1 sm:grid-cols-2">
+                  <Fila k="Proveedor" v={provSel?.razon_social ?? "—"} />
+                  <Fila k="RUC" v={provSel?.ruc ?? "—"} />
+                  <Fila k="Categoría" v={catSel?.nombre ?? "—"} />
+                  <Fila
+                    k="Proceso"
+                    v={proceso === "seleccion" ? "Selección" : "Evaluación"}
+                  />
+                </div>
+                <div className="divide-y divide-line border-t border-line pt-1">
+                  {criterios.map((c) => {
+                    const op = c.criterio_opciones.find(
+                      (o) => o.id === respuestas[c.id]
+                    );
+                    return (
+                      <div key={c.id} className="flex justify-between gap-2 py-1.5">
+                        <span className="text-ink-600">{c.nombre}</span>
+                        <span className="shrink-0 font-bold tabular-nums">
+                          {op?.etiqueta} · {Number(op?.puntos ?? 0)} pts
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="mt-2">
-                <span className={CAL_UI[calificacion].cls}>
-                  {CAL_UI[calificacion].label}
-                </span>
+
+              <div>
+                <label className="label text-[12px]">
+                  Observaciones (opcional)
+                </label>
+                <textarea
+                  className="input text-[13px]"
+                  rows={2}
+                  value={observacion}
+                  onChange={(e) => setObservacion(e.target.value)}
+                />
+                {error && (
+                  <p className="mt-2 text-[12px] text-danger-600">{error}</p>
+                )}
               </div>
             </div>
-
-            <div className="card space-y-2 text-sm">
-              <h3 className="font-semibold">Resumen</h3>
-              <Fila k="Proveedor" v={`${provSel?.razon_social ?? "—"} (${provSel?.ruc ?? ""})`} />
-              <Fila k="Categoría" v={catSel?.nombre ?? "—"} />
-              <Fila k="Proceso" v={proceso === "seleccion" ? "Selección" : "Evaluación"} />
-              <Fila k="Matriz" v={matriz?.nombre ?? "—"} />
-              <div className="divide-y divide-line border-t border-line pt-2">
-                {criterios.map((c) => {
-                  const op = c.criterio_opciones.find(
-                    (o) => o.id === respuestas[c.id]
-                  );
-                  return (
-                    <div key={c.id} className="flex justify-between gap-3 py-1.5">
-                      <span className="text-ink-600">{c.nombre}</span>
-                      <span className="font-bold tabular-nums">
-                        {op?.etiqueta} · {Number(op?.puntos ?? 0)} pts
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="card">
-              <label className="label">Observaciones (opcional)</label>
-              <textarea
-                className="input"
-                rows={2}
-                value={observacion}
-                onChange={(e) => setObservacion(e.target.value)}
-              />
-              {error && <p className="mt-3 text-sm text-danger-600">{error}</p>}
-            </div>
-          </section>
-        )}
-      </div>
-
-      {/* Barra sticky: score + navegación */}
-      <div className="fixed inset-x-0 bottom-14 z-20 px-4 md:bottom-4">
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white/95 px-5 py-3 shadow-lg backdrop-blur">
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="font-display text-2xl font-semibold leading-7 tabular-nums">
-                {nota}
-                <span className="text-sm font-normal text-ink-400"> /100</span>
-              </div>
-              <div className="text-[11px] text-ink-400">
-                {respondidos}/{criterios.length} criterios
-              </div>
-            </div>
-            {respondidos > 0 && calificacion && (
-              <span className={`hidden sm:inline-flex ${CAL_UI[calificacion].cls}`}>
-                {CAL_UI[calificacion].label}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {paso > 0 && (
-              <button
-                type="button"
-                className="btn-secondary min-h-[40px] px-4"
-                onClick={() => irA(paso - 1)}
-                disabled={guardando}
-              >
-                ← Volver
-              </button>
-            )}
-            {!esUltimo ? (
-              <button
-                type="button"
-                className="btn min-h-[40px] px-5"
-                disabled={!puedeAvanzar}
-                onClick={() => irA(paso + 1)}
-              >
-                Siguiente →
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn min-h-[40px] px-5"
-                disabled={!listoParaGuardar || guardando}
-                onClick={guardar}
-              >
-                {guardando ? "Guardando…" : "✓ Finalizar y generar ficha"}
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Footer del modal: score + navegación */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-line bg-white px-5 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <div>
+            <div className="font-display text-xl font-semibold leading-6 tabular-nums">
+              {nota}
+              <span className="text-xs font-normal text-ink-400"> /100</span>
+            </div>
+            <div className="text-[10px] leading-3 text-ink-400">
+              {respondidos}/{criterios.length} criterios
+            </div>
+          </div>
+          {respondidos > 0 && (
+            <span className="hidden sm:block">
+              <CalBadge cal={calificacion} />
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {paso > 0 && (
+            <button
+              type="button"
+              className="btn-secondary min-h-[36px] px-3 text-[12px]"
+              onClick={() => irA(paso - 1)}
+              disabled={guardando}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Volver
+            </button>
+          )}
+          {!esUltimo ? (
+            <button
+              type="button"
+              className="btn min-h-[36px] px-4 text-[12px]"
+              disabled={!puedeAvanzar}
+              onClick={() => irA(paso + 1)}
+            >
+              Siguiente <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn min-h-[36px] px-4 text-[12px]"
+              disabled={!listoParaGuardar || guardando}
+              onClick={guardar}
+            >
+              <Check className="h-3.5 w-3.5" />
+              {guardando ? "Guardando…" : "Finalizar y generar ficha"}
+            </button>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 
 function Fila({ k, v }: { k: string; v: string }) {
   return (
-    <div className="flex justify-between gap-3">
+    <div className="flex justify-between gap-2">
       <span className="text-ink-400">{k}</span>
-      <span className="text-right font-semibold">{v}</span>
+      <span className="truncate text-right font-semibold">{v}</span>
     </div>
   );
 }
@@ -662,16 +653,16 @@ function ComboboxProveedor({
 
   if (seleccionado) {
     return (
-      <div className="flex min-h-[48px] items-center justify-between rounded-lg border border-brand-900 bg-brand-100 px-4 py-2">
-        <div>
-          <div className="text-sm font-bold text-brand-900">
-            {seleccionado.razon_social}
-          </div>
-          <div className="text-xs text-brand-700">RUC {seleccionado.ruc}</div>
+      <div className="flex h-9 items-center justify-between rounded-lg border border-brand-900 bg-brand-100 px-3">
+        <div className="min-w-0 truncate text-[12px] font-bold text-brand-900">
+          {seleccionado.razon_social}
+          <span className="ml-1.5 font-normal text-brand-700">
+            {seleccionado.ruc}
+          </span>
         </div>
         <button
           type="button"
-          className="text-xs font-bold text-brand-900 underline"
+          className="shrink-0 text-[11px] font-bold text-brand-900 underline"
           onClick={() => {
             onChange("");
             setTexto("");
@@ -686,7 +677,7 @@ function ComboboxProveedor({
   return (
     <div className="relative">
       <input
-        className="input"
+        className="input h-9 text-[13px]"
         placeholder="Escribe razón social o RUC…"
         value={texto}
         onChange={(e) => {
@@ -699,26 +690,28 @@ function ComboboxProveedor({
         }}
       />
       {abierto && matches.length > 0 && (
-        <ul className="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded-xl border border-line bg-white py-1 shadow-lg">
+        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-line bg-white py-1 shadow-lg">
           {matches.map((p) => (
             <li key={p.id}>
               <button
                 type="button"
-                className="w-full px-4 py-2.5 text-left transition hover:bg-brand-100"
+                className="w-full px-3 py-2 text-left transition hover:bg-brand-100"
                 onMouseDown={() => {
                   if (blurTimer.current) clearTimeout(blurTimer.current);
                   onChange(p.id);
                 }}
               >
-                <div className="text-sm font-semibold">{p.razon_social}</div>
-                <div className="text-xs text-ink-400">RUC {p.ruc}</div>
+                <div className="text-[12px] font-semibold leading-4">
+                  {p.razon_social}
+                </div>
+                <div className="text-[10px] text-ink-400">RUC {p.ruc}</div>
               </button>
             </li>
           ))}
         </ul>
       )}
       {abierto && texto && matches.length === 0 && (
-        <div className="absolute z-10 mt-1 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-400 shadow-lg">
+        <div className="absolute z-10 mt-1 w-full rounded-xl border border-line bg-white px-3 py-2.5 text-[12px] text-ink-400 shadow-lg">
           Sin coincidencias — el proveedor debe estar registrado primero
         </div>
       )}

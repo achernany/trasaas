@@ -107,7 +107,7 @@ export default function RegistroForm({ token }: { token: string }) {
   if (enviado)
     return (
       <div className="card mx-auto max-w-xl text-center">
-        <div className="mb-2 text-3xl">✓</div>
+        <div className="mb-2 flex justify-center"><svg viewBox="0 0 24 24" className="h-10 w-10 text-ok-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div>
         <h2 className="mb-2 text-lg font-semibold">Registro enviado</h2>
         <p className="text-sm text-slate-600">
           Su información fue recibida y será validada por el área de Logística

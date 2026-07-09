@@ -88,8 +88,9 @@ export default async function EvaluacionesPage({
       </div>
 
       <div className="card mt-3 overflow-hidden p-0">
+        <div className="max-h-[calc(100vh-330px)] overflow-y-auto">
         <table className="w-full">
-          <thead className="border-b border-line bg-page">
+          <thead className="sticky top-0 z-[5] border-b border-line bg-page">
             <tr>
               <th className="th">Código</th>
               <th className="th">Proveedor</th>
@@ -150,6 +151,7 @@ export default async function EvaluacionesPage({
             )}
           </tbody>
         </table>
+        </div>
         <Paginator
           total={total}
           page={page}
