@@ -66,6 +66,8 @@ export default function EvaluacionForm({
   const [observacion, setObservacion] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paso, setPaso] = useState(0);
+  const [dir, setDir] = useState<"fwd" | "back">("fwd");
 
   const matriz = useMemo(
     () => matrices.find((m) => m.tipo === proceso),
@@ -74,6 +76,12 @@ export default function EvaluacionForm({
   const criterios = useMemo(
     () => [...(matriz?.criterios ?? [])].sort((a, b) => a.orden - b.orden),
     [matriz]
+  );
+  const tieneDocs = (matriz?.matriz_documentos ?? []).length > 0;
+
+  const pasos = useMemo(
+    () => ["Datos", "Criterios", ...(tieneDocs ? ["Documentos"] : []), "Resumen"],
+    [tieneDocs]
   );
 
   const nota = useMemo(() => {
@@ -105,13 +113,31 @@ export default function EvaluacionForm({
   const docsListos = (matriz?.matriz_documentos ?? []).every(
     (d) => docs[d.id] !== undefined && docs[d.id] !== null
   );
-  const completo =
-    Boolean(proveedorId && categoriaId && matriz) &&
-    respondidos === criterios.length &&
-    docsListos;
+
+  function pasoValido(i: number): boolean {
+    const nombre = pasos[i];
+    if (nombre === "Datos") return Boolean(proveedorId && categoriaId && matriz);
+    if (nombre === "Criterios") return respondidos === criterios.length;
+    if (nombre === "Documentos") return docsListos;
+    return true;
+  }
+  const puedeAvanzar = pasoValido(paso);
+  const esUltimo = paso === pasos.length - 1;
+  const listoParaGuardar = pasos.every((_, i) => pasoValido(i));
+
+  function irA(destino: number) {
+    if (destino === paso) return;
+    // hacia atrás siempre; hacia adelante solo si los pasos previos están completos
+    if (destino > paso) {
+      for (let i = paso; i < destino; i++) if (!pasoValido(i)) return;
+    }
+    setDir(destino > paso ? "fwd" : "back");
+    setPaso(destino);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   async function guardar() {
-    if (!completo || !matriz || !calificacion) return;
+    if (!listoParaGuardar || !matriz || !calificacion) return;
     setGuardando(true);
     setError(null);
     const supabase = createClient();
@@ -207,7 +233,7 @@ export default function EvaluacionForm({
         .insert(filas);
       if (e3) throw e3;
 
-      if ((matriz.matriz_documentos ?? []).length) {
+      if (tieneDocs) {
         const { error: e4 } = await supabase
           .from("evaluacion_documentos")
           .insert(
@@ -247,213 +273,308 @@ export default function EvaluacionForm({
     }
   }
 
+  const nombrePaso = pasos[paso];
+  const provSel = proveedores.find((p) => p.id === proveedorId);
+  const catSel = categorias.find((c) => c.id === categoriaId);
+
   return (
-    <div className="space-y-6 pb-28">
-      {/* 1 · Datos del proceso */}
-      <section className="card space-y-5">
-        <h2 className="text-xl font-semibold">1 · Datos del proceso</h2>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div>
-            <label className="label">Tipo de proceso</label>
-            <div className="flex gap-2">
-              {(["seleccion", "evaluacion"] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => {
-                    setProceso(p);
-                    setRespuestas({});
-                    setDocs({});
-                  }}
-                  className={`min-h-[44px] flex-1 rounded-lg border px-3 text-sm font-semibold transition ${
-                    proceso === p
-                      ? "border-brand-900 bg-brand-100 text-brand-900"
-                      : "border-line bg-white text-ink-600 hover:bg-page"
+    <div className="pb-32">
+      {/* Step bar */}
+      <div className="mb-6 flex items-center">
+        {pasos.map((nombre, i) => {
+          const hecho = i < paso || (i === paso && pasoValido(i) && esUltimo);
+          const activo = i === paso;
+          const alcanzable =
+            i <= paso || pasos.slice(0, i).every((_, j) => pasoValido(j));
+          return (
+            <div key={nombre} className="flex flex-1 items-center last:flex-none">
+              <button
+                type="button"
+                onClick={() => alcanzable && irA(i)}
+                className={`group flex items-center gap-2 ${alcanzable ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+              >
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
+                    activo
+                      ? "scale-110 border-brand-900 bg-brand-900 text-white shadow-lg shadow-brand-900/30"
+                      : hecho || i < paso
+                        ? "border-ok-600 bg-ok-600 text-white"
+                        : "border-line bg-white text-ink-400"
                   }`}
                 >
-                  {p === "seleccion" ? "Selección (nuevo)" : "Evaluación"}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="label">Proyecto</label>
-            <select
-              className="input"
-              value={proyectoId}
-              onChange={(e) => setProyectoId(e.target.value)}
-            >
-              <option value="">— Sin proyecto —</option>
-              {proyectos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="label">Proveedor</label>
-            <ComboboxProveedor
-              proveedores={proveedores}
-              value={proveedorId}
-              onChange={setProveedorId}
-            />
-          </div>
-          <div>
-            <label className="label">Categoría</label>
-            <select
-              className="input"
-              value={categoriaId}
-              onChange={(e) => setCategoriaId(e.target.value)}
-            >
-              <option value="">Seleccione…</option>
-              {categorias.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">Suministro (bien/servicio)</label>
-            <input
-              className="input"
-              value={suministro}
-              onChange={(e) => setSuministro(e.target.value)}
-              placeholder="Ej. Ferretería y fontanería"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 2 · Grilla de calificación */}
-      <section className="card space-y-1">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-semibold">2 · Criterios</h2>
-          <span className="text-xs text-ink-400">{matriz?.nombre}</span>
-        </div>
-        <div className="divide-y divide-line">
-          {criterios.map((c, i) => (
-            <div key={c.id} className="grid gap-3 py-4 md:grid-cols-[220px_1fr] md:items-center">
-              <div>
-                <div className="text-sm font-bold">
-                  {i + 1}. {c.nombre}
+                  {i < paso ? "✓" : i + 1}
+                </span>
+                <span
+                  className={`hidden text-[12px] font-bold sm:block ${
+                    activo ? "text-brand-900" : "text-ink-400"
+                  }`}
+                >
+                  {nombre}
+                </span>
+              </button>
+              {i < pasos.length - 1 && (
+                <div className="mx-2 h-0.5 flex-1 overflow-hidden rounded bg-line">
+                  <div
+                    className="h-full bg-ok-600 transition-all duration-500"
+                    style={{ width: i < paso ? "100%" : "0%" }}
+                  />
                 </div>
-                <div className="text-xs text-ink-400">
-                  máx. {Number(c.peso_max)} pts
-                </div>
-              </div>
-              <div
-                className="grid gap-2"
-                style={{
-                  gridTemplateColumns: `repeat(${c.criterio_opciones.length}, minmax(0,1fr))`,
-                }}
-              >
-                {[...c.criterio_opciones]
-                  .sort((a, b) => a.orden - b.orden)
-                  .map((o) => {
-                    const activo = respuestas[c.id] === o.id;
-                    return (
-                      <button
-                        key={o.id}
-                        type="button"
-                        title={o.descripcion ?? o.etiqueta}
-                        onClick={() =>
-                          setRespuestas((r) => ({ ...r, [c.id]: o.id }))
-                        }
-                        className={`min-h-[48px] rounded-lg border px-2 py-1.5 text-center transition ${
-                          activo
-                            ? "border-brand-900 bg-brand-100"
-                            : "border-line bg-white hover:bg-page"
-                        }`}
-                      >
-                        <div
-                          className={`text-xs font-bold ${activo ? "text-brand-900" : "text-ink-600"}`}
-                        >
-                          {o.etiqueta}
-                        </div>
-                        <div
-                          className={`text-xs tabular-nums ${activo ? "font-bold text-brand-900" : "text-ink-400"}`}
-                        >
-                          {Number(o.puntos)} pts
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
-              {respuestas[c.id] && (
-                <p className="text-xs text-ink-400 md:col-start-2">
-                  {
-                    c.criterio_opciones.find((o) => o.id === respuestas[c.id])
-                      ?.descripcion
-                  }
-                </p>
               )}
             </div>
-          ))}
-        </div>
-      </section>
+          );
+        })}
+      </div>
 
-      {/* 3 · Documentos de legalidad */}
-      {(matriz?.matriz_documentos ?? []).length > 0 && (
-        <section className="card space-y-3">
-          <h2 className="text-xl font-semibold">3 · Documentos de legalidad</h2>
-          <p className="text-xs text-ink-400">
-            Eliminatorios: un solo "No cumple" clasifica al proveedor como NO
-            CONFIABLE sin importar el puntaje.
-          </p>
-          {matriz!.matriz_documentos.map((d) => (
-            <div
-              key={d.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line px-4 py-3"
-            >
-              <span className="text-sm">{d.descripcion}</span>
-              <div className="flex shrink-0 gap-2">
-                {[
-                  { v: true, t: "✓ Cumple", on: "border-ok-600 bg-ok-600 text-white" },
-                  { v: false, t: "✕ No cumple", on: "border-danger-600 bg-danger-600 text-white" },
-                ].map(({ v, t, on }) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setDocs((x) => ({ ...x, [d.id]: v }))}
-                    className={`min-h-[40px] rounded-lg border px-4 text-xs font-bold transition ${
-                      docs[d.id] === v
-                        ? on
-                        : "border-line text-ink-600 hover:bg-page"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
+      {/* Contenido del paso */}
+      <div key={paso} className={dir === "fwd" ? "step-enter" : "step-enter-back"}>
+        {nombrePaso === "Datos" && (
+          <section className="card space-y-5">
+            <h2 className="text-xl font-semibold">Datos del proceso</h2>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label className="label">Tipo de proceso</label>
+                <div className="flex gap-2">
+                  {(["seleccion", "evaluacion"] as const).map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                        setProceso(p);
+                        setRespuestas({});
+                        setDocs({});
+                      }}
+                      className={`min-h-[44px] flex-1 rounded-lg border px-3 text-sm font-semibold transition ${
+                        proceso === p
+                          ? "border-brand-900 bg-brand-100 text-brand-900"
+                          : "border-line bg-white text-ink-600 hover:bg-page"
+                      }`}
+                    >
+                      {p === "seleccion" ? "Selección (nuevo)" : "Evaluación"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="label">Proyecto</label>
+                <select
+                  className="input"
+                  value={proyectoId}
+                  onChange={(e) => setProyectoId(e.target.value)}
+                >
+                  <option value="">— Sin proyecto —</option>
+                  {proyectos.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="label">Proveedor</label>
+                <ComboboxProveedor
+                  proveedores={proveedores}
+                  value={proveedorId}
+                  onChange={setProveedorId}
+                />
+              </div>
+              <div>
+                <label className="label">Categoría</label>
+                <select
+                  className="input"
+                  value={categoriaId}
+                  onChange={(e) => setCategoriaId(e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  {categorias.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label">Suministro (bien/servicio)</label>
+                <input
+                  className="input"
+                  value={suministro}
+                  onChange={(e) => setSuministro(e.target.value)}
+                  placeholder="Ej. Ferretería y fontanería"
+                />
               </div>
             </div>
-          ))}
-          {docsIncumplidos.length > 0 && (
-            <div className="rounded-lg bg-danger-100 px-4 py-3 text-sm font-semibold text-danger-600">
-              ⚠ {docsIncumplidos.length} documento(s) sin cumplir — la
-              clasificación será NO CONFIABLE.
+          </section>
+        )}
+
+        {nombrePaso === "Criterios" && (
+          <section className="card space-y-1">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-xl font-semibold">Criterios de la matriz</h2>
+              <span className="text-xs text-ink-400">{matriz?.nombre}</span>
             </div>
-          )}
-        </section>
-      )}
+            <div className="divide-y divide-line">
+              {criterios.map((c, i) => (
+                <div
+                  key={c.id}
+                  className="grid gap-3 py-4 md:grid-cols-[220px_1fr] md:items-center"
+                >
+                  <div>
+                    <div className="text-sm font-bold">
+                      {i + 1}. {c.nombre}
+                    </div>
+                    <div className="text-xs text-ink-400">
+                      máx. {Number(c.peso_max)} pts
+                    </div>
+                  </div>
+                  <div
+                    className="grid gap-2"
+                    style={{
+                      gridTemplateColumns: `repeat(${c.criterio_opciones.length}, minmax(0,1fr))`,
+                    }}
+                  >
+                    {[...c.criterio_opciones]
+                      .sort((a, b) => a.orden - b.orden)
+                      .map((o) => {
+                        const activo = respuestas[c.id] === o.id;
+                        return (
+                          <button
+                            key={o.id}
+                            type="button"
+                            title={o.descripcion ?? o.etiqueta}
+                            onClick={() =>
+                              setRespuestas((r) => ({ ...r, [c.id]: o.id }))
+                            }
+                            className={`min-h-[48px] rounded-lg border px-2 py-1.5 text-center transition ${
+                              activo
+                                ? "border-brand-900 bg-brand-100"
+                                : "border-line bg-white hover:bg-page"
+                            }`}
+                          >
+                            <div
+                              className={`text-xs font-bold ${activo ? "text-brand-900" : "text-ink-600"}`}
+                            >
+                              {o.etiqueta}
+                            </div>
+                            <div
+                              className={`text-xs tabular-nums ${activo ? "font-bold text-brand-900" : "text-ink-400"}`}
+                            >
+                              {Number(o.puntos)} pts
+                            </div>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Observaciones */}
-      <section className="card">
-        <label className="label">Observaciones</label>
-        <textarea
-          className="input"
-          rows={2}
-          value={observacion}
-          onChange={(e) => setObservacion(e.target.value)}
-        />
-        {error && <p className="mt-3 text-sm text-danger-600">{error}</p>}
-      </section>
+        {nombrePaso === "Documentos" && (
+          <section className="card space-y-3">
+            <h2 className="text-xl font-semibold">Documentos de legalidad</h2>
+            <p className="text-xs text-ink-400">
+              Eliminatorios: un solo "No cumple" clasifica al proveedor como NO
+              CONFIABLE sin importar el puntaje.
+            </p>
+            {matriz!.matriz_documentos.map((d) => (
+              <div
+                key={d.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line px-4 py-3"
+              >
+                <span className="text-sm">{d.descripcion}</span>
+                <div className="flex shrink-0 gap-2">
+                  {[
+                    { v: true, t: "✓ Cumple", on: "border-ok-600 bg-ok-600 text-white" },
+                    { v: false, t: "✕ No cumple", on: "border-danger-600 bg-danger-600 text-white" },
+                  ].map(({ v, t, on }) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setDocs((x) => ({ ...x, [d.id]: v }))}
+                      className={`min-h-[40px] rounded-lg border px-4 text-xs font-bold transition ${
+                        docs[d.id] === v
+                          ? on
+                          : "border-line text-ink-600 hover:bg-page"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {docsIncumplidos.length > 0 && (
+              <div className="rounded-lg bg-danger-100 px-4 py-3 text-sm font-semibold text-danger-600">
+                ⚠ {docsIncumplidos.length} documento(s) sin cumplir — la
+                clasificación será NO CONFIABLE.
+              </div>
+            )}
+          </section>
+        )}
 
-      {/* Barra de resultado sticky */}
+        {nombrePaso === "Resumen" && calificacion && (
+          <section className="space-y-4">
+            <div
+              className={`card border-2 text-center ${
+                calificacion === "confiable"
+                  ? "border-ok-600/40 bg-ok-100/40"
+                  : calificacion === "medianamente_confiable"
+                    ? "border-warn-700/40 bg-warn-100/40"
+                    : "border-danger-600/40 bg-danger-100/40"
+              }`}
+            >
+              <div className="font-display text-6xl font-bold tabular-nums">
+                {nota}
+                <span className="text-2xl font-normal text-ink-400">/100</span>
+              </div>
+              <div className="mt-2">
+                <span className={CAL_UI[calificacion].cls}>
+                  {CAL_UI[calificacion].label}
+                </span>
+              </div>
+            </div>
+
+            <div className="card space-y-2 text-sm">
+              <h3 className="font-semibold">Resumen</h3>
+              <Fila k="Proveedor" v={`${provSel?.razon_social ?? "—"} (${provSel?.ruc ?? ""})`} />
+              <Fila k="Categoría" v={catSel?.nombre ?? "—"} />
+              <Fila k="Proceso" v={proceso === "seleccion" ? "Selección" : "Evaluación"} />
+              <Fila k="Matriz" v={matriz?.nombre ?? "—"} />
+              <div className="divide-y divide-line border-t border-line pt-2">
+                {criterios.map((c) => {
+                  const op = c.criterio_opciones.find(
+                    (o) => o.id === respuestas[c.id]
+                  );
+                  return (
+                    <div key={c.id} className="flex justify-between gap-3 py-1.5">
+                      <span className="text-ink-600">{c.nombre}</span>
+                      <span className="font-bold tabular-nums">
+                        {op?.etiqueta} · {Number(op?.puntos ?? 0)} pts
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="card">
+              <label className="label">Observaciones (opcional)</label>
+              <textarea
+                className="input"
+                rows={2}
+                value={observacion}
+                onChange={(e) => setObservacion(e.target.value)}
+              />
+              {error && <p className="mt-3 text-sm text-danger-600">{error}</p>}
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* Barra sticky: score + navegación */}
       <div className="fixed inset-x-0 bottom-14 z-20 px-4 md:bottom-4">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white/95 px-5 py-3 shadow-lg backdrop-blur">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div>
               <div className="font-display text-2xl font-semibold leading-7 tabular-nums">
                 {nota}
@@ -464,16 +585,53 @@ export default function EvaluacionForm({
               </div>
             </div>
             {respondidos > 0 && calificacion && (
-              <span className={CAL_UI[calificacion].cls}>
+              <span className={`hidden sm:inline-flex ${CAL_UI[calificacion].cls}`}>
                 {CAL_UI[calificacion].label}
               </span>
             )}
           </div>
-          <button className="btn" disabled={!completo || guardando} onClick={guardar}>
-            {guardando ? "Guardando…" : "Guardar y generar ficha"}
-          </button>
+          <div className="flex items-center gap-2">
+            {paso > 0 && (
+              <button
+                type="button"
+                className="btn-secondary min-h-[40px] px-4"
+                onClick={() => irA(paso - 1)}
+                disabled={guardando}
+              >
+                ← Volver
+              </button>
+            )}
+            {!esUltimo ? (
+              <button
+                type="button"
+                className="btn min-h-[40px] px-5"
+                disabled={!puedeAvanzar}
+                onClick={() => irA(paso + 1)}
+              >
+                Siguiente →
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn min-h-[40px] px-5"
+                disabled={!listoParaGuardar || guardando}
+                onClick={guardar}
+              >
+                {guardando ? "Guardando…" : "✓ Finalizar y generar ficha"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Fila({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between gap-3">
+      <span className="text-ink-400">{k}</span>
+      <span className="text-right font-semibold">{v}</span>
     </div>
   );
 }

@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    /* evita el salto de layout cuando aparece/desaparece el scrollbar */
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-page text-ink-900 text-[15px] leading-relaxed;
   }
@@ -35,7 +39,7 @@
     @apply rounded-2xl border border-line bg-white p-6 shadow-card;
   }
   .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold;
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-bold leading-4;
   }
   .badge-confiable {
     @apply badge bg-ok-100 text-ok-600;
@@ -47,16 +51,53 @@
     @apply badge bg-danger-100 text-danger-600;
   }
   .th {
-    @apply px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-ink-400;
+    @apply whitespace-nowrap px-3 py-2.5 text-left text-[10.5px] font-bold uppercase tracking-wide text-ink-400;
   }
   .td {
-    @apply px-4 py-3.5 text-[13.5px] tabular-nums;
+    @apply whitespace-nowrap px-3 py-2 text-[12px] leading-[14px] tabular-nums;
   }
   .chip {
-    @apply inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink-600 transition hover:bg-page;
+    @apply inline-flex min-h-[36px] items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-white px-4 text-sm font-semibold text-ink-600 transition hover:bg-page;
   }
   .chip-active {
     @apply chip border-brand-900 bg-brand-100 text-brand-900;
+  }
+  /* Bloque de cabecera de página pegajoso bajo el nav */
+  .page-head {
+    @apply sticky top-14 z-10 -mx-4 border-b border-line bg-page px-4 pb-4 pt-4;
+  }
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes stepInBack {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.step-enter {
+  animation: stepIn 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.step-enter-back {
+  animation: stepInBack 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-enter,
+  .step-enter-back {
+    animation: none;
   }
 }
 

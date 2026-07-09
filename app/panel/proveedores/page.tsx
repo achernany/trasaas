@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import Paginator from "@/components/Paginator";
 
 export const dynamic = "force-dynamic";
 
@@ -7,10 +8,10 @@ const BADGE: Record<string, { cls: string; label: string; icon: string }> = {
   confiable: { cls: "badge-confiable", label: "Confiable", icon: "✓" },
   medianamente_confiable: {
     cls: "badge-medianamente",
-    label: "Medianamente",
+    label: "Medianam.",
     icon: "!",
   },
-  no_confiable: { cls: "badge-no-confiable", label: "No confiable", icon: "✕" },
+  no_confiable: { cls: "badge-no-confiable", label: "No conf.", icon: "✕" },
 };
 
 function NotaBar({ nota }: { nota: number | null }) {
@@ -18,14 +19,14 @@ function NotaBar({ nota }: { nota: number | null }) {
   const color =
     nota >= 71 ? "bg-ok-600" : nota >= 31 ? "bg-warn-700" : "bg-danger-600";
   return (
-    <span className="inline-flex items-center gap-2">
-      <span className="h-1.5 w-16 overflow-hidden rounded-full bg-page">
+    <span className="inline-flex items-center gap-1.5">
+      <span className="h-1 w-10 overflow-hidden rounded-full bg-page">
         <span
           className={`block h-full rounded-full ${color}`}
           style={{ width: `${Math.min(100, nota)}%` }}
         />
       </span>
-      <span className="font-bold tabular-nums">{nota}</span>
+      <span className="font-bold">{nota}</span>
     </span>
   );
 }
@@ -33,11 +34,12 @@ function NotaBar({ nota }: { nota: number | null }) {
 export default async function ProveedoresPage({
   searchParams,
 }: {
-  searchParams: { q?: string; filtro?: string };
+  searchParams: { q?: string; filtro?: string; page?: string; per?: string };
 }) {
   const supabase = createClient();
   const q = (searchParams.q ?? "").trim();
   const filtro = searchParams.filtro ?? "todas";
+  const per = Math.min(50, Math.max(10, Number(searchParams.per) || 10));
   const hoy = new Date().toISOString().slice(0, 10);
 
   const { data: pcs } = await supabase
@@ -74,6 +76,11 @@ export default async function ProveedoresPage({
   else if (filtro !== "todas")
     rows = rows.filter((r) => r.calificacion_actual === filtro);
 
+  const total = rows.length;
+  const pages = Math.max(1, Math.ceil(total / per));
+  const page = Math.min(pages, Math.max(1, Number(searchParams.page) || 1));
+  const visibles = rows.slice((page - 1) * per, page * per);
+
   const chips = [
     { key: "todas", label: `Todas (${conteos.todas})` },
     { key: "confiable", label: `✓ Confiables (${conteos.confiable})` },
@@ -85,41 +92,39 @@ export default async function ProveedoresPage({
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Proveedores</h1>
-          <p className="mt-1 text-sm text-ink-600">
-            {rows.length} registros por proveedor-categoría
-          </p>
+    <div>
+      <div className="page-head space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Proveedores
+            </h1>
+            <p className="text-[12px] text-ink-400">
+              {total} registros por proveedor-categoría
+            </p>
+          </div>
+          <Link href="/panel/evaluaciones/nueva" className="btn">
+            + Nueva evaluación
+          </Link>
         </div>
-        <Link href="/panel/evaluaciones/nueva" className="btn">
-          + Nueva evaluación
-        </Link>
-      </div>
-
-      <div className="space-y-4">
-        <form className="flex gap-2">
-          <input
-            type="search"
-            name="q"
-            defaultValue={q}
-            placeholder="Buscar por razón social, RUC o categoría…"
-            className="input max-w-md"
-          />
-          {filtro !== "todas" && (
-            <input type="hidden" name="filtro" value={filtro} />
-          )}
-          <button className="btn-secondary" type="submit">
-            Buscar
-          </button>
-        </form>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <form className="flex gap-2">
+            <input
+              type="search"
+              name="q"
+              defaultValue={q}
+              placeholder="Buscar proveedor, RUC o categoría…"
+              className="input h-9 w-64 py-1 text-[13px]"
+            />
+            {filtro !== "todas" && (
+              <input type="hidden" name="filtro" value={filtro} />
+            )}
+          </form>
           {chips.map((c) => (
             <Link
               key={c.key}
               href={`/panel/proveedores?filtro=${c.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-              className={filtro === c.key ? "chip-active" : "chip"}
+              className={`${filtro === c.key ? "chip-active" : "chip"} min-h-[32px] px-3 text-[12px]`}
             >
               {c.label}
             </Link>
@@ -127,82 +132,96 @@ export default async function ProveedoresPage({
         </div>
       </div>
 
-      {/* Desktop: tabla */}
-      <div className="card hidden overflow-x-auto p-0 md:block">
-        <table className="w-full">
-          <thead className="sticky top-0 border-b border-line bg-page">
-            <tr>
-              <th className="th">Proveedor</th>
-              <th className="th">Categoría</th>
-              <th className="th">Calificación</th>
-              <th className="th">Nota</th>
-              <th className="th">Próxima evaluación</th>
-              <th className="th"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {rows.map((r) => {
-              const vencida = r.proxima_evaluacion && r.proxima_evaluacion < hoy;
-              const b = BADGE[r.calificacion_actual];
-              return (
-                <tr key={r.id} className="transition hover:bg-page">
-                  <td className="td">
-                    <div className="font-sans text-sm font-bold text-ink-900">
-                      {r.proveedores?.razon_social}
-                    </div>
-                    <div className="text-xs text-ink-400">
-                      RUC {r.proveedores?.ruc}
-                    </div>
-                  </td>
-                  <td className="td text-ink-600">{r.categorias?.nombre}</td>
-                  <td className="td">
-                    {b ? (
-                      <span className={b.cls}>
-                        {b.icon} {b.label}
+      {/* Desktop: tabla compacta */}
+      <div className="card mt-4 hidden overflow-hidden p-0 md:block">
+        <div className="max-h-[62vh] overflow-auto">
+          <table className="w-full">
+            <thead className="sticky top-0 z-[5] border-b border-line bg-page">
+              <tr>
+                <th className="th">Proveedor</th>
+                <th className="th">Categoría</th>
+                <th className="th">Calificación</th>
+                <th className="th">Nota</th>
+                <th className="th">Próx. eval.</th>
+                <th className="th"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {visibles.map((r) => {
+                const vencida =
+                  r.proxima_evaluacion && r.proxima_evaluacion < hoy;
+                const b = BADGE[r.calificacion_actual];
+                return (
+                  <tr key={r.id} className="transition hover:bg-page">
+                    <td className="td">
+                      <span
+                        className="block max-w-[260px] truncate font-sans text-[12px] font-bold leading-[14px]"
+                        title={`${r.proveedores?.razon_social} · RUC ${r.proveedores?.ruc}`}
+                      >
+                        {r.proveedores?.razon_social}
                       </span>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td className="td">
-                    <NotaBar nota={r.nota_actual} />
-                  </td>
-                  <td className="td">
-                    {vencida ? (
-                      <span className="badge bg-danger-100 text-danger-600">
-                        ⏱ {r.proxima_evaluacion}
+                      <span className="text-[10.5px] text-ink-400">
+                        {r.proveedores?.ruc}
                       </span>
-                    ) : (
-                      <span className="text-ink-600">
+                    </td>
+                    <td className="td max-w-[160px] truncate text-ink-600">
+                      {r.categorias?.nombre}
+                    </td>
+                    <td className="td">
+                      {b ? (
+                        <span className={b.cls}>
+                          {b.icon} {b.label}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="td">
+                      <NotaBar nota={r.nota_actual} />
+                    </td>
+                    <td className="td">
+                      <span
+                        className={
+                          vencida ? "font-bold text-danger-600" : "text-ink-600"
+                        }
+                      >
+                        {vencida ? "⏱ " : ""}
                         {r.proxima_evaluacion ?? "—"}
                       </span>
-                    )}
-                  </td>
-                  <td className="td">
-                    <Link
-                      href={`/panel/evaluaciones/nueva?pc=${r.id}`}
-                      className="rounded-lg bg-brand-100 px-3 py-2 text-xs font-bold text-brand-900 transition hover:bg-brand-900 hover:text-white"
-                    >
-                      Evaluar
-                    </Link>
+                    </td>
+                    <td className="td text-right">
+                      <Link
+                        href={`/panel/evaluaciones/nueva?pc=${r.id}`}
+                        className="rounded-md bg-brand-100 px-2.5 py-1 text-[11px] font-bold text-brand-900 transition hover:bg-brand-900 hover:text-white"
+                      >
+                        Evaluar
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+              {visibles.length === 0 && (
+                <tr>
+                  <td className="td py-10 text-center text-ink-400" colSpan={6}>
+                    Sin resultados para esta búsqueda
                   </td>
                 </tr>
-              );
-            })}
-            {rows.length === 0 && (
-              <tr>
-                <td className="td py-12 text-center text-ink-400" colSpan={6}>
-                  Sin resultados para esta búsqueda
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <Paginator
+          total={total}
+          page={page}
+          per={per}
+          basePath="/panel/proveedores"
+          params={{ q, filtro: filtro !== "todas" ? filtro : undefined, per: String(per) }}
+        />
       </div>
 
       {/* Mobile: cards */}
-      <div className="space-y-3 md:hidden">
-        {rows.map((r) => {
+      <div className="mt-4 space-y-3 md:hidden">
+        {visibles.map((r) => {
           const vencida = r.proxima_evaluacion && r.proxima_evaluacion < hoy;
           const b = BADGE[r.calificacion_actual];
           return (
@@ -237,11 +256,15 @@ export default async function ProveedoresPage({
             </div>
           );
         })}
-        {rows.length === 0 && (
-          <p className="py-12 text-center text-sm text-ink-400">
-            Sin resultados
-          </p>
-        )}
+        <div className="card p-0">
+          <Paginator
+            total={total}
+            page={page}
+            per={per}
+            basePath="/panel/proveedores"
+            params={{ q, filtro: filtro !== "todas" ? filtro : undefined, per: String(per) }}
+          />
+        </div>
       </div>
     </div>
   );
