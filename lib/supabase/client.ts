@@ -1,8 +1,11 @@
 import { createBrowserClient } from "@supabase/ssr";
 
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  // En el navegador usamos el proxy first-party (/sbproxy) para atravesar
+  // firewalls corporativos; Vercel reescribe hacia Supabase.
+  const url =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/sbproxy`
+      : process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  return createBrowserClient(url, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 }

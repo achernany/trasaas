@@ -85,6 +85,47 @@
   }
 }
 
+/* Gradiente de marca con movimiento suave */
+@keyframes gradShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.anim-gradient {
+  background-image: linear-gradient(
+    110deg,
+    #2743c0 0%,
+    #7a2fb0 40%,
+    #e23a5e 75%,
+    #2743c0 100%
+  );
+  background-size: 250% 250%;
+  animation: gradShift 16s ease-in-out infinite;
+}
+/* Dot de carrusel que se llena en el tiempo del slide */
+@keyframes dotFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+.dot-fill {
+  animation: dotFill 6s linear forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-gradient {
+    animation: none;
+  }
+}
+
 @keyframes stepIn {
   from {
     opacity: 0;

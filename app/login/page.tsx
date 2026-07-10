@@ -1,15 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AlfaMark, AlfaLockup } from "@/components/Logo";
 
-const FOTOS = [
-  "https://alfaco.com.pe/wp-content/uploads/2024/05/alfaco-multifamiliares-constructoras-06.jpg",
-  "https://alfaco.com.pe/wp-content/uploads/2023/03/alfaco-800x600-A3.jpg",
-  "https://alfaco.com.pe/wp-content/uploads/2023/04/alfaco-800x600-B12.jpg",
+const SLIDES = [
+  {
+    img: "https://alfaco.com.pe/wp-content/uploads/2024/05/alfaco-multifamiliares-constructoras-06.jpg",
+    titulo: "Tu abastecimiento, llevado a su punto alfa.",
+    texto:
+      "Registro de proveedores, evaluación con matriz y trazabilidad completa para tus auditorías.",
+  },
+  {
+    img: "https://alfaco.com.pe/wp-content/uploads/2023/03/alfaco-800x600-A3.jpg",
+    titulo: "Solo proveedores confiables en tus compras.",
+    texto:
+      "El comparativo aplica el procedimiento por ti: mínimo 3 cotizaciones y matriz ponderada automática.",
+  },
+  {
+    img: "https://alfaco.com.pe/wp-content/uploads/2023/04/alfaco-800x600-B12.jpg",
+    titulo: "Auditorías sin sustos.",
+    texto:
+      "Cada evaluación queda con ficha firmada, historial y re-evaluación programada según su calificación.",
+  },
 ];
+const INTERVALO = 6000;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,6 +33,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [slide, setSlide] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(
+      () => setSlide((s) => (s + 1) % SLIDES.length),
+      INTERVALO
+    );
+    return () => clearInterval(t);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,7 +70,7 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(
         err?.message === "timeout" || String(err).includes("fetch")
-          ? "No se pudo contactar al servidor de autenticación. Si estás en una red corporativa, es posible que el firewall bloquee la conexión — intenta desde otra red o compartiendo datos del celular."
+          ? "No se pudo contactar al servidor. Verifica tu conexión e intenta de nuevo."
           : `Error inesperado: ${err?.message ?? err}`
       );
       setLoading(false);
@@ -107,17 +132,25 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Derecha: panel de marca (espacio para banners/comunicaciones a futuro) */}
+      {/* Derecha: carrusel de marca (slot de banners/comunicaciones a futuro) */}
       <div className="hidden p-4 lg:block">
-        <div className="relative h-full w-full overflow-hidden rounded-3xl bg-alfa-gradient shadow-brand">
-          {/* foto de Alfaco con mezcla al gradiente */}
-          <img
-            src={FOTOS[0]}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-luminosity"
-          />
-          {/* chevrons gigantes de marca */}
-          <div className="absolute -right-16 -top-16 opacity-15">
+        <div className="relative h-full w-full overflow-hidden rounded-3xl bg-ink-950 shadow-brand">
+          {/* gradiente animado de marca */}
+          <div className="anim-gradient absolute inset-0" />
+          {/* fotos del carrusel */}
+          {SLIDES.map((s, i) => (
+            <img
+              key={s.img}
+              src={s.img}
+              alt=""
+              loading={i === 0 ? "eager" : "lazy"}
+              className={`absolute inset-0 h-full w-full object-cover mix-blend-luminosity transition-opacity duration-1000 ${
+                i === slide ? "opacity-30" : "opacity-0"
+              }`}
+            />
+          ))}
+          {/* chevrons gigantes */}
+          <div className="pointer-events-none absolute -right-16 -top-16 opacity-15">
             <AlfaMark size={420} mono="white" />
           </div>
 
@@ -125,24 +158,38 @@ export default function LoginPage() {
             <AlfaLockup invertido />
 
             <div>
-              <h2 className="max-w-md font-display text-4xl font-bold leading-[1.1] tracking-[-1.5px] text-white">
-                Tu abastecimiento, llevado a su punto alfa.
-              </h2>
-              <p className="mt-3 max-w-sm text-sm leading-6 text-white/70">
-                Registro de proveedores, evaluación con matriz, comparativos y
-                trazabilidad completa para tus auditorías.
-              </p>
-              <div className="mt-6 flex gap-3">
-                {FOTOS.slice(1).map((f) => (
-                  <img
-                    key={f}
-                    src={f}
-                    alt="Proyectos Alfaco"
-                    className="h-20 w-28 rounded-xl border border-white/20 object-cover"
-                  />
+              <div key={slide} className="step-enter">
+                <h2 className="max-w-md font-display text-4xl font-bold leading-[1.1] tracking-[-1.5px] text-white">
+                  {SLIDES[slide].titulo}
+                </h2>
+                <p className="mt-3 max-w-sm text-sm leading-6 text-white/70">
+                  {SLIDES[slide].texto}
+                </p>
+              </div>
+
+              {/* dots temporales */}
+              <div className="mt-8 flex items-center gap-2">
+                {SLIDES.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`Slide ${i + 1}`}
+                    onClick={() => setSlide(i)}
+                    className={`h-1.5 overflow-hidden rounded-full transition-all duration-500 ${
+                      i === slide ? "w-14 bg-white/25" : "w-6 bg-white/25 hover:bg-white/40"
+                    }`}
+                  >
+                    {i === slide && (
+                      <span
+                        key={`fill-${slide}`}
+                        className="dot-fill block h-full rounded-full bg-white"
+                      />
+                    )}
+                  </button>
                 ))}
               </div>
-              <p className="mt-4 font-mono text-[10px] uppercase tracking-[3px] text-white/50">
+
+              <p className="mt-5 font-mono text-[10px] uppercase tracking-[3px] text-white/50">
                 Alfaco · alfaco.com.pe
               </p>
             </div>
