@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import UserMenu from "@/components/UserMenu";
 import { AlfaMark } from "@/components/Logo";
+import { Bell } from "lucide-react";
 
 export default async function PanelLayout({
   children,
@@ -16,11 +17,13 @@ export default async function PanelLayout({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: perfil } = await supabase
-    .from("usuarios")
-    .select("nombre, rol")
-    .eq("id", user.id)
-    .single();
+  const [{ data: perfil }, { count: registrosNuevos }] = await Promise.all([
+    supabase.from("usuarios").select("nombre, rol").eq("id", user.id).single(),
+    supabase
+      .from("proveedor_registros")
+      .select("*", { count: "exact", head: true })
+      .eq("estado", "enviado"),
+  ]);
 
   const links = [
     { href: "/panel", label: "Dashboard" },
@@ -52,10 +55,24 @@ export default async function PanelLayout({
               ))}
             </nav>
           </div>
-          <UserMenu
-            nombre={perfil?.nombre ?? user.email ?? "Usuario"}
-            rol={perfil?.rol}
-          />
+          <div className="flex items-center gap-1">
+            <Link
+              href="/panel/registros"
+              title="Registros de proveedores pendientes de revisión"
+              className="relative flex h-10 w-10 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
+            >
+              <Bell className="h-[18px] w-[18px]" />
+              {(registrosNuevos ?? 0) > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-alfa-red px-1 text-[9px] font-bold text-white">
+                  {registrosNuevos}
+                </span>
+              )}
+            </Link>
+            <UserMenu
+              nombre={perfil?.nombre ?? user.email ?? "Usuario"}
+              rol={perfil?.rol}
+            />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>

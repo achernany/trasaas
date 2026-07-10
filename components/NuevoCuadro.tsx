@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Stepper from "@/components/Stepper";
+import Select from "@/components/Select";
 
 const PESOS = { precio: 30, lugar: 15, tiempo: 15, pago: 20, garantia: 10, feedback: 10 };
 const LUGARES = [
@@ -353,18 +354,15 @@ export default function NuevoCuadro({
               </div>
               <div>
                 <label className="label text-[12px]">Proyecto</label>
-                <select
-                  className="input h-9 text-[13px]"
+                <Select
                   value={proyectoId}
-                  onChange={(e) => setProyectoId(e.target.value)}
-                >
-                  <option value="">— Sin proyecto —</option>
-                  {proyectos.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setProyectoId}
+                  placeholder="— Sin proyecto —"
+                  opciones={[
+                    { value: "", label: "— Sin proyecto —" },
+                    ...proyectos.map((p) => ({ value: p.id, label: p.nombre })),
+                  ]}
+                />
               </div>
               <p className="text-[11px] text-ink-400 sm:col-span-2">
                 {tipo === "rutinario"
@@ -467,18 +465,16 @@ export default function NuevoCuadro({
                   {cots.length}/{minCots} mín. · solo proveedores CONFIABLES ·
                   feedback automático del scorecard
                 </span>
-                <select
-                  className="input h-9 w-64 text-[12px]"
+                <Select
+                  className="w-64"
                   value=""
-                  onChange={(e) => agregarCot(e.target.value)}
-                >
-                  <option value="">+ Agregar proveedor…</option>
-                  {disponibles.map((p) => (
-                    <option key={p.proveedor_id} value={p.proveedor_id}>
-                      {p.razon_social} — {p.ruc}
-                    </option>
-                  ))}
-                </select>
+                  onChange={agregarCot}
+                  placeholder="+ Agregar proveedor…"
+                  opciones={disponibles.map((p) => ({
+                    value: p.proveedor_id,
+                    label: `${p.razon_social} — ${p.ruc}`,
+                  }))}
+                />
               </div>
 
               {cots.map((c, i) => {
@@ -522,23 +518,16 @@ export default function NuevoCuadro({
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      <select
-                        className="input h-8 text-[11px]"
+                      <Select
+                        compacto
                         value={c.lugar}
-                        onChange={(e) =>
+                        onChange={(v) =>
                           setCots((cs) =>
-                            cs.map((x, j) =>
-                              j === i ? { ...x, lugar: e.target.value } : x
-                            )
+                            cs.map((x, j) => (j === i ? { ...x, lugar: v } : x))
                           )
                         }
-                      >
-                        {LUGARES.map((l) => (
-                          <option key={l.v} value={l.v}>
-                            {l.t}
-                          </option>
-                        ))}
-                      </select>
+                        opciones={LUGARES.map((l) => ({ value: l.v, label: l.t }))}
+                      />
                       <input
                         type="number"
                         min={1}
@@ -555,40 +544,28 @@ export default function NuevoCuadro({
                           )
                         }
                       />
-                      <select
-                        className="input h-8 text-[11px]"
+                      <Select
+                        compacto
                         value={c.pago}
-                        onChange={(e) =>
+                        onChange={(v) =>
                           setCots((cs) =>
-                            cs.map((x, j) =>
-                              j === i ? { ...x, pago: e.target.value } : x
-                            )
+                            cs.map((x, j) => (j === i ? { ...x, pago: v } : x))
                           )
                         }
-                      >
-                        {PAGOS.map((p) => (
-                          <option key={p.v} value={p.v}>
-                            {p.t}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        className="input h-8 text-[11px]"
+                        opciones={PAGOS.map((p) => ({ value: p.v, label: p.t }))}
+                      />
+                      <Select
+                        compacto
                         value={c.garantia}
-                        onChange={(e) =>
+                        onChange={(v) =>
                           setCots((cs) =>
                             cs.map((x, j) =>
-                              j === i ? { ...x, garantia: e.target.value } : x
+                              j === i ? { ...x, garantia: v } : x
                             )
                           )
                         }
-                      >
-                        {GARANTIAS.map((g) => (
-                          <option key={g.v} value={g.v}>
-                            {g.t}
-                          </option>
-                        ))}
-                      </select>
+                        opciones={GARANTIAS.map((g) => ({ value: g.v, label: g.t }))}
+                      />
                     </div>
                     <div className="mt-2 space-y-1.5">
                       {items.map((it, j) => (
@@ -702,20 +679,20 @@ export default function NuevoCuadro({
       </div>
 
       {/* Footer del modal */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-line bg-white px-5 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 bg-ink-950 px-5 py-2.5">
         <div className="flex min-w-0 items-center gap-2 text-[12px]">
           {ganadorProv ? (
             <>
               <Trophy className="h-4 w-4 shrink-0 text-ok-600" />
-              <span className="truncate font-bold">
+              <span className="truncate font-bold text-white">
                 {ganadorProv.razon_social}
               </span>
-              <span className="shrink-0 font-display font-semibold tabular-nums">
+              <span className="shrink-0 font-display font-semibold tabular-nums text-white">
                 {puntajes[idxGanador]?.total}/100
               </span>
             </>
           ) : (
-            <span className="text-ink-400">
+            <span className="text-white/50">
               {cots.length}/{minCots} cotizaciones mín.
             </span>
           )}
@@ -724,7 +701,7 @@ export default function NuevoCuadro({
           {paso > 0 && (
             <button
               type="button"
-              className="btn-secondary min-h-[36px] px-3 text-[12px]"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-white/25 px-3 text-[12px] font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
               onClick={() => irA(paso - 1)}
               disabled={guardando}
             >
@@ -734,7 +711,7 @@ export default function NuevoCuadro({
           {!esUltimo ? (
             <button
               type="button"
-              className="btn min-h-[36px] px-4 text-[12px]"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-white px-4 text-[12px] font-bold text-ink-950 transition hover:bg-white/85 disabled:opacity-40"
               disabled={!puedeAvanzar}
               onClick={() => irA(paso + 1)}
             >
@@ -743,7 +720,7 @@ export default function NuevoCuadro({
           ) : (
             <button
               type="button"
-              className="btn min-h-[36px] px-4 text-[12px]"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-white px-4 text-[12px] font-bold text-ink-950 transition hover:bg-white/85 disabled:opacity-40"
               disabled={!listo || guardando}
               onClick={guardar}
             >

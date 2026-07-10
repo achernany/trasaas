@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Stepper from "@/components/Stepper";
+import Select from "@/components/Select";
 
 type Opcion = {
   id: string;
@@ -138,7 +139,10 @@ export default function EvaluacionForm({
 
   function pasoValido(i: number): boolean {
     const n = pasos[i];
-    if (n === "Datos") return Boolean(proveedorId && categoriaId && matriz);
+    if (n === "Datos")
+      return Boolean(
+        proveedorId && categoriaId && matriz && proyectoId && suministro.trim()
+      );
     if (n === "Criterios") return respondidos === criterios.length;
     if (n === "Documentos") return docsListos;
     return true;
@@ -338,19 +342,15 @@ export default function EvaluacionForm({
                   </div>
                 </div>
                 <div>
-                  <label className="label text-[12px]">Proyecto</label>
-                  <select
-                    className="input h-9 text-[13px]"
+                  <label className="label text-[12px]">Proyecto *</label>
+                  <Select
                     value={proyectoId}
-                    onChange={(e) => setProyectoId(e.target.value)}
-                  >
-                    <option value="">— Sin proyecto —</option>
-                    {proyectos.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nombre}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setProyectoId}
+                    opciones={proyectos.map((p) => ({
+                      value: p.id,
+                      label: p.nombre,
+                    }))}
+                  />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="label text-[12px]">Proveedor</label>
@@ -361,23 +361,19 @@ export default function EvaluacionForm({
                   />
                 </div>
                 <div>
-                  <label className="label text-[12px]">Categoría</label>
-                  <select
-                    className="input h-9 text-[13px]"
+                  <label className="label text-[12px]">Categoría *</label>
+                  <Select
                     value={categoriaId}
-                    onChange={(e) => setCategoriaId(e.target.value)}
-                  >
-                    <option value="">Seleccione…</option>
-                    {categorias.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nombre}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setCategoriaId}
+                    opciones={categorias.map((c) => ({
+                      value: c.id,
+                      label: c.nombre,
+                    }))}
+                  />
                 </div>
                 <div>
                   <label className="label text-[12px]">
-                    Suministro (bien/servicio)
+                    Suministro (bien/servicio) *
                   </label>
                   <input
                     className="input h-9 text-[13px]"
@@ -563,15 +559,15 @@ export default function EvaluacionForm({
         </div>
       </div>
 
-      {/* Footer del modal: score + navegación */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-line bg-white px-5 py-2.5">
+      {/* Footer del modal: score + navegación (superficie de marca) */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 bg-ink-950 px-5 py-2.5">
         <div className="flex items-center gap-2.5">
           <div>
-            <div className="font-display text-xl font-semibold leading-6 tabular-nums">
+            <div className="font-display text-xl font-semibold leading-6 tabular-nums text-white">
               {nota}
-              <span className="text-xs font-normal text-ink-400"> /100</span>
+              <span className="text-xs font-normal text-white/40"> /100</span>
             </div>
-            <div className="text-[10px] leading-3 text-ink-400">
+            <div className="text-[10px] leading-3 text-white/40">
               {respondidos}/{criterios.length} criterios
             </div>
           </div>
@@ -585,7 +581,7 @@ export default function EvaluacionForm({
           {paso > 0 && (
             <button
               type="button"
-              className="btn-secondary min-h-[36px] px-3 text-[12px]"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-white/25 px-3 text-[12px] font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
               onClick={() => irA(paso - 1)}
               disabled={guardando}
             >
@@ -595,7 +591,7 @@ export default function EvaluacionForm({
           {!esUltimo ? (
             <button
               type="button"
-              className="btn min-h-[36px] px-4 text-[12px]"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-white px-4 text-[12px] font-bold text-ink-950 transition hover:bg-white/85 disabled:opacity-40"
               disabled={!puedeAvanzar}
               onClick={() => irA(paso + 1)}
             >
@@ -604,7 +600,7 @@ export default function EvaluacionForm({
           ) : (
             <button
               type="button"
-              className="btn min-h-[36px] px-4 text-[12px]"
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-white px-4 text-[12px] font-bold text-ink-950 transition hover:bg-white/85 disabled:opacity-40"
               disabled={!listoParaGuardar || guardando}
               onClick={guardar}
             >

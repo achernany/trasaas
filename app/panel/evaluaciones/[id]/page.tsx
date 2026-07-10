@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PrintButton from "@/components/PrintButton";
+import GenerarEncuesta from "@/components/GenerarEncuesta";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function FichaEvaluacionPage({
   const { data: ev } = await supabase
     .from("evaluaciones")
     .select(
-      `id, codigo, proceso, fecha, nota, calificacion, observacion, creado_en,
+      `id, codigo, proceso, fecha, nota, calificacion, observacion, creado_en, proveedor_categoria_id,
        proveedor_categorias(suministro, proxima_evaluacion, proveedores(ruc, razon_social, direccion, distrito), categorias(nombre)),
        matrices(nombre),
        proyectos(nombre),
@@ -45,6 +46,11 @@ export default async function FichaEvaluacionPage({
 
   if (!ev) notFound();
   const e = ev as any;
+  const { data: sat } = await supabase
+    .from("satisfaccion_respuestas")
+    .select("token_acceso, puntaje, comentario, respondente, area, respondido_en")
+    .eq("evaluacion_id", params.id)
+    .maybeSingle();
   const cal = CAL[e.calificacion];
   const pc = e.proveedor_categorias;
   const respuestas = [...(e.evaluacion_respuestas ?? [])].sort(
@@ -61,7 +67,14 @@ export default async function FichaEvaluacionPage({
         >
           ← Evaluaciones
         </Link>
-        <PrintButton />
+        <div className="flex items-center gap-2">
+          <GenerarEncuesta
+            evaluacionId={e.id}
+            pcId={e.proveedor_categoria_id}
+            tokenExistente={sat && !sat.respondido_en ? sat.token_acceso : null}
+          />
+          <PrintButton />
+        </div>
       </div>
 
       <div className="card p-8">
@@ -174,6 +187,27 @@ export default async function FichaEvaluacionPage({
               ))}
             </ul>
           </>
+        )}
+
+        {sat?.respondido_en && (
+          <div className="mb-6 rounded-xl border border-brand-900/20 bg-brand-100/40 p-4">
+            <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-brand-900">
+              Feedback del área usuaria
+            </h2>
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <span className="font-display text-2xl font-bold tabular-nums">
+                {Number(sat.puntaje)}/10
+              </span>
+              <span className="text-ink-600">
+                {sat.respondente ?? "—"}
+                {sat.area ? ` · ${sat.area}` : ""} ·{" "}
+                {sat.respondido_en?.slice(0, 10)}
+              </span>
+            </div>
+            {sat.comentario && (
+              <p className="mt-1 text-sm text-ink-600">“{sat.comentario}”</p>
+            )}
+          </div>
         )}
 
         {e.observacion && (

@@ -44,17 +44,17 @@ export default function Modal({
         aria-modal="true"
         aria-label={titulo}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-3">
+        <div className="flex shrink-0 items-center justify-between bg-ink-950 px-5 py-3">
           <div>
-            <h2 className="text-base font-semibold leading-6">{titulo}</h2>
+            <h2 className="text-base font-semibold leading-6 text-white">{titulo}</h2>
             {subtitulo && (
-              <p className="text-[11px] leading-4 text-ink-400">{subtitulo}</p>
+              <p className="text-[11px] leading-4 text-white/50">{subtitulo}</p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 transition hover:bg-page hover:text-ink-900"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
             aria-label="Cerrar"
           >
             <X className="h-[18px] w-[18px]" />

@@ -64,9 +64,18 @@ export default async function EvaluacionesPage({
               clic en el código abre la ficha
             </p>
           </div>
-          <Link href="/panel/evaluaciones/nueva" className="btn">
-            + Nueva evaluación
-          </Link>
+          <div className="flex items-center gap-2">
+            <a
+              href="/api/export?tipo=evaluaciones"
+              className="btn-secondary min-h-[40px] px-4 text-[13px]"
+              title="Descargar como Excel (CSV)"
+            >
+              Exportar
+            </a>
+            <Link href="/panel/evaluaciones/nueva" className="btn">
+              + Nueva evaluación
+            </Link>
+          </div>
         </div>
         <form className="flex gap-2">
           <input

@@ -35,18 +35,18 @@ export default async function NuevoCuadroPage() {
   return (
     <div className="fixed inset-0 z-40 flex justify-center bg-ink-900/45 px-4 py-10 backdrop-blur-sm">
       <div className="step-enter flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
-        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-3">
+        <div className="flex shrink-0 items-center justify-between bg-ink-950 px-5 py-3">
           <div>
-            <h1 className="text-base font-semibold leading-6 tracking-tight">
+            <h1 className="text-base font-semibold leading-6 tracking-tight text-white">
               Nuevo cuadro comparativo
             </h1>
-            <p className="text-[11px] leading-4 text-ink-400">
+            <p className="text-[11px] leading-4 text-white/50">
               LOG-GN-F-P02-07 · solo confiables · matriz ponderada automática
             </p>
           </div>
           <Link
             href="/panel/cuadros"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 transition hover:bg-page hover:text-ink-900"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
             aria-label="Cerrar y volver a comparativos"
           >
             <X className="h-[18px] w-[18px]" />

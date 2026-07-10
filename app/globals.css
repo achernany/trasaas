@@ -7,6 +7,30 @@
     /* evita el salto de layout cuando aparece/desaparece el scrollbar */
     scrollbar-gutter: stable;
   }
+  /* Scrollbars finos y de marca en toda la app (overlay: no mueven layout) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #c3c9e6 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #c3c9e6;
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #2743c0;
+  }
+  /* los contenedores con scroll interno reservan el espacio del thumb */
+  .modal-body,
+  .tabla-scroll {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-page text-ink-900 text-[15px] leading-relaxed;
   }
