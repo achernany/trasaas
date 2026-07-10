@@ -1,31 +1,40 @@
 import type { Metadata } from "next";
-import { Poppins, Mulish } from "next/font/google";
+import { Space_Grotesk, Manrope, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const poppins = Poppins({
+const display = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-poppins",
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
   display: "swap",
 });
-const mulish = Mulish({
+const sans = Manrope({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
-  variable: "--font-mulish",
+  variable: "--font-sans",
+  display: "swap",
+});
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Scorecard de Proveedores",
+  title: "AlfaSource · Procurement de ALFACO",
   description:
-    "Evaluación y selección de proveedores auditable — registro, matriz de puntaje, comparativos y aprobaciones.",
+    "AlfaSource — abastecimiento estratégico llevado a su punto alfa. Evaluación y selección de proveedores, comparativos y trazabilidad auditable.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${poppins.variable} ${mulish.variable}`}>
+    <html
+      lang="es"
+      className={`${display.variable} ${sans.variable} ${mono.variable}`}
+    >
       <body className="min-h-screen font-sans antialiased">{children}</body>
     </html>
   );

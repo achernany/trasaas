@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import UserMenu from "@/components/UserMenu";
+import { AlfaMark } from "@/components/Logo";
 
 export default async function PanelLayout({
   children,
@@ -30,15 +31,13 @@ export default async function PanelLayout({
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
-      <header className="no-print sticky top-0 z-20 border-b border-brand-700/30 bg-brand-900">
+      <header className="no-print sticky top-0 z-20 border-b border-white/10 bg-ink-950">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-8">
-            <Link href="/panel" className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 font-display text-sm font-bold text-white">
-                S
-              </span>
-              <span className="font-display font-semibold tracking-tight text-white">
-                Scorecard
+            <Link href="/panel" className="flex items-center gap-2">
+              <AlfaMark size={26} />
+              <span className="font-display text-[16px] font-bold tracking-[-0.5px] text-white">
+                AlfaSource
               </span>
             </Link>
             <nav className="hidden gap-1 md:flex">
