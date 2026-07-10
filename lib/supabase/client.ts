@@ -7,5 +7,8 @@ export function createClient() {
     typeof window !== "undefined"
       ? `${window.location.origin}/sbproxy`
       : process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  return createBrowserClient(url, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+  return createBrowserClient(url, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    // nombre fijo: debe coincidir con server.ts y middleware.ts
+    cookieOptions: { name: "sb-alfasource-auth" },
+  });
 }
