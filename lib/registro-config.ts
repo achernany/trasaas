@@ -20,6 +20,7 @@ export type Campo = {
   ayuda?: string;
   multiple?: boolean; // file múltiple
   validacion?: "ruc" | "cci" | "dni";
+  ancho?: "medio"; // ocupa media fila en desktop
   showIf?: { campo: string; igualA?: string; rucEmpiezaCon?: string };
 };
 
@@ -91,7 +92,7 @@ export const FORM_REGISTRO: Seccion[] = [
     id: "datos_generales",
     titulo: "Datos generales del proveedor",
     campos: [
-      { id: "razon_social", label: "Razón Social", tipo: "text", requerido: true },
+      { id: "razon_social", label: "Razón Social", tipo: "text", requerido: true, ancho: "medio" },
       {
         id: "ruc",
         label: "Número de RUC",
@@ -114,8 +115,8 @@ export const FORM_REGISTRO: Seccion[] = [
         requerido: true,
       },
       { id: "direccion", label: "Dirección fiscal", tipo: "text", requerido: true },
-      { id: "distrito", label: "Distrito", tipo: "text", requerido: true },
-      { id: "provincia", label: "Provincia", tipo: "text", requerido: true },
+      { id: "distrito", label: "Distrito", tipo: "text", requerido: true, ancho: "medio" },
+      { id: "provincia", label: "Provincia", tipo: "text", requerido: true, ancho: "medio" },
     ],
   },
   {

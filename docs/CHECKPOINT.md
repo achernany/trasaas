@@ -140,6 +140,12 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
   botones invertidos + microcopy "Tu avance se conserva al retroceder". Grupos internos
   sobre glass: bg-white/55 y bg-white/70. CSS: keyframes `kenburns`.
 - La v1 (split tipo login con scroll de página) quedó descartada.
+- Ajustes v3 (feedback en vivo): modal BLANCO SÓLIDO (sin glass/blur — se veía sucio sobre
+  fotos), título de sección FIJO fuera del scroll (solo scrollean los inputs), watermark
+  gigante "alfasource" text-[16vw] white/15 detrás del modal (referencia spaciaz), campos
+  con `ancho: "medio"` en registro-config (razón social + RUC en un row; distrito +
+  provincia en otro; grid sm:grid-cols-2 en el renderer, grupos col-span-2), helper text
+  a text-ink-600.
 - NOTA: la propuesta de web NO gustó — descartar contexto/opiniones previas de la web;
   se retoma desde cero el 14.
 - RegistroForm chrome: progress bar bg-alfa-gradient + chip "Sección X de 11", título de

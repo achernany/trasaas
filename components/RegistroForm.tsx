@@ -137,18 +137,19 @@ export default function RegistroForm({ token }: { token: string }) {
         </div>
       </div>
 
-      <div className="modal-body min-h-0 flex-1 space-y-5 overflow-y-auto px-6 pb-6 pt-1">
-        <div className="border-b border-ink-950/10 pb-4">
-          <h2 className="font-display text-xl font-bold tracking-[-0.5px]">
-            {seccion.titulo}
-          </h2>
-          {seccion.descripcion && (
-            <p className="mt-1 text-[13px] leading-6 text-ink-400">
-              {seccion.descripcion}
-            </p>
-          )}
-        </div>
+      <div className="shrink-0 border-b border-line px-6 pb-4 pt-1">
+        <h2 className="font-display text-xl font-bold tracking-[-0.5px]">
+          {seccion.titulo}
+        </h2>
+        {seccion.descripcion && (
+          <p className="mt-1 text-[13px] leading-6 text-ink-600">
+            {seccion.descripcion}
+          </p>
+        )}
+      </div>
 
+      <div className="modal-body min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-5">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
         {(seccion.campos ?? []).map(
           (c) =>
             visible(c, valores) && (
@@ -177,11 +178,14 @@ export default function RegistroForm({ token }: { token: string }) {
         ))}
 
         {errorEnvio && (
-          <p className="text-sm font-semibold text-danger-600">{errorEnvio}</p>
+          <p className="text-sm font-semibold text-danger-600 sm:col-span-2">
+            {errorEnvio}
+          </p>
         )}
+        </div>
       </div>
 
-      <div className="flex shrink-0 items-center justify-between bg-ink-950/90 px-6 py-3.5">
+      <div className="flex shrink-0 items-center justify-between bg-ink-950 px-6 py-3.5">
         <button
           className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-white/25 px-4 text-[13px] font-bold text-white transition hover:bg-white/10 disabled:opacity-40"
           disabled={paso === 0 || enviando}
@@ -238,7 +242,9 @@ function CampoInput({
   onArchivos?: (f: File[]) => void;
 }) {
   return (
-    <div>
+    <div
+      className={campo.ancho === "medio" ? "sm:col-span-1" : "sm:col-span-2"}
+    >
       {campo.tipo !== "checkbox" && (
         <label className="label">
           {campo.label}
@@ -246,7 +252,7 @@ function CampoInput({
         </label>
       )}
       {campo.ayuda && (
-        <p className="-mt-0.5 mb-1 text-xs text-slate-400">{campo.ayuda}</p>
+        <p className="-mt-0.5 mb-1 text-xs text-ink-600">{campo.ayuda}</p>
       )}
 
       {(campo.tipo === "text" ||
@@ -401,7 +407,7 @@ function GrupoInput({
   const activo = grupo.gate ? valores[grupo.gate.id] === "Sí" : true;
 
   return (
-    <div className="rounded-xl border border-ink-950/10 bg-white/55 p-4">
+    <div className="rounded-xl border border-line bg-page/60 p-4 sm:col-span-2">
       <h3 className="mb-3 text-sm font-semibold">{grupo.titulo}</h3>
       {grupo.gate && (
         <CampoInput
@@ -417,7 +423,7 @@ function GrupoInput({
       {activo && (
         <div className="mt-4 space-y-4">
           {items.map((item, idx) => (
-            <div key={idx} className="rounded-lg bg-white/70 p-3">
+            <div key={idx} className="rounded-lg bg-white p-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500">
                   Registro {idx + 1}

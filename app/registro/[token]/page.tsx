@@ -54,10 +54,16 @@ function Lobby({ children }: { children: React.ReactNode }) {
   return (
     <main className="fixed inset-0">
       <FondoObra />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-[-2vw] select-none overflow-hidden text-center font-display text-[16vw] font-bold leading-none tracking-[-0.06em] text-white/15"
+      >
+        alfasource
+      </div>
       <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-6 lg:p-10">
-        <div className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/30 bg-white/75 shadow-2xl backdrop-blur-2xl">
+        <div className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
           {/* Header del brand */}
-          <div className="flex shrink-0 items-center gap-3 bg-ink-950/90 px-6 py-4">
+          <div className="flex shrink-0 items-center gap-3 bg-ink-950 px-6 py-4">
             <svg viewBox="0 0 120 120" width={30} height={30} aria-hidden="true">
               <defs>
                 <linearGradient
