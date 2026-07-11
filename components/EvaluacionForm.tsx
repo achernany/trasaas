@@ -34,6 +34,7 @@ type Matriz = {
   id: string;
   nombre: string;
   tipo: "seleccion" | "evaluacion";
+  clasificacion?: "regular" | "critico";
   umbral_confiable: number;
   umbral_medianamente: number;
   meses_reeval_confiable: number;
@@ -42,7 +43,12 @@ type Matriz = {
   criterios: Criterio[];
   matriz_documentos: Doc[];
 };
-type Prov = { id: string; ruc: string; razon_social: string };
+type Prov = {
+  id: string;
+  ruc: string;
+  razon_social: string;
+  clasificacion?: "regular" | "critico";
+};
 
 export function CalBadge({ cal }: { cal: string | null }) {
   if (cal === "confiable")
@@ -84,6 +90,11 @@ export default function EvaluacionForm({
   const [categoriaId, setCategoriaId] = useState(preseleccion?.categoriaId ?? "");
   const [proyectoId, setProyectoId] = useState("");
   const [proceso, setProceso] = useState<"seleccion" | "evaluacion">("evaluacion");
+  const [clasificacion, setClasificacion] = useState<"regular" | "critico">(
+    () =>
+      proveedores.find((p) => p.id === preseleccion?.proveedorId)
+        ?.clasificacion ?? "regular"
+  );
   const [suministro, setSuministro] = useState("");
   const [respuestas, setRespuestas] = useState<Record<string, string>>({});
   const [docs, setDocs] = useState<Record<string, boolean | null>>({});
@@ -94,8 +105,18 @@ export default function EvaluacionForm({
   const [dir, setDir] = useState<"fwd" | "back">("fwd");
 
   const matriz = useMemo(
-    () => matrices.find((m) => m.tipo === proceso),
-    [matrices, proceso]
+    () =>
+      matrices.find(
+        (m) => m.tipo === proceso && (m.clasificacion ?? "regular") === clasificacion
+      ) ?? matrices.find((m) => m.tipo === proceso),
+    [matrices, proceso, clasificacion]
+  );
+  const matrizExactaExiste = useMemo(
+    () =>
+      matrices.some(
+        (m) => m.tipo === proceso && (m.clasificacion ?? "regular") === clasificacion
+      ),
+    [matrices, proceso, clasificacion]
   );
   const criterios = useMemo(
     () => [...(matriz?.criterios ?? [])].sort((a, b) => a.orden - b.orden),
@@ -174,6 +195,11 @@ export default function EvaluacionForm({
         .eq("id", auth.user!.id)
         .single();
       const empresaId = perfil!.empresa_id;
+
+      await supabase
+        .from("proveedores")
+        .update({ clasificacion })
+        .eq("id", proveedorId);
 
       let { data: pc } = await supabase
         .from("proveedor_categorias")
@@ -342,6 +368,39 @@ export default function EvaluacionForm({
                   </div>
                 </div>
                 <div>
+                  <label className="label text-[12px]">
+                    Clasificación del proveedor *
+                  </label>
+                  <div className="flex gap-2">
+                    {(["regular", "critico"] as const).map((cl) => (
+                      <button
+                        key={cl}
+                        type="button"
+                        onClick={() => {
+                          setClasificacion(cl);
+                          setRespuestas({});
+                          setDocs({});
+                        }}
+                        className={`h-9 flex-1 rounded-lg border px-2 text-[12px] font-semibold transition ${
+                          clasificacion === cl
+                            ? cl === "critico"
+                              ? "border-alfa-red bg-danger-100 text-danger-600"
+                              : "border-brand-900 bg-brand-100 text-brand-900"
+                            : "border-line bg-white text-ink-600 hover:bg-page"
+                        }`}
+                      >
+                        {cl === "critico" ? "Crítico" : "Regular"}
+                      </button>
+                    ))}
+                  </div>
+                  {!matrizExactaExiste && clasificacion === "critico" && (
+                    <p className="mt-1 text-[11px] text-warn-700">
+                      Sin matriz vigente para críticos: se aplica la matriz
+                      regular. Créala en Configuración → Matrices.
+                    </p>
+                  )}
+                </div>
+                <div>
                   <label className="label text-[12px]">Proyecto *</label>
                   <Select
                     value={proyectoId}
@@ -357,7 +416,11 @@ export default function EvaluacionForm({
                   <ComboboxProveedor
                     proveedores={proveedores}
                     value={proveedorId}
-                    onChange={setProveedorId}
+                    onChange={(id: string) => {
+                      setProveedorId(id);
+                      const pr = proveedores.find((x) => x.id === id);
+                      if (pr?.clasificacion) setClasificacion(pr.clasificacion);
+                    }}
                   />
                 </div>
                 <div>
@@ -520,7 +583,7 @@ export default function EvaluacionForm({
                   <Fila k="Categoría" v={catSel?.nombre ?? "—"} />
                   <Fila
                     k="Proceso"
-                    v={proceso === "seleccion" ? "Selección" : "Evaluación"}
+                    v={`${proceso === "seleccion" ? "Selección" : "Evaluación"} · Prov. ${clasificacion === "critico" ? "crítico" : "regular"}`}
                   />
                 </div>
                 <div className="divide-y divide-line border-t border-line pt-1">

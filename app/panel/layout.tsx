@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import UserMenu from "@/components/UserMenu";
 import { AlfaMark } from "@/components/Logo";
-import { Bell } from "lucide-react";
+import { Bell, Settings } from "lucide-react";
 
 export default async function PanelLayout({
   children,
@@ -67,6 +67,13 @@ export default async function PanelLayout({
                   {registrosNuevos}
                 </span>
               )}
+            </Link>
+            <Link
+              href="/panel/configuracion"
+              title="Configuración del sistema"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
+            >
+              <Settings className="h-[18px] w-[18px]" />
             </Link>
             <UserMenu
               nombre={perfil?.nombre ?? user.email ?? "Usuario"}

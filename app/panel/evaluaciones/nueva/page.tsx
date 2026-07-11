@@ -16,14 +16,14 @@ export default async function NuevaEvaluacionPage({
     await Promise.all([
       supabase
         .from("proveedores")
-        .select("id, ruc, razon_social")
+        .select("id, ruc, razon_social, clasificacion")
         .order("razon_social"),
       supabase.from("categorias").select("id, nombre").order("nombre"),
       supabase.from("proyectos").select("id, nombre").order("nombre"),
       supabase
         .from("matrices")
         .select(
-          "id, nombre, tipo, umbral_confiable, umbral_medianamente, meses_reeval_confiable, meses_reeval_medianamente, meses_reeval_no_confiable, criterios(id, orden, nombre, peso_max, criterio_opciones(id, orden, etiqueta, descripcion, puntos)), matriz_documentos(id, descripcion, eliminatorio)"
+          "id, nombre, tipo, clasificacion, umbral_confiable, umbral_medianamente, meses_reeval_confiable, meses_reeval_medianamente, meses_reeval_no_confiable, criterios(id, orden, nombre, peso_max, criterio_opciones(id, orden, etiqueta, descripcion, puntos)), matriz_documentos(id, descripcion, eliminatorio)"
         )
         .eq("estado", "vigente"),
     ]);
