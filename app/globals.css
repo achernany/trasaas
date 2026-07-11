@@ -191,3 +191,18 @@
     background: white !important;
   }
 }
+
+/* ---------- Loader de marca: chevrones en avance + loop de tips ---------- */
+@keyframes chevAvance {
+  0%, 100% { opacity: 0.2; transform: translateX(0); }
+  50% { opacity: 1; transform: translateX(3px); }
+}
+.chev-anim-1 { animation: chevAvance 1.2s ease-in-out infinite; }
+.chev-anim-2 { animation: chevAvance 1.2s ease-in-out 0.25s infinite; }
+
+@keyframes tipLoop {
+  0% { opacity: 0; transform: translateY(10px); }
+  12%, 84% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+.tip-loop { animation: tipLoop 2.8s ease-in-out both; }

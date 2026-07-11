@@ -117,6 +117,20 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
 - Favicon: `app/icon.svg` (chevrones AlfaSource sobre ink, gradiente de marca).
 - Código auditado: sin TODOs, console.logs ni notas informales.
 
+### Estados de carga y error (2026-07-11 tarde)
+- `components/CargandoAlfa.tsx`: loader de marca — chevrones con animación de avance +
+  text-loop de tips del proceso (rotan cada 2.8s, estilo motion-primitives/text-loop).
+- `app/loading.tsx` (público, pantalla completa) y `app/panel/loading.tsx` (dentro del panel).
+- `app/panel/error.tsx`: error boundary con card de marca (conexión BD), botón Reintentar
+  (reset) + digest de referencia. `app/global-error.tsx`: fallback total con estilos inline.
+- `app/not-found.tsx`: 404 de marca.
+- CSS: keyframes `chevAvance` y `tipLoop` al final de globals.css.
+
+### Agenda 14 de julio (cuando se renueven los límites de Fable 5)
+- Diseñar/iterar la nueva web de Alfaco a partir de `propuesta-web-alfaco.html`.
+- Dashboard v2: hoy se ve "pálido/seco/poco interactivo" (palabras del usuario) —
+  darle vida e interactividad; es la puerta de entrada aunque no el core.
+
 ### Propuesta web Alfaco (nuevo frente)
 - Existe `propuesta-web-alfaco.html` en la carpeta de marca (fuera del repo): mockup
   one-page de la nueva alfaco.com.pe con Portal de Proveedores integrado (registro
