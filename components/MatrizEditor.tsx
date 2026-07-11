@@ -205,7 +205,7 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
           href={`/panel/configuracion/matrices/${matriz.id}`}
           className="text-sm text-slate-500 hover:underline"
         >
-          ← Cancelar
+          ← Volver a la matriz (sin guardar)
         </Link>
         <span className="text-[12px] text-ink-400">
           Editando v{matriz.version} → se creará y activará la{" "}

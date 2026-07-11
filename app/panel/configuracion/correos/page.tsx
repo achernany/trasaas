@@ -23,7 +23,10 @@ export default async function CorreosPage() {
             conectar el servicio de correo
           </p>
         </div>
-        <Link href="/panel/configuracion" className="btn-secondary min-h-[40px]">
+        <Link
+          href="/panel/configuracion"
+          className="text-sm text-slate-500 hover:underline"
+        >
           ← Configuración
         </Link>
       </div>

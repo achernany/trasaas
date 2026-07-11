@@ -197,6 +197,30 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
   Autoservicio = ruta pública sin token con Turnstile (plan B si no compran la web:
   se queda como link / subdominio proveedores.alfaco.com.pe con un CNAME).
 
+### Feedback de Fran 11-jul (audio) — estado
+- Matriz ajustada + matriz de Críticos: la directora aprueba el LUNES 13 → Fran manda
+  Excel/ponderaciones → cargarlas ese día (por editor del panel o por mí).
+- Subcategorías: Fran las trabaja, llegan lunes 13.
+- Logo Alfaco: el usuario lo dejará como `logo-alfaco.png` (o .svg) en la carpeta
+  montada "Brand Alfaco Procurement" → copiarlo a public/ del repo y usarlo para
+  membrete de PDFs (actas, matrices, reportes).
+- Directora pidió ver "estructura del comparativo" para el 15 → YA ESTÁ FUNCIONAL
+  completo (solo confiables, mín 3 cotizaciones, scoring, aprobación); solo falta
+  adjuntar PDF de cotización (14).
+- Directora vio la propuesta de web con buenos ojos → dispuesta a que la empresa
+  la pague. Negocio confirmado; web desde cero el 14.
+- Fran hace pruebas la tarde del 11 → llegará lista de observaciones.
+
+### Pulido UI Configuración (hecho 11-jul noche, pendiente push)
+- Back-links "← Configuración" ya no son botones raros: links de texto estándar
+  (patrón de la ficha de evaluación). MatrizEditor: "← Volver a la matriz (sin
+  guardar)" para que no compita con el botón Cancelar del pie.
+- Tabla de matrices: columna "Ver" duplicada eliminada (el nombre ya es link).
+- PENDIENTE 14 (observación del usuario): revisar iconografía de botones en
+  Configuración (flechas/estilos que no se entienden) y homologar la tabla de
+  matrices y la de destinatarios al 100% con el patrón de tablas del resto
+  (sticky thead, paginador si crece, row-click).
+
 ### Agenda 14 de julio (cuando se renueven los límites de Fable 5)
 - Diseñar/iterar la nueva web de Alfaco a partir de `propuesta-web-alfaco.html`.
 - Dashboard v2: hoy se ve "pálido/seco/poco interactivo" (palabras del usuario) —

@@ -34,7 +34,10 @@ export default async function MatricesPage() {
             · editar crea una nueva versión y archiva la anterior
           </p>
         </div>
-        <Link href="/panel/configuracion" className="btn-secondary min-h-[40px]">
+        <Link
+          href="/panel/configuracion"
+          className="text-sm text-slate-500 hover:underline"
+        >
           ← Configuración
         </Link>
       </div>
@@ -49,7 +52,6 @@ export default async function MatricesPage() {
               <th className="th">Versión</th>
               <th className="th">Criterios</th>
               <th className="th">Estado</th>
-              <th className="th"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
@@ -89,14 +91,6 @@ export default async function MatricesPage() {
                   <span className={ESTADO[m.estado] ?? "badge-neutral"}>
                     {m.estado}
                   </span>
-                </td>
-                <td className="td py-3 text-right">
-                  <Link
-                    href={`/panel/configuracion/matrices/${m.id}`}
-                    className="text-[12px] font-semibold text-brand-900 hover:underline"
-                  >
-                    Ver
-                  </Link>
                 </td>
               </tr>
             ))}
