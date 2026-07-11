@@ -126,11 +126,22 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
 - `app/not-found.tsx`: 404 de marca.
 - CSS: keyframes `chevAvance` y `tipLoop` al final de globals.css.
 
-### Rediseño del form de registro (2026-07-11 noche)
-- `app/registro/[token]/page.tsx`: split layout tipo login — form a la izquierda (max-w-2xl),
-  panel de marca fijo a la derecha (foto de obra de alfaco.com.pe + .anim-gradient +
-  AlfaMark watermark + claim "Un solo registro. Trazabilidad total."). AlfaLockup arriba,
-  chips de metadata (formato/tiempo/DJ), nota legal al pie.
+### Rediseño del form de registro — v2 "lobby" (2026-07-11 noche, DEFINITIVO)
+- REGLA CORE DEL PROYECTO (dictada por el usuario tras romperse el split con scroll):
+  **nunca scroll de página; siempre modal centrado one-view con scroll interno**.
+- `app/registro/[token]/page.tsx`: "Lobby" = `components/FondoObra.tsx` (fotos reales de
+  obra full-screen con crossfade 7s + Ken Burns + anim-gradient 60% + velo ink/45) y
+  encima modal glass centrado: bg-white/75 + backdrop-blur-2xl + borde white/30
+  (el 25% pedido se subió a 75% por legibilidad de 88 preguntas). Header bg-ink-950/90
+  con chevrones ANIMADOS (chev-anim-1/2, gradiente claro) + título; estados
+  inválido/enviado dentro del mismo modal.
+- RegistroForm ahora es fragmento one-view: progress fijo (px-6 pt-4), `.modal-body`
+  flex-1 con scroll interno (scrollTo al cambiar de sección), footer bg-ink-950/90 con
+  botones invertidos + microcopy "Tu avance se conserva al retroceder". Grupos internos
+  sobre glass: bg-white/55 y bg-white/70. CSS: keyframes `kenburns`.
+- La v1 (split tipo login con scroll de página) quedó descartada.
+- NOTA: la propuesta de web NO gustó — descartar contexto/opiniones previas de la web;
+  se retoma desde cero el 14.
 - RegistroForm chrome: progress bar bg-alfa-gradient + chip "Sección X de 11", título de
   sección en font-display, radios → pills de marca, file input → dropzone punteada con
   UploadCloud + chips verdes por archivo, botonera con flechas y scroll-to-top al navegar.

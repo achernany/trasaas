@@ -107,7 +107,7 @@ export default function RegistroForm({ token }: { token: string }) {
 
   if (enviado)
     return (
-      <div className="card text-center">
+      <div className="px-8 py-14 text-center">
         <div className="mb-2 flex justify-center"><svg viewBox="0 0 24 24" className="h-10 w-10 text-ok-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div>
         <h2 className="mb-2 text-lg font-semibold">Registro enviado</h2>
         <p className="text-sm text-slate-600">
@@ -119,8 +119,8 @@ export default function RegistroForm({ token }: { token: string }) {
     );
 
   return (
-    <div className="space-y-4">
-      <div>
+    <>
+      <div className="shrink-0 px-6 pb-3 pt-4">
         <div className="mb-2 flex items-center justify-between">
           <span className="rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold text-brand-900">
             Sección {paso + 1} de {secciones.length}
@@ -137,8 +137,8 @@ export default function RegistroForm({ token }: { token: string }) {
         </div>
       </div>
 
-      <div className="card space-y-5">
-        <div className="border-b border-line pb-4">
+      <div className="modal-body min-h-0 flex-1 space-y-5 overflow-y-auto px-6 pb-6 pt-1">
+        <div className="border-b border-ink-950/10 pb-4">
           <h2 className="font-display text-xl font-bold tracking-[-0.5px]">
             {seccion.titulo}
           </h2>
@@ -175,28 +175,33 @@ export default function RegistroForm({ token }: { token: string }) {
             set={set}
           />
         ))}
+
+        {errorEnvio && (
+          <p className="text-sm font-semibold text-danger-600">{errorEnvio}</p>
+        )}
       </div>
 
-      {errorEnvio && <p className="text-sm text-red-600">{errorEnvio}</p>}
-
-      <div className="flex justify-between pb-6">
+      <div className="flex shrink-0 items-center justify-between bg-ink-950/90 px-6 py-3.5">
         <button
-          className="btn-secondary min-h-[44px]"
+          className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-white/25 px-4 text-[13px] font-bold text-white transition hover:bg-white/10 disabled:opacity-40"
           disabled={paso === 0 || enviando}
           onClick={() => {
             setPaso((p) => p - 1);
-            window.scrollTo({ top: 0 });
+            document.querySelector(".modal-body")?.scrollTo({ top: 0 });
           }}
         >
           <ArrowLeft className="h-4 w-4" /> Anterior
         </button>
+        <span className="hidden text-[11px] font-semibold text-white/40 sm:block">
+          Tu avance se conserva al retroceder
+        </span>
         {paso < secciones.length - 1 ? (
           <button
-            className="btn min-h-[44px]"
+            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-bold text-ink-950 transition hover:bg-brand-100"
             onClick={() => {
               if (validaSeccion()) {
                 setPaso((p) => p + 1);
-                window.scrollTo({ top: 0 });
+                document.querySelector(".modal-body")?.scrollTo({ top: 0 });
               }
             }}
           >
@@ -204,7 +209,7 @@ export default function RegistroForm({ token }: { token: string }) {
           </button>
         ) : (
           <button
-            className="btn min-h-[44px]"
+            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-bold text-ink-950 transition hover:bg-brand-100 disabled:opacity-50"
             disabled={enviando}
             onClick={enviar}
           >
@@ -213,7 +218,7 @@ export default function RegistroForm({ token }: { token: string }) {
           </button>
         )}
       </div>
-    </div>
+    </>
   );
 }
 
@@ -396,7 +401,7 @@ function GrupoInput({
   const activo = grupo.gate ? valores[grupo.gate.id] === "Sí" : true;
 
   return (
-    <div className="rounded-lg border border-slate-200 p-4">
+    <div className="rounded-xl border border-ink-950/10 bg-white/55 p-4">
       <h3 className="mb-3 text-sm font-semibold">{grupo.titulo}</h3>
       {grupo.gate && (
         <CampoInput
@@ -412,7 +417,7 @@ function GrupoInput({
       {activo && (
         <div className="mt-4 space-y-4">
           {items.map((item, idx) => (
-            <div key={idx} className="rounded-lg bg-slate-50 p-3">
+            <div key={idx} className="rounded-lg bg-white/70 p-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500">
                   Registro {idx + 1}

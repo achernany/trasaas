@@ -1,7 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import RegistroForm from "@/components/RegistroForm";
-import { AlfaLockup, AlfaMark } from "@/components/Logo";
-import { ShieldCheck, Clock3, FileCheck2 } from "lucide-react";
+import FondoObra from "@/components/FondoObra";
 
 export const dynamic = "force-dynamic";
 
@@ -23,110 +22,102 @@ export default async function RegistroPage({
 
   if (!registro) {
     return (
-      <Shell>
+      <Lobby>
         <Aviso
           titulo="Enlace no válido"
           texto="Este enlace de registro no existe o fue desactivado. Solicite uno nuevo al área de Logística de Alfa Co S.A.C."
         />
-      </Shell>
+      </Lobby>
     );
   }
 
   if (registro.estado === "enviado" || registro.estado === "validado") {
     return (
-      <Shell>
+      <Lobby>
         <Aviso
           titulo="Registro ya enviado"
           texto="Este formulario ya fue completado y está en proceso de validación por el área de Logística."
         />
-      </Shell>
+      </Lobby>
     );
   }
 
   return (
-    <Shell>
-      <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold tracking-[-0.8px] sm:text-3xl">
-          Registro de Proveedores
-          <span className="block text-ink-400">y Debida Diligencia</span>
-        </h1>
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[12px] font-semibold text-ink-400">
-          <span className="inline-flex items-center gap-1.5">
-            <FileCheck2 className="h-3.5 w-3.5 text-brand-900" />
-            Formato LOG-GN-F-P02-09
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Clock3 className="h-3.5 w-3.5 text-brand-900" />~30 minutos
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-brand-900" />
-            Carácter de Declaración Jurada
-          </span>
-        </div>
-      </div>
+    <Lobby>
       <RegistroForm token={params.token} />
-    </Shell>
+    </Lobby>
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+/** El lobby: fotos de obra full-screen + modal glass centrado, one-view */
+function Lobby({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen bg-page">
-      {/* Columna del formulario */}
-      <div className="min-h-screen w-full lg:w-[58%] xl:w-[55%]">
-        <div className="mx-auto max-w-2xl px-5 py-8 sm:px-8">
-          <div className="mb-8">
-            <AlfaLockup conEndoso />
+    <main className="fixed inset-0">
+      <FondoObra />
+      <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-6 lg:p-10">
+        <div className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/30 bg-white/75 shadow-2xl backdrop-blur-2xl">
+          {/* Header del brand */}
+          <div className="flex shrink-0 items-center gap-3 bg-ink-950/90 px-6 py-4">
+            <svg viewBox="0 0 120 120" width={30} height={30} aria-hidden="true">
+              <defs>
+                <linearGradient
+                  id="reg-g"
+                  x1="24"
+                  y1="20"
+                  x2="98"
+                  y2="102"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0" stopColor="#6E8BFF" />
+                  <stop offset="0.52" stopColor="#B06AE0" />
+                  <stop offset="1" stopColor="#FF6E8C" />
+                </linearGradient>
+              </defs>
+              <path
+                className="chev-anim-1"
+                d="M38 34 L66 62 L38 90"
+                fill="none"
+                stroke="url(#reg-g)"
+                strokeWidth="12"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                className="chev-anim-2"
+                d="M64 34 L92 62 L64 90"
+                fill="none"
+                stroke="url(#reg-g)"
+                strokeWidth="12"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <div className="min-w-0">
+              <h1 className="truncate font-display text-[15px] font-bold leading-5 tracking-[-0.3px] text-white">
+                Registro de Proveedores y Debida Diligencia
+              </h1>
+              <p className="truncate text-[11px] leading-4 text-white/50">
+                Alfa Co S.A.C. · LOG-GN-F-P02-09 · ~30 min · Carácter de
+                Declaración Jurada
+              </p>
+            </div>
           </div>
           {children}
-          <p className="mt-10 text-[11px] leading-5 text-ink-400">
-            La información se rige por la Política de Privacidad de Alfa Co
-            S.A.C. y su Sistema de Gestión Antisoborno (ISO 37001 · Ley N°
-            30424). AlfaSource registra cada envío con sello de fecha y hora
-            para fines de auditoría.
-          </p>
         </div>
       </div>
-
-      {/* Panel de marca (solo desktop) */}
-      <aside className="relative hidden min-h-screen flex-1 overflow-hidden lg:block">
-        <div className="fixed inset-y-0 right-0 w-[42%] xl:w-[45%]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://alfaco.com.pe/wp-content/uploads/2023/03/alfaco-800x600-A3.jpg"
-            alt=""
-            className="h-full w-full object-cover"
-          />
-          <div className="anim-gradient absolute inset-0 opacity-80" />
-          <div className="absolute inset-0 bg-ink-950/35" />
-          <div className="absolute -bottom-24 -right-16 opacity-[0.16]">
-            <AlfaMark size={460} mono="white" />
-          </div>
-          <div className="absolute inset-x-0 bottom-0 p-10">
-            <p className="font-display text-3xl font-bold leading-[1.08] tracking-[-1px] text-white xl:text-4xl">
-              Un solo registro.
-              <br />
-              Trazabilidad total.
-            </p>
-            <p className="mt-3 max-w-sm text-[13px] leading-6 text-white/70">
-              Tu expediente entra directo al sistema de evaluación de
-              proveedores de Alfa Co: sin papeles, sin reenvíos, con evidencia
-              auditable de cada paso.
-            </p>
-          </div>
-        </div>
-      </aside>
     </main>
   );
 }
 
 function Aviso({ titulo, texto }: { titulo: string; texto: string }) {
   return (
-    <div className="card text-center">
+    <div className="px-8 py-14 text-center">
       <h2 className="font-display text-xl font-bold tracking-[-0.5px]">
         {titulo}
       </h2>
-      <p className="mt-2 text-sm leading-6 text-ink-400">{texto}</p>
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-ink-600">
+        {texto}
+      </p>
     </div>
   );
 }

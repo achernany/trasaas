@@ -209,3 +209,7 @@
 
 /* Radios y checkboxes nativos con color de marca */
 input[type="radio"], input[type="checkbox"] { accent-color: #2743c0; width: 15px; height: 15px; }
+
+/* Ken Burns para fondos de fotos */
+@keyframes kenburns { from { transform: scale(1.14); } to { transform: scale(1.02); } }
+.kenburns { animation: kenburns 9s ease-out forwards; }
