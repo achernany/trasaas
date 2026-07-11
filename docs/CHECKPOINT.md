@@ -154,6 +154,10 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
   next.config.mjs). Es temporal: migrar a proyecto Vercel propio cuando se venda.
 - Watermark del registro: mitad visible (bottom-0 translate-y-[46%], main overflow-hidden)
   con shimmer suave `.wm-shine` (gradient clip-text animado 8s, keyframes wmShine).
+- Registro v4: selects nativos del form reemplazados por components/Select (custom);
+  ~36 campos emparejados con `ancho: "medio"` (cuenta+CCI soles y dólares, tipo+número de
+  doc, contactos nombre+celular, referencias contacto+correo, rep. legal, conflictos,
+  vinculadas, etc.); los items de grupos repetibles también renderizan en grid 2 cols.
 - RegistroForm chrome: progress bar bg-alfa-gradient + chip "Sección X de 11", título de
   sección en font-display, radios → pills de marca, file input → dropzone punteada con
   UploadCloud + chips verdes por archivo, botonera con flechas y scroll-to-top al navegar.

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { UploadCloud, ArrowLeft, ArrowRight, CheckCircle2, Send } from "lucide-react";
+import Select from "@/components/Select";
 import { FORM_REGISTRO, type Campo, type Grupo } from "@/lib/registro-config";
 
 type Valores = Record<string, unknown>;
@@ -267,18 +268,14 @@ function CampoInput({
       )}
 
       {campo.tipo === "select" && (
-        <select
-          className="input"
+        <Select
           value={(valor as string) ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-        >
-          <option value="">Seleccione…</option>
-          {campo.opciones?.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => onChange(v)}
+          opciones={(campo.opciones ?? []).map((o) => ({
+            value: o,
+            label: o,
+          }))}
+        />
       )}
 
       {campo.tipo === "radio" && (
@@ -443,7 +440,7 @@ function GrupoInput({
                   </button>
                 )}
               </div>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
                 {grupo.camposItem.map(
                   (c) =>
                     visible(c, item) && (
