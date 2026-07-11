@@ -154,6 +154,13 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
   next.config.mjs). Es temporal: migrar a proyecto Vercel propio cuando se venda.
 - Watermark del registro: mitad visible (bottom-0 translate-y-[46%], main overflow-hidden)
   con shimmer suave `.wm-shine` (gradient clip-text animado 8s, keyframes wmShine).
+- Registro v7 (homologación exacta con el modal de comparativos): contenedor idéntico —
+  max-w-3xl, `border border-line` (la línea outline), header px-5 py-3, body p-5, footer
+  px-5 py-2.5, step-enter. `components/Watermark.tsx` nuevo: "alfasource" de punta a punta
+  (scaleX medido con JS al ancho de ventana, resize-aware). FondoObra sin salto: el zoom
+  ya no usa keyframes sino transition (opacity 2.2s / transform 9s; saliente scale 1.18,
+  activa 1.06) — la deriva continúa durante el fade. Sección "condiciones": contenido
+  anclado abajo (grid h-full content-end).
 - Registro v6 (cierre de sesión): modal con ALTURA FIJA `h-full max-h-[780px]` (como el
   modal de Nuevo cuadro comparativo — sin saltos de tamaño entre secciones); clase
   `.modal-lobby` en el box con CSS scoped que refuerza outlines de inputs/selects

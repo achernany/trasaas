@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import RegistroForm from "@/components/RegistroForm";
 import FondoObra from "@/components/FondoObra";
+import Watermark from "@/components/Watermark";
 
 export const dynamic = "force-dynamic";
 
@@ -54,16 +55,11 @@ function Lobby({ children }: { children: React.ReactNode }) {
   return (
     <main className="fixed inset-0 overflow-hidden">
       <FondoObra />
-      <div
-        aria-hidden="true"
-        className="wm-shine pointer-events-none absolute inset-x-0 bottom-0 translate-y-[46%] select-none text-center font-display text-[17vw] font-bold leading-none tracking-[-0.06em]"
-      >
-        alfasource
-      </div>
+      <Watermark />
       <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-6 lg:p-10">
-        <div className="modal-lobby relative z-10 flex h-full max-h-[780px] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="modal-lobby step-enter relative z-10 flex h-full max-h-[780px] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
           {/* Header del brand */}
-          <div className="flex shrink-0 items-center gap-3 bg-ink-950 px-6 py-4">
+          <div className="flex shrink-0 items-center gap-3 bg-ink-950 px-5 py-3">
             <svg viewBox="0 0 120 120" width={30} height={30} aria-hidden="true">
               <defs>
                 <linearGradient

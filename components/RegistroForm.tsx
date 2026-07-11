@@ -122,7 +122,7 @@ export default function RegistroForm({ token }: { token: string }) {
 
   return (
     <>
-      <div className="shrink-0 px-6 pt-4">
+      <div className="shrink-0 px-5 pt-4">
         <Stepper
           compacto
           pasos={secciones.map((x) => x.titulo)}
@@ -137,7 +137,7 @@ export default function RegistroForm({ token }: { token: string }) {
         />
       </div>
 
-      <div className="shrink-0 border-b border-line px-6 pb-4 pt-1">
+      <div className="shrink-0 border-b border-line px-5 pb-4 pt-1">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="font-display text-xl font-bold tracking-[-0.5px]">
             {seccion.titulo}
@@ -153,10 +153,12 @@ export default function RegistroForm({ token }: { token: string }) {
         )}
       </div>
 
-      <div className="modal-body min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-5">
+      <div className="modal-body min-h-0 flex-1 overflow-y-auto p-5">
         <div
           key={paso}
-          className="step-enter grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2"
+          className={`step-enter grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2${
+            seccion.id === "condiciones" ? " h-full content-end" : ""
+          }`}
         >
         {(seccion.campos ?? []).map(
           (c) =>
@@ -193,7 +195,7 @@ export default function RegistroForm({ token }: { token: string }) {
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center justify-between bg-ink-950 px-6 py-3.5">
+      <div className="flex shrink-0 items-center justify-between bg-ink-950 px-5 py-2.5">
         <button
           className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-white/25 px-4 text-[13px] font-bold text-white transition hover:bg-white/10 disabled:opacity-40"
           disabled={paso === 0 || enviando}
