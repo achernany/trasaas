@@ -7,11 +7,13 @@ export default function Stepper({
   paso,
   alcanzable,
   onIr,
+  compacto,
 }: {
   pasos: string[];
   paso: number;
   alcanzable: (i: number) => boolean;
   onIr: (i: number) => void;
+  compacto?: boolean;
 }) {
   return (
     <div className="mb-4 flex items-center">
@@ -37,11 +39,13 @@ export default function Stepper({
               >
                 {hecho ? <Check className="h-3.5 w-3.5" /> : i + 1}
               </span>
-              <span
-                className={`hidden text-[11px] font-bold sm:block ${activo ? "text-brand-900" : "text-ink-400"}`}
-              >
-                {nombre}
-              </span>
+              {!compacto && (
+                <span
+                  className={`hidden text-[11px] font-bold sm:block ${activo ? "text-brand-900" : "text-ink-400"}`}
+                >
+                  {nombre}
+                </span>
+              )}
             </button>
             {i < pasos.length - 1 && (
               <div className="mx-1.5 h-0.5 flex-1 overflow-hidden rounded bg-line">

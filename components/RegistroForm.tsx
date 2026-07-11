@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { UploadCloud, ArrowLeft, ArrowRight, CheckCircle2, Send } from "lucide-react";
 import Select from "@/components/Select";
+import Stepper from "@/components/Stepper";
 import { FORM_REGISTRO, type Campo, type Grupo } from "@/lib/registro-config";
 
 type Valores = Record<string, unknown>;
@@ -121,27 +122,30 @@ export default function RegistroForm({ token }: { token: string }) {
 
   return (
     <>
-      <div className="shrink-0 px-6 pb-3 pt-4">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold text-brand-900">
-            Sección {paso + 1} de {secciones.length}
-          </span>
-          <span className="font-mono text-[11px] font-semibold text-ink-400">
-            {progreso}%
-          </span>
-        </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-line">
-          <div
-            className="h-1.5 rounded-full bg-alfa-gradient transition-all duration-500"
-            style={{ width: `${progreso}%` }}
-          />
-        </div>
+      <div className="shrink-0 px-6 pt-4">
+        <Stepper
+          compacto
+          pasos={secciones.map((x) => x.titulo)}
+          paso={paso}
+          alcanzable={(i) => i <= paso}
+          onIr={(i) => {
+            if (i < paso) {
+              setPaso(i);
+              document.querySelector(".modal-body")?.scrollTo({ top: 0 });
+            }
+          }}
+        />
       </div>
 
       <div className="shrink-0 border-b border-line px-6 pb-4 pt-1">
-        <h2 className="font-display text-xl font-bold tracking-[-0.5px]">
-          {seccion.titulo}
-        </h2>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display text-xl font-bold tracking-[-0.5px]">
+            {seccion.titulo}
+          </h2>
+          <span className="shrink-0 font-mono text-[11px] font-semibold text-ink-400">
+            {progreso}%
+          </span>
+        </div>
         {seccion.descripcion && (
           <p className="mt-1 text-[13px] leading-6 text-ink-600">
             {seccion.descripcion}
@@ -150,7 +154,10 @@ export default function RegistroForm({ token }: { token: string }) {
       </div>
 
       <div className="modal-body min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-5">
-        <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
+        <div
+          key={paso}
+          className="step-enter grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2"
+        >
         {(seccion.campos ?? []).map(
           (c) =>
             visible(c, valores) && (
@@ -261,7 +268,7 @@ function CampoInput({
         campo.tipo === "email") && (
         <input
           type={campo.tipo}
-          className="input"
+          className="input h-9 text-[13px]"
           value={(valor as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
         />
