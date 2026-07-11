@@ -211,7 +211,7 @@
 input[type="radio"], input[type="checkbox"] { accent-color: #2743c0; width: 15px; height: 15px; }
 
 /* Ken Burns para fondos de fotos */
-@keyframes kenburns { from { transform: scale(1.14); } to { transform: scale(1.02); } }
+@keyframes kenburns { from { transform: scale(1.16); } to { transform: scale(1.06); } }
 .kenburns { animation: kenburns 9s ease-out forwards; }
 
 /* Watermark con brillo suave que recorre las letras */
@@ -231,4 +231,13 @@ input[type="radio"], input[type="checkbox"] { accent-color: #2743c0; width: 15px
   background-clip: text;
   color: transparent;
   animation: wmShine 8s linear infinite;
+}
+
+/* Inputs del lobby de registro: outline mas presente sobre fondo blanco */
+.modal-lobby .input,
+.modal-lobby button.input {
+  border-color: #c9cfdf;
+}
+.modal-lobby .input:focus {
+  border-color: #2743c0;
 }

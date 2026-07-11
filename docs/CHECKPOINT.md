@@ -154,6 +154,14 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
   next.config.mjs). Es temporal: migrar a proyecto Vercel propio cuando se venda.
 - Watermark del registro: mitad visible (bottom-0 translate-y-[46%], main overflow-hidden)
   con shimmer suave `.wm-shine` (gradient clip-text animado 8s, keyframes wmShine).
+- Registro v6 (cierre de sesión): modal con ALTURA FIJA `h-full max-h-[780px]` (como el
+  modal de Nuevo cuadro comparativo — sin saltos de tamaño entre secciones); clase
+  `.modal-lobby` en el box con CSS scoped que refuerza outlines de inputs/selects
+  (#c9cfdf, focus brand); fotos de fondo con blur-[7px] + scale-110 (kenburns ajustado
+  1.16→1.06) — el watermark queda nítido por ser capa aparte.
+- LA WEB: al usuario NO le gustó ninguna versión ("la sigues haciendo fea"). OLVIDAR todo
+  el contexto/enfoque de la web; se retoma desde cero el 14 con otra dirección. No pasar
+  el link de /web-alfaco.
 - Registro v4: selects nativos del form reemplazados por components/Select (custom);
   ~36 campos emparejados con `ancho: "medio"` (cuenta+CCI soles y dólares, tipo+número de
   doc, contactos nombre+celular, referencias contacto+correo, rep. legal, conflictos,

@@ -61,7 +61,7 @@ function Lobby({ children }: { children: React.ReactNode }) {
         alfasource
       </div>
       <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-6 lg:p-10">
-        <div className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="modal-lobby relative z-10 flex h-full max-h-[780px] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
           {/* Header del brand */}
           <div className="flex shrink-0 items-center gap-3 bg-ink-950 px-6 py-4">
             <svg viewBox="0 0 120 120" width={30} height={30} aria-hidden="true">

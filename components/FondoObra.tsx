@@ -25,7 +25,7 @@ export default function FondoObra() {
           key={src}
           src={src}
           alt=""
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[2200ms] ${
+          className={`absolute inset-0 h-full w-full scale-110 object-cover blur-[7px] transition-opacity duration-[2200ms] ${
             i === activa ? "kenburns opacity-100" : "opacity-0"
           }`}
         />
