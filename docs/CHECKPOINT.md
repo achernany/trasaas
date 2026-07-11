@@ -201,9 +201,16 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
 - Matriz ajustada + matriz de Críticos: la directora aprueba el LUNES 13 → Fran manda
   Excel/ponderaciones → cargarlas ese día (por editor del panel o por mí).
 - Subcategorías: Fran las trabaja, llegan lunes 13.
-- Logo Alfaco: el usuario lo dejará como `logo-alfaco.png` (o .svg) en la carpeta
-  montada "Brand Alfaco Procurement" → copiarlo a public/ del repo y usarlo para
-  membrete de PDFs (actas, matrices, reportes).
+- Logo Alfaco: ✅ recibido y copiado a `public/logo-alfaco.png` (PNG 1200x630 RGBA).
+  Ya viaja en git/Vercel — NO depende de la carpeta local del usuario. Usarlo el 14
+  para membrete de PDFs (actas, matrices, reportes). Es horizontal con isotipo α
+  azul/rojo + wordmark gris; para membretes pedir/derivar versión de mayor
+  resolución o vectorial si se necesita imprimir grande.
+- REGLA nueva (pedida por el usuario): NINGÚN asset del producto debe consumirse
+  desde su carpeta local. Todo asset vivo va en `public/` del repo (o en Supabase
+  Storage cuando sea por-tenant, p. ej. logos de clientes white-label — diseñar
+  eso el 14). Las fotos del fondo del registro hoy se hotlinkean de alfaco.com.pe:
+  migrarlas también a public/ el 14.
 - Directora pidió ver "estructura del comparativo" para el 15 → YA ESTÁ FUNCIONAL
   completo (solo confiables, mín 3 cotizaciones, scoring, aprobación); solo falta
   adjuntar PDF de cotización (14).
