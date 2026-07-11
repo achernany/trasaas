@@ -206,3 +206,6 @@
   100% { opacity: 0; transform: translateY(-10px); }
 }
 .tip-loop { animation: tipLoop 2.8s ease-in-out both; }
+
+/* Radios y checkboxes nativos con color de marca */
+input[type="radio"], input[type="checkbox"] { accent-color: #2743c0; width: 15px; height: 15px; }

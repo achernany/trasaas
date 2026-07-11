@@ -126,6 +126,35 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
 - `app/not-found.tsx`: 404 de marca.
 - CSS: keyframes `chevAvance` y `tipLoop` al final de globals.css.
 
+### Rediseño del form de registro (2026-07-11 noche)
+- `app/registro/[token]/page.tsx`: split layout tipo login — form a la izquierda (max-w-2xl),
+  panel de marca fijo a la derecha (foto de obra de alfaco.com.pe + .anim-gradient +
+  AlfaMark watermark + claim "Un solo registro. Trazabilidad total."). AlfaLockup arriba,
+  chips de metadata (formato/tiempo/DJ), nota legal al pie.
+- RegistroForm chrome: progress bar bg-alfa-gradient + chip "Sección X de 11", título de
+  sección en font-display, radios → pills de marca, file input → dropzone punteada con
+  UploadCloud + chips verdes por archivo, botonera con flechas y scroll-to-top al navegar.
+- CSS: accent-color #2743c0 para radios/checkboxes nativos (grids del form).
+- La lógica de validación/envío NO se tocó.
+
+### Propuesta web v2 (2026-07-11 noche)
+- `propuesta-web-alfaco.html` (carpeta de marca) rehecha estilo "motion": hero full-screen
+  con Ken Burns crossfade de 3 fotos reales de obra, navbar liquid-glass, título animado
+  letra por letra, fades escalonados (800/1200/1400ms), tag glass "Energía. Infraestructura.
+  Minería.", marquee de líneas, banda Portal de Proveedores con 4 pasos y CTA → form demo
+  (registro/demo-proveedor-001), footer legal. Es solo la HOME como pieza de venta;
+  la web completa (7 subpáginas + legal + EN) queda para el 14. En producción el hero
+  llevaría video de obra real.
+- Sitemap real relevado de alfaco.com.pe: Inicio · Líneas de Negocio (7 subpáginas) ·
+  Experiencia · Nuestro Trabajo · Conócenos · Contacto; top bar Trabaja con Nosotros /
+  Intranet (Google Sites) / Mesa de Partes (helpdesk avanapps) / Línea Ética; footer con
+  privacidad, términos, libro de reclamaciones, certificaciones; versión EN en
+  en.alfaco.com.pe. Empresa: 20+ años, Colombia/Perú/Panamá/Costa Rica.
+- Visión de paquete acordada: web moderna + portal de proveedores (autoservicio → módulo
+  de evaluación) + mesa de partes digital + línea ética; intranet y helpdesk como links.
+  Autoservicio = ruta pública sin token con Turnstile (plan B si no compran la web:
+  se queda como link / subdominio proveedores.alfaco.com.pe con un CNAME).
+
 ### Agenda 14 de julio (cuando se renueven los límites de Fable 5)
 - Diseñar/iterar la nueva web de Alfaco a partir de `propuesta-web-alfaco.html`.
 - Dashboard v2: hoy se ve "pálido/seco/poco interactivo" (palabras del usuario) —

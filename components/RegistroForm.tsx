@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { UploadCloud, ArrowLeft, ArrowRight, CheckCircle2, Send } from "lucide-react";
 import { FORM_REGISTRO, type Campo, type Grupo } from "@/lib/registro-config";
 
 type Valores = Record<string, unknown>;
@@ -106,7 +107,7 @@ export default function RegistroForm({ token }: { token: string }) {
 
   if (enviado)
     return (
-      <div className="card mx-auto max-w-xl text-center">
+      <div className="card text-center">
         <div className="mb-2 flex justify-center"><svg viewBox="0 0 24 24" className="h-10 w-10 text-ok-600" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div>
         <h2 className="mb-2 text-lg font-semibold">Registro enviado</h2>
         <p className="text-sm text-slate-600">
@@ -118,27 +119,33 @@ export default function RegistroForm({ token }: { token: string }) {
     );
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
+    <div className="space-y-4">
       <div>
-        <div className="mb-1 flex justify-between text-xs text-slate-500">
-          <span>
-            Sección {paso + 1} de {secciones.length}: {seccion.titulo}
+        <div className="mb-2 flex items-center justify-between">
+          <span className="rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold text-brand-900">
+            Sección {paso + 1} de {secciones.length}
           </span>
-          <span>{progreso}%</span>
+          <span className="font-mono text-[11px] font-semibold text-ink-400">
+            {progreso}%
+          </span>
         </div>
-        <div className="h-1.5 rounded bg-slate-200">
+        <div className="h-1.5 overflow-hidden rounded-full bg-line">
           <div
-            className="h-1.5 rounded bg-slate-900 transition-all"
+            className="h-1.5 rounded-full bg-alfa-gradient transition-all duration-500"
             style={{ width: `${progreso}%` }}
           />
         </div>
       </div>
 
       <div className="card space-y-5">
-        <div>
-          <h2 className="text-lg font-semibold">{seccion.titulo}</h2>
+        <div className="border-b border-line pb-4">
+          <h2 className="font-display text-xl font-bold tracking-[-0.5px]">
+            {seccion.titulo}
+          </h2>
           {seccion.descripcion && (
-            <p className="mt-1 text-sm text-slate-500">{seccion.descripcion}</p>
+            <p className="mt-1 text-[13px] leading-6 text-ink-400">
+              {seccion.descripcion}
+            </p>
           )}
         </div>
 
@@ -172,26 +179,37 @@ export default function RegistroForm({ token }: { token: string }) {
 
       {errorEnvio && <p className="text-sm text-red-600">{errorEnvio}</p>}
 
-      <div className="flex justify-between">
+      <div className="flex justify-between pb-6">
         <button
-          className="btn-secondary"
+          className="btn-secondary min-h-[44px]"
           disabled={paso === 0 || enviando}
-          onClick={() => setPaso((p) => p - 1)}
+          onClick={() => {
+            setPaso((p) => p - 1);
+            window.scrollTo({ top: 0 });
+          }}
         >
-          Anterior
+          <ArrowLeft className="h-4 w-4" /> Anterior
         </button>
         {paso < secciones.length - 1 ? (
           <button
-            className="btn"
+            className="btn min-h-[44px]"
             onClick={() => {
-              if (validaSeccion()) setPaso((p) => p + 1);
+              if (validaSeccion()) {
+                setPaso((p) => p + 1);
+                window.scrollTo({ top: 0 });
+              }
             }}
           >
-            Siguiente
+            Siguiente <ArrowRight className="h-4 w-4" />
           </button>
         ) : (
-          <button className="btn" disabled={enviando} onClick={enviar}>
-            {enviando ? "Enviando..." : "Enviar registro"}
+          <button
+            className="btn min-h-[44px]"
+            disabled={enviando}
+            onClick={enviar}
+          >
+            <Send className="h-4 w-4" />
+            {enviando ? "Enviando…" : "Enviar registro"}
           </button>
         )}
       </div>
@@ -253,17 +271,20 @@ function CampoInput({
       )}
 
       {campo.tipo === "radio" && (
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-2">
           {campo.opciones?.map((o) => (
-            <label key={o} className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name={campo.id}
-                checked={valor === o}
-                onChange={() => onChange(o)}
-              />
+            <button
+              key={o}
+              type="button"
+              onClick={() => onChange(o)}
+              className={`min-h-[36px] rounded-lg border px-4 text-[13px] font-semibold transition ${
+                valor === o
+                  ? "border-brand-900 bg-brand-100 text-brand-900"
+                  : "border-line bg-white text-ink-600 hover:bg-page"
+              }`}
+            >
               {o}
-            </label>
+            </button>
           ))}
         </div>
       )}
@@ -321,18 +342,37 @@ function CampoInput({
       )}
 
       {campo.tipo === "file" && (
-        <input
-          type="file"
-          accept="application/pdf"
-          multiple={campo.multiple}
-          className="block w-full text-sm"
-          onChange={(e) => onArchivos?.(Array.from(e.target.files ?? []))}
-        />
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-line bg-page/70 px-4 py-6 text-center transition hover:border-brand-900/60 hover:bg-brand-100/30">
+          <UploadCloud className="h-6 w-6 text-brand-900" />
+          <span className="text-[13px] font-bold text-ink-600">
+            {(archivos?.length ?? 0) > 0
+              ? "Cambiar archivo(s)"
+              : "Adjuntar PDF — clic para elegir"}
+          </span>
+          <span className="text-[11px] text-ink-400">
+            Solo PDF{campo.multiple ? " · puedes seleccionar varios" : ""}
+          </span>
+          <input
+            type="file"
+            accept="application/pdf"
+            multiple={campo.multiple}
+            className="hidden"
+            onChange={(e) => onArchivos?.(Array.from(e.target.files ?? []))}
+          />
+        </label>
       )}
       {campo.tipo === "file" && (archivos?.length ?? 0) > 0 && (
-        <p className="mt-1 text-xs text-slate-500">
-          {archivos!.map((f) => f.name).join(", ")}
-        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {archivos!.map((f) => (
+            <span
+              key={f.name}
+              className="inline-flex items-center gap-1 rounded-full bg-ok-100 px-2.5 py-1 text-[11px] font-bold text-ok-600"
+            >
+              <CheckCircle2 className="h-3 w-3" />
+              {f.name}
+            </span>
+          ))}
+        </div>
       )}
 
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
