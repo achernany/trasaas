@@ -146,8 +146,14 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
   con `ancho: "medio"` en registro-config (razón social + RUC en un row; distrito +
   provincia en otro; grid sm:grid-cols-2 en el renderer, grupos col-span-2), helper text
   a text-ink-600.
-- NOTA: la propuesta de web NO gustó — descartar contexto/opiniones previas de la web;
-  se retoma desde cero el 14.
+- NOTA: la propuesta v2 (motion/vex) NO gustó. La v3 (estilo "spaciaz": hero foto full +
+  titular Baloo 2 + botón circular + watermark gigante + footer tarjeta blanca, logo α
+  monocolor pequeño, solo home, registro conectado en navbar/sección/footer) SÍ gustó y
+  está desplegada como estático en `public/web-alfaco/` del repo del producto → URL:
+  https://procurement-scorecard-providers-erp.vercel.app/web-alfaco (rewrite en
+  next.config.mjs). Es temporal: migrar a proyecto Vercel propio cuando se venda.
+- Watermark del registro: mitad visible (bottom-0 translate-y-[46%], main overflow-hidden)
+  con shimmer suave `.wm-shine` (gradient clip-text animado 8s, keyframes wmShine).
 - RegistroForm chrome: progress bar bg-alfa-gradient + chip "Sección X de 11", título de
   sección en font-display, radios → pills de marca, file input → dropzone punteada con
   UploadCloud + chips verdes por archivo, botonera con flechas y scroll-to-top al navegar.

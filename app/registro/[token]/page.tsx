@@ -52,11 +52,11 @@ export default async function RegistroPage({
 /** El lobby: fotos de obra full-screen + modal glass centrado, one-view */
 function Lobby({ children }: { children: React.ReactNode }) {
   return (
-    <main className="fixed inset-0">
+    <main className="fixed inset-0 overflow-hidden">
       <FondoObra />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-[-2vw] select-none overflow-hidden text-center font-display text-[16vw] font-bold leading-none tracking-[-0.06em] text-white/15"
+        className="wm-shine pointer-events-none absolute inset-x-0 bottom-0 translate-y-[46%] select-none text-center font-display text-[17vw] font-bold leading-none tracking-[-0.06em]"
       >
         alfasource
       </div>
