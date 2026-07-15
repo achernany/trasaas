@@ -228,6 +228,124 @@ feedback:10}; feedback automático por calificación (10/5/0); precio/tiempo pro
   matrices y la de destinatarios al 100% con el patrón de tablas del resto
   (sticky thead, paginador si crece, row-click).
 
+### HALLAZGO CLAVE: Excel "EvaluacióndeProveedoresConfiable Enero.xls" (11-jul)
+Fran lo mandó diciendo "ahí está el acta membretada". Está en uploads de la sesión
+original Y el análisis completo aquí (el archivo NO viaja en el repo — pedirlo de
+nuevo si hace falta). Hojas: LOG-F-P03-01, Control de Cambios, BD_EVALUACION,
+T.D EVALUADOS, TD, EVAL. BIENES, EVAL. SERVICIOS, S. MAQUINARIAS, S. GENERALES,
+BIENES, S. TRANSPORTES, S. SALUD, DATOS, Requisitos Vehículos.
+
+1) **Acta membretada oficial (LOG-F-P03-01)** — estructura exacta a replicar el 14:
+   logo Alfaco arriba-izq · título "EVALUACIÓN DE PROVEEDORES DE {TIPO}" · caja
+   derecha CODIGO/VERSION/FECHA APROBACION (21/03/2024 v1) · fila Codigo
+   (DD.MM.AA-E|S-RUC, coincide con nuestro formato) · grid TIPO DE SERVICIO/RAZÓN
+   SOCIAL/DIRECCIÓN/SUMINISTRO vs FECHA/RUC/DISTRITO/PROYECTO · tabla RESULTADO DE
+   SELECCIÓN con semáforo (Confiables/Medianamente/No confiable + leyenda 71-100 /
+   31-70 / 0-30) y Puntaje grande con check verde · OBSERVACIONES · criterios con
+   niveles marcados (radio) + PTS. POSIBLES + PUNTAJE por criterio · pie:
+   ANALISTA (nombre) / Cargo: Evaluador / Firma. Además botones de macro
+   "Exportar PDF" y "Registrar Evaluacion" (nuestro sistema los reemplaza).
+
+2) **CONFIRMADO: matrices por TIPO DE SERVICIO** (esto es lo que Fran llama
+   "subcategorías"/ajustes): cada hoja tiene criterios DISTINTOS:
+   - EVAL. BIENES (evaluación): Precios · Calidad de bienes adquiridos ·
+     Cumplimiento cantidad y entrega · Forma de pago · Entrega de documentación ·
+     Posventa/Garantías (6 criterios).
+   - EVAL. SERVICIOS (evaluación): Precios · Cumplimiento en calidad y entrega
+     (4 niveles E/B/R/M) · Forma de pago · Entrega de documentación ·
+     Posventa/Garantías · "OTRAS ESPECIFICACIONES" con 3 sub-checks C/NC
+     (logística, personal técnico, servicio según lo pactado).
+   - S. MAQUINARIAS (selección): Precios · Calidad certificada ISO · Forma de
+     pago (4 niveles: 30d/15d/7d/<7d) · Garantías + docs legalidad (4 ítems C/NC
+     con Observación) + DOCS ADICIONALES agrupados (Personal: DNI/SCTR/brevete,
+     examen médico, cursos operador/manejo defensivo/vigía; Maquinaria: cert.
+     operatividad, opacidad-minería, ficha técnica, plan de mantenimiento,
+     evidencia último mant.) con C/NC/**NA**/Observación.
+   - S. GENERALES (selección): Precios · Calidad certificada · Forma de pago ·
+     Garantías + docs legalidad + adicionales por Vehículos (tarjeta/SOAT/rev.
+     técnica, póliza RC) y Personal.
+   - Hay hojas extra: S. TRANSPORTES, S. SALUD, Requisitos Vehículos.
+   IMPLICACIONES para el 14: (a) el esquema YA soporta matriz por categoría
+   (matrices.categoria_id nullable) — activar ese vínculo; (b) matriz_documentos
+   necesita extensión: opción **NA** además de C/NC, campo observación por ítem,
+   y agrupación (Personal/Vehículos/Maquinaria); (c) EVAL. SERVICIOS trae
+   sub-checks C/NC dentro de un criterio (modelar como criterio con opciones o
+   como documentos no eliminatorios); (d) los pesos que mande Fran el lunes
+   vendrán probablemente separados por tipo de servicio.
+
+### MEGA-FEEDBACK Fran 11/14-jul (voices + WhatsApp) — DEFINE LA FASE 2
+Hecho ya (11-jul): back-links con lucide ArrowLeft en Configuración; encuesta exige
+nombre+área; verificado que el comparativo YA impide repetir proveedor (filtro
+`disponibles`).
+
+**A. REDISEÑO DEL FLUJO (voice del 14 — el cambio más importante):**
+La evaluación con matriz NO ocurre antes de comprar (no hay con qué evaluar).
+Flujo correcto: 1) REGISTRO (panel que muestra todo lo que llega del form, sin
+evaluación) → 2) SELECCIÓN (panel donde el comprador CATEGORIZA: bien/servicio +
+categoría(s) + regular/crítico — sin puntaje) → 3) COMPARATIVO (jala proveedores
+por categoría; correo al aprobador; al aprobarse → estado "proveedor aprobado")
+→ 4) EVALUACIÓN PERIÓDICA solo de aprobados, con matriz, según meses del
+procedimiento. "Medianamente confiable" y esos criterios SALEN del flujo de
+selección (quedan solo en evaluación periódica). Nav esperada: Registro ·
+Selección · Comparativos · Evaluaciones. La clasificación regular/crítico se
+asigna en Selección (ya existe el campo).
+
+**B. Catálogo de ítems (CÓDIGOS SIG) — ella ya prepara la data limpia del ERP:**
+- Tabla items/catálogo: codigo_sig (llave única) + descripción + tipo
+  (producto/servicio) + unidad + ultimo_costo (viene del ERP).
+- Carga masiva inicial (CSV del ERP) + pantalla "Administrador de códigos SIG"
+  en Configuración (ref. visual: screenshot "Administrar Productos y Servicios").
+- En el comparativo, el ítem se SELECCIONA por código/descripción (no texto libre).
+- **Alerta de precio histórico**: si el precio cotizado > ultimo_costo → alerta
+  roja en el resumen y la aprobación escala al máximo aprobador (política:
+  prohibido comprar sobre el histórico sin esa aprobación).
+
+**C. Comparativo/aprobación:**
+- Correo al aprobador con RESUMEN primero + link a la carpeta/detalle.
+- "Administrador de aprobadores" en Configuración: aprobador varía por ÁREA y
+  MONTO (área + cargo + correo). Al enviar el comparativo el sistema ya sabe a
+  quién. (Lista de áreas de Fran recibida: Gestión de Calidad, Operaciones,
+  Logística, Administración, Ingeniería, Relaciones Comunitarias, Redes
+  Internas, Redes Externas, Nuevos Negocios, HSE, Gestión Humana, Finanzas,
+  Contabilidad, Facturación, Auditoría y Control de Calidad — para selección
+  simple en formularios.)
+- **Carpeta repositorio por comparativo (ciclo completo de la compra)**: docs de
+  registro/debida diligencia + ficha de registro en PDF + ticket de
+  requerimiento (adjunto pdf/excel) + comparativo + cotizaciones PDF + Orden de
+  Compra en PDF para CERRAR el ciclo. Ticket y OC vienen de fuera (ERP): el
+  comprador los adjunta a la carpeta.
+
+**D. Permisos y roles (punto 9/10):**
+- Panel de permisos en Configuración. Roles: Director de área · Coordinador
+  General · Analista de compras · Comprador · Auditor (solo lectura+descarga).
+  Ej.: editar matrices SOLO directora+Fran. Fran organizará permisos por módulo
+  después de revisar todo (ref. visual: screenshot "Administrar Usuarios").
+- Requiere RLS por rol (hoy solo hay aislamiento por empresa) — diseñar con calma.
+
+**E. Encuesta→evaluación:** Fran pregunta cómo se enlaza el puntaje de la
+encuesta con la evaluación y cómo lo ve el comprador → conectar cuando mande la
+matriz (criterio que reemplaza) y mostrarlo en la UI de evaluación, no solo acta.
+
+**F. Exports:** Excel membretados (logo) + selector de PERIODO al exportar.
+
+**G. Dashboard v2 (además de "pálido"):** filtro por categoría; evaluaciones por
+categoría; KPIs de comparativos: creados, enviados, pendientes de aprobar,
+aprobados.
+
+**H. Para la presentación del 15 (Fran pide):** instructivo con las bondades de
+la web + apartado de SEGURIDAD DE DATOS (con qué base se trabaja, dónde se
+almacena, cifrado, respaldos). Respuesta técnica: Supabase/PostgreSQL cifrado en
+reposo y tránsito (TLS), aislamiento por empresa vía RLS a nivel de base de
+datos, storage privado con URLs firmadas temporales, auditoría completa en
+audit_log, backups automáticos diarios, infra en AWS São Paulo.
+- "Documento aleatorio" que Fran no entiende = probablemente la FIRMA DIGITAL
+  del sistema en el acta (código único + timestamp): explicado en mensaje.
+
+**I. Manuales de usuario (fase siguiente):** sección "Soporte" en Configuración
+con manuales por módulo + FAQ (Fran mandó screenshots de cómo lo hizo en su
+sistema anterior AlfaFleet — cards por módulo, tabs por tema, paso a paso).
+Nota: Fran ya tiene experiencia armando esto; ella aporta contenido.
+
 ### Agenda 14 de julio (cuando se renueven los límites de Fable 5)
 - Diseñar/iterar la nueva web de Alfaco a partir de `propuesta-web-alfaco.html`.
 - Dashboard v2: hoy se ve "pálido/seco/poco interactivo" (palabras del usuario) —

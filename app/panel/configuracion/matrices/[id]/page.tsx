@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
+import {ArrowLeft, Pencil} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import PrintButton from "@/components/PrintButton";
 
@@ -39,9 +39,9 @@ export default async function MatrizDetallePage({
       <div className="no-print flex items-center justify-between">
         <Link
           href="/panel/configuracion/matrices"
-          className="text-sm text-slate-500 hover:underline"
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-400 transition hover:text-brand-900"
         >
-          ← Matrices
+          <ArrowLeft className="h-4 w-4" /> Matrices
         </Link>
         <div className="flex items-center gap-2">
           {mx.estado === "vigente" && (

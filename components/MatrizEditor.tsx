@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Save, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Select from "@/components/Select";
 
@@ -203,9 +203,9 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
       <div className="flex items-center justify-between">
         <Link
           href={`/panel/configuracion/matrices/${matriz.id}`}
-          className="text-sm text-slate-500 hover:underline"
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-400 transition hover:text-brand-900"
         >
-          ← Volver a la matriz (sin guardar)
+          <ArrowLeft className="h-4 w-4" /> Volver a la matriz (sin guardar)
         </Link>
         <span className="text-[12px] text-ink-400">
           Editando v{matriz.version} → se creará y activará la{" "}

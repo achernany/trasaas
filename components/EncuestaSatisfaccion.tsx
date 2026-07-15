@@ -19,8 +19,10 @@ export default function EncuestaSatisfaccion({ token }: { token: string }) {
   const [enviado, setEnviado] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const completo = Boolean(calificacion && respondente.trim() && area.trim());
+
   async function enviar() {
-    if (!calificacion) return;
+    if (!completo) return;
     setEnviando(true);
     setError(null);
     const res = await fetch("/api/satisfaccion", {
@@ -65,7 +67,7 @@ export default function EncuestaSatisfaccion({ token }: { token: string }) {
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="label text-[12px]">Tu nombre</label>
+          <label className="label text-[12px]">Tu nombre *</label>
           <input
             className="input h-9 text-[13px]"
             value={respondente}
@@ -74,7 +76,7 @@ export default function EncuestaSatisfaccion({ token }: { token: string }) {
           />
         </div>
         <div>
-          <label className="label text-[12px]">Área</label>
+          <label className="label text-[12px]">Área *</label>
           <input
             className="input h-9 text-[13px]"
             value={area}
@@ -96,7 +98,7 @@ export default function EncuestaSatisfaccion({ token }: { token: string }) {
       {error && <p className="text-[12px] text-danger-600">{error}</p>}
       <button
         className="btn w-full"
-        disabled={!calificacion || enviando}
+        disabled={!completo || enviando}
         onClick={enviar}
       >
         {enviando ? "Enviando…" : "Enviar evaluación"}

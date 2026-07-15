@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldAlert, Shield } from "lucide-react";
+import {ArrowLeft, ShieldAlert, Shield} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -36,9 +36,9 @@ export default async function MatricesPage() {
         </div>
         <Link
           href="/panel/configuracion"
-          className="text-sm text-slate-500 hover:underline"
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-400 transition hover:text-brand-900"
         >
-          ← Configuración
+          <ArrowLeft className="h-4 w-4" /> Configuración
         </Link>
       </div>
 
