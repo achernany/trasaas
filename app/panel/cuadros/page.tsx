@@ -56,8 +56,9 @@ export default async function CuadrosPage() {
         </div>
       ) : (
         <div className="card mt-3 overflow-hidden p-0">
+          <div className="h-[calc(100vh-350px)] overflow-y-auto">
           <table className="w-full">
-            <thead className="border-b border-line bg-page">
+            <thead className="sticky top-0 z-[5] border-b border-line bg-page">
               <tr>
                 <th className="th">Código</th>
                 <th className="th">Ticket</th>
@@ -102,6 +103,7 @@ export default async function CuadrosPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

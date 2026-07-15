@@ -122,7 +122,7 @@ export default function SeleccionTabla({
   return (
     <>
       <div className="card overflow-hidden p-0">
-        <div className="max-h-[calc(100vh-330px)] overflow-y-auto">
+        <div className="h-[calc(100vh-350px)] overflow-y-auto">
           <table className="w-full">
             <thead className="sticky top-0 z-[5] border-b border-line bg-page">
               <tr>

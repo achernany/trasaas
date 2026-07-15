@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import UserMenu from "@/components/UserMenu";
 import { AlfaMark } from "@/components/Logo";
-import { Bell, Settings } from "lucide-react";
+import NavItem from "@/components/NavItem";
 
 export default async function PanelLayout({
   children,
@@ -26,65 +26,61 @@ export default async function PanelLayout({
   ]);
 
   const links = [
-    { href: "/panel", label: "Dashboard" },
-    { href: "/panel/registros", label: "Registro" },
-    { href: "/panel/seleccion", label: "Selección" },
-    { href: "/panel/cuadros", label: "Comparativos" },
-    { href: "/panel/proveedores", label: "Proveedores" },
-    { href: "/panel/evaluaciones", label: "Evaluaciones" },
+    { href: "/panel", label: "Dashboard", icon: "dashboard" },
+    {
+      href: "/panel/registros",
+      label: "Registro",
+      icon: "registro",
+      badge: registrosNuevos ?? 0,
+    },
+    { href: "/panel/seleccion", label: "Selección", icon: "seleccion" },
+    { href: "/panel/cuadros", label: "Comparativos", icon: "cuadros" },
+    { href: "/panel/proveedores", label: "Proveedores", icon: "proveedores" },
+    { href: "/panel/evaluaciones", label: "Evaluaciones", icon: "evaluaciones" },
   ];
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
-      <header className="no-print sticky top-0 z-20 border-b border-white/10 bg-ink-950">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-8">
-            <Link href="/panel" className="flex items-center gap-2">
-              <AlfaMark size={26} />
-              <span className="font-display text-[16px] font-bold tracking-[-0.5px] text-white">
-                AlfaSource
-              </span>
-            </Link>
-            <nav className="hidden gap-1 md:flex">
-              {links.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className="rounded-lg px-3 py-2.5 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <div className="flex items-center gap-1">
-            <Link
-              href="/panel/registros"
-              title="Registros de proveedores pendientes de revisión"
-              className="relative flex h-10 w-10 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
-            >
-              <Bell className="h-[18px] w-[18px]" />
-              {(registrosNuevos ?? 0) > 0 && (
-                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-alfa-red px-1 text-[9px] font-bold text-white">
-                  {registrosNuevos}
-                </span>
-              )}
-            </Link>
-            <Link
-              href="/panel/configuracion"
-              title="Configuración del sistema"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
-            >
-              <Settings className="h-[18px] w-[18px]" />
-            </Link>
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar */}
+      <aside className="no-print hidden w-[232px] shrink-0 flex-col bg-ink-950 md:flex">
+        <Link href="/panel" className="flex items-center gap-2.5 px-5 pb-6 pt-5">
+          <AlfaMark size={28} />
+          <span className="font-display text-[17px] font-bold tracking-[-0.5px] text-white">
+            AlfaSource
+          </span>
+        </Link>
+
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3">
+          <p className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/30">
+            Flujo de compra
+          </p>
+          {links.map((l) => (
+            <NavItem key={l.href} {...l} />
+          ))}
+        </nav>
+
+        <div className="space-y-0.5 px-3 pb-3">
+          <NavItem
+            href="/panel/configuracion"
+            label="Configuración"
+            icon="config"
+          />
+          <div className="mt-2 border-t border-white/10 px-1 pt-3">
             <UserMenu
               nombre={perfil?.nombre ?? user.email ?? "Usuario"}
               rol={perfil?.rol}
             />
           </div>
         </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      </aside>
+
+      {/* Contenido */}
+      <div className="min-w-0 flex-1 overflow-y-auto bg-page pb-20 md:pb-0">
+        <main className="mx-auto min-h-full max-w-6xl px-4 py-6 lg:px-8">
+          {children}
+        </main>
+      </div>
+
       <BottomNav />
     </div>
   );

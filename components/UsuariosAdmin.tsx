@@ -42,7 +42,7 @@ export default function UsuariosAdmin({ iniciales }: { iniciales: Usuario[] }) {
   }
 
   return (
-    <div className="card overflow-hidden p-0">
+    <div className="card p-0">
       <table className="w-full">
         <thead className="border-b border-line bg-page">
           <tr>

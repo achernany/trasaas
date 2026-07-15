@@ -1,5 +1,26 @@
 # CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 CONSTRUIDA)
 
+## ⚡ FASE 2.1 — UI shell (14-jul, tras feedback con screenshots)
+- **SIDEBAR estilo Material** reemplaza al top navbar: `app/panel/layout.tsx` +
+  `components/NavItem.tsx` (cliente, usePathname para activo, indicador de
+  gradiente, badge de registros en "Registro"). Sidebar bg-ink-950 w-232px:
+  logo, sección "Flujo de compra" (6 items con lucide), abajo Configuración +
+  UserMenu. Shell: flex h-screen overflow-hidden; contenido = div flex-1
+  overflow-y-auto (scroll SOLO en contenido). Bell eliminada (badge en nav).
+  BottomNav móvil se mantiene.
+- **REGLA UI "todo lisito"**: contenedores/tablas de listas con ALTO FIJO
+  h-[calc(100vh-350px)] aunque estén vacíos — sin saltos entre vistas
+  (Proveedores, Evaluaciones, Selección, Cuadros con thead sticky).
+- `.page-head` sticky -top-6 (ya no hay navbar de 56px).
+- UsuariosAdmin: quitado overflow-hidden que DECAPITABA el dropdown de rol
+  (regla: nunca overflow-hidden en cards que contengan Select).
+- **HALLAZGO de la imagen "ROL/RESPONSABILIDAD" de Fran (pendiente de construir
+  con la matriz de permisos)**: cadena de validación de EVALUACIONES:
+  Comprador (evaluación inicial + evidencias) → Área usuaria (encuesta) →
+  Analista de compras (valida metodología/documentación) → Coordinador de
+  compras (aprueba evaluación definitiva y clasificación). Hoy la evaluación se
+  guarda directa; falta estado borrador→validada→aprobada. Diseñar con permisos.
+
 ## ⚡ FASE 2 — ejecutada el 14-jul (todo compilado; SQL db/fase2.sql YA CORRIDO en Supabase)
 - **Flujo nuevo completo**: nav = Dashboard · Registro · Selección · Comparativos ·
   Proveedores · Evaluaciones. Estados de proveedores ampliados (registrado →

@@ -80,7 +80,7 @@ export default function ProveedoresTabla({
   return (
     <>
       {/* Desktop: scroll interno, el paginador queda fijo abajo */}
-      <div className="hidden max-h-[calc(100vh-380px)] overflow-y-auto md:block">
+      <div className="hidden h-[calc(100vh-350px)] overflow-y-auto md:block">
         <table className="w-full">
           <thead className="sticky top-0 z-[5] border-b border-line bg-page">
             <tr>
