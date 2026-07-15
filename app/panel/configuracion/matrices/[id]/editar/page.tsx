@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { X } from "lucide-react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import MatrizEditor from "@/components/MatrizEditor";
@@ -23,6 +25,31 @@ export default async function EditarMatrizPage({
     .maybeSingle();
 
   if (!m) notFound();
+  const mx = m as any;
 
-  return <MatrizEditor matriz={m as any} />;
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-900/45 px-4 py-10 backdrop-blur-sm">
+      <div className="step-enter flex h-full max-h-[780px] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between bg-ink-950 px-5 py-3">
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-semibold leading-6 tracking-tight text-white">
+              Editar matriz — {mx.nombre}
+            </h1>
+            <p className="text-[11px] leading-4 text-white/50">
+              Editando v{mx.version} → se creará y activará la v{mx.version + 1}
+              · la actual queda archivada
+            </p>
+          </div>
+          <Link
+            href="/panel/configuracion/matrices"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
+            aria-label="Cerrar sin guardar"
+          >
+            <X className="h-[18px] w-[18px]" />
+          </Link>
+        </div>
+        <MatrizEditor matriz={mx} />
+      </div>
+    </div>
+  );
 }

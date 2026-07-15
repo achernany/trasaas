@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Trash2, Save, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, AlertTriangle } from "lucide-react";
+import Stepper from "@/components/Stepper";
 import { createClient } from "@/lib/supabase/client";
 import Select from "@/components/Select";
 
@@ -62,6 +63,7 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
       eliminatorio: d.eliminatorio,
     }))
   );
+  const [paso, setPaso] = useState(0);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -190,7 +192,7 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
         },
       });
 
-      router.push(`/panel/configuracion/matrices/${nueva.id}`);
+      router.push("/panel/configuracion/matrices");
       router.refresh();
     } catch (err: any) {
       setError(err?.message ?? "No se pudo guardar la nueva versión");
@@ -198,251 +200,333 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
     }
   }
 
+  const PASOS = ["Datos", "Criterios", "Documentos"];
+
+  function pasoValido(i: number): boolean {
+    if (PASOS[i] === "Datos") return Boolean(nombre.trim());
+    if (PASOS[i] === "Criterios")
+      return (
+        criterios.length > 0 &&
+        criterios.every(
+          (c) =>
+            c.nombre.trim() &&
+            c.peso_max > 0 &&
+            c.criterio_opciones.length > 0 &&
+            c.criterio_opciones.every((o) => o.etiqueta.trim())
+        )
+      );
+    return true;
+  }
+
+  function irA(destino: number) {
+    if (destino < 0 || destino >= PASOS.length) return;
+    if (destino > paso)
+      for (let i = paso; i < destino; i++) if (!pasoValido(i)) return;
+    setPaso(destino);
+    document.querySelector(".modal-body")?.scrollTo({ top: 0 });
+  }
+
+  const esUltimo = paso === PASOS.length - 1;
+
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      <div className="flex items-center justify-between">
-        <Link
-          href={`/panel/configuracion/matrices/${matriz.id}`}
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-400 transition hover:text-brand-900"
-        >
-          <ArrowLeft className="h-4 w-4" /> Volver a la matriz (sin guardar)
-        </Link>
-        <span className="text-[12px] text-ink-400">
-          Editando v{matriz.version} → se creará y activará la{" "}
-          <b>v{matriz.version + 1}</b>; la actual queda archivada para
-          trazabilidad
-        </span>
-      </div>
-
-      <div className="card space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="label text-[12px]">Nombre de la matriz</label>
-            <input
-              className="input h-9 text-[13px]"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="label text-[12px]">Aplica a proveedores</label>
-            <Select
-              value={clasificacion}
-              onChange={setClasificacion}
-              opciones={[
-                { value: "regular", label: "Regulares" },
-                { value: "critico", label: "Críticos" },
-              ]}
-            />
-          </div>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="label text-[12px]">
-              Umbral Confiable (≥ puntos)
-            </label>
-            <input
-              type="number"
-              className="input h-9 text-[13px]"
-              value={umbralC}
-              onChange={(e) => setUmbralC(Number(e.target.value))}
-            />
-          </div>
-          <div>
-            <label className="label text-[12px]">
-              Umbral Medianamente (≥ puntos)
-            </label>
-            <input
-              type="number"
-              className="input h-9 text-[13px]"
-              value={umbralM}
-              onChange={(e) => setUmbralM(Number(e.target.value))}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">
-          Criterios ({totalPeso} pts en total)
-        </h2>
-        {totalPeso !== 100 && (
-          <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-warn-700">
-            <AlertTriangle className="h-3.5 w-3.5" /> Los pesos no suman 100
-          </span>
-        )}
-      </div>
-
-      {criterios.map((c, i) => (
-        <div key={i} className="card space-y-3">
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <label className="label text-[12px]">Criterio {i + 1}</label>
-              <input
-                className="input h-9 text-[13px]"
-                value={c.nombre}
-                onChange={(e) => setCriterio(i, { nombre: e.target.value })}
-              />
-            </div>
-            <div className="w-28">
-              <label className="label text-[12px]">Peso máx.</label>
-              <input
-                type="number"
-                className="input h-9 text-[13px]"
-                value={c.peso_max}
-                onChange={(e) =>
-                  setCriterio(i, { peso_max: Number(e.target.value) })
-                }
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setCriterios((cs) => cs.filter((_, j) => j !== i))
-              }
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
-              title="Eliminar criterio"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            {c.criterio_opciones.map((o, k) => (
-              <div key={k} className="flex items-center gap-2">
-                <input
-                  className="input h-8 w-40 text-[12px]"
-                  value={o.etiqueta}
-                  placeholder="Nivel (ej. EXCELENTE)"
-                  onChange={(e) => setOpcion(i, k, { etiqueta: e.target.value })}
-                />
-                <input
-                  className="input h-8 flex-1 text-[12px]"
-                  value={o.descripcion ?? ""}
-                  placeholder="Descripción"
-                  onChange={(e) =>
-                    setOpcion(i, k, { descripcion: e.target.value })
-                  }
-                />
-                <input
-                  type="number"
-                  className="input h-8 w-20 text-[12px]"
-                  value={o.puntos}
-                  onChange={(e) =>
-                    setOpcion(i, k, { puntos: Number(e.target.value) })
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCriterio(i, {
-                      criterio_opciones: c.criterio_opciones.filter(
-                        (_, l) => l !== k
-                      ),
-                    })
-                  }
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() =>
-                setCriterio(i, {
-                  criterio_opciones: [
-                    ...c.criterio_opciones,
-                    { orden: c.criterio_opciones.length + 1, etiqueta: "", descripcion: "", puntos: 0 },
-                  ],
-                })
-              }
-              className="inline-flex items-center gap-1 text-[12px] font-semibold text-brand-900 hover:underline"
-            >
-              <Plus className="h-3.5 w-3.5" /> Agregar nivel
-            </button>
-          </div>
-        </div>
-      ))}
-
-      <button
-        type="button"
-        onClick={() =>
-          setCriterios((cs) => [
-            ...cs,
-            {
-              orden: cs.length + 1,
-              nombre: "",
-              peso_max: 0,
-              criterio_opciones: [
-                { orden: 1, etiqueta: "", descripcion: "", puntos: 0 },
-              ],
-            },
-          ])
-        }
-        className="btn-secondary min-h-[40px] text-[13px]"
-      >
-        <Plus className="h-4 w-4" /> Agregar criterio
-      </button>
-
-      <div className="card space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">
-          Documentos eliminatorios
-        </h2>
-        {docs.map((d, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <input
-              className="input h-8 flex-1 text-[12px]"
-              value={d.descripcion}
-              onChange={(e) =>
-                setDocs((ds) =>
-                  ds.map((x, j) =>
-                    j === i ? { ...x, descripcion: e.target.value } : x
-                  )
-                )
-              }
-            />
-            <button
-              type="button"
-              onClick={() => setDocs((ds) => ds.filter((_, j) => j !== i))}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() =>
-            setDocs((ds) => [...ds, { descripcion: "", eliminatorio: true }])
+    <>
+      <div className="shrink-0 px-5 pt-4">
+        <Stepper
+          pasos={PASOS}
+          paso={paso}
+          alcanzable={(i) =>
+            i <= paso || PASOS.slice(0, i).every((_, j) => pasoValido(j))
           }
-          className="inline-flex items-center gap-1 text-[12px] font-semibold text-brand-900 hover:underline"
-        >
-          <Plus className="h-3.5 w-3.5" /> Agregar documento
-        </button>
+          onIr={irA}
+        />
       </div>
 
-      {error && <p className="text-[12px] text-danger-600">{error}</p>}
+      <div className="modal-body min-h-0 flex-1 overflow-y-auto p-5">
+        <div key={paso} className="step-enter space-y-4">
+          {paso === 0 && (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="label text-[12px]">Nombre de la matriz</label>
+                  <input
+                    className="input h-9 text-[13px]"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="label text-[12px]">Aplica a proveedores</label>
+                  <Select
+                    value={clasificacion}
+                    onChange={setClasificacion}
+                    opciones={[
+                      { value: "regular", label: "Regulares" },
+                      { value: "critico", label: "Críticos" },
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="label text-[12px]">
+                    Umbral Confiable (≥ puntos)
+                  </label>
+                  <input
+                    type="number"
+                    className="input h-9 text-[13px]"
+                    value={umbralC}
+                    onChange={(e) => setUmbralC(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <label className="label text-[12px]">
+                    Umbral Medianamente (≥ puntos)
+                  </label>
+                  <input
+                    type="number"
+                    className="input h-9 text-[13px]"
+                    value={umbralM}
+                    onChange={(e) => setUmbralM(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+              <p className="rounded-xl bg-brand-100/50 p-3 text-[12px] leading-5 text-ink-600">
+                Editar nunca modifica la versión actual: al guardar se crea y
+                activa la <b>v{matriz.version + 1}</b> y la v{matriz.version}{" "}
+                queda archivada para trazabilidad de auditoría.
+              </p>
+            </>
+          )}
 
-      <div className="flex justify-end gap-2 pb-8">
+          {paso === 1 && (
+            <>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">
+                  Criterios ({totalPeso} pts en total)
+                </h2>
+                {totalPeso !== 100 && (
+                  <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-warn-700">
+                    <AlertTriangle className="h-3.5 w-3.5" /> Los pesos no suman 100
+                  </span>
+                )}
+              </div>
+
+              {criterios.map((c, i) => (
+                <div key={i} className="space-y-3 rounded-xl border border-line p-4">
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <label className="label text-[12px]">Criterio {i + 1}</label>
+                      <input
+                        className="input h-9 text-[13px]"
+                        value={c.nombre}
+                        onChange={(e) => setCriterio(i, { nombre: e.target.value })}
+                      />
+                    </div>
+                    <div className="w-28">
+                      <label className="label text-[12px]">Peso máx.</label>
+                      <input
+                        type="number"
+                        className="input h-9 text-[13px]"
+                        value={c.peso_max}
+                        onChange={(e) =>
+                          setCriterio(i, { peso_max: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCriterios((cs) => cs.filter((_, j) => j !== i))
+                      }
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
+                      title="Eliminar criterio"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {c.criterio_opciones.map((o, k) => (
+                      <div key={k} className="flex items-center gap-2">
+                        <input
+                          className="input h-8 w-40 text-[12px]"
+                          value={o.etiqueta}
+                          placeholder="Nivel (ej. EXCELENTE)"
+                          onChange={(e) =>
+                            setOpcion(i, k, { etiqueta: e.target.value })
+                          }
+                        />
+                        <input
+                          className="input h-8 flex-1 text-[12px]"
+                          value={o.descripcion ?? ""}
+                          placeholder="Descripción"
+                          onChange={(e) =>
+                            setOpcion(i, k, { descripcion: e.target.value })
+                          }
+                        />
+                        <input
+                          type="number"
+                          className="input h-8 w-20 text-[12px]"
+                          value={o.puntos}
+                          onChange={(e) =>
+                            setOpcion(i, k, { puntos: Number(e.target.value) })
+                          }
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCriterio(i, {
+                              criterio_opciones: c.criterio_opciones.filter(
+                                (_, l) => l !== k
+                              ),
+                            })
+                          }
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCriterio(i, {
+                          criterio_opciones: [
+                            ...c.criterio_opciones,
+                            {
+                              orden: c.criterio_opciones.length + 1,
+                              etiqueta: "",
+                              descripcion: "",
+                              puntos: 0,
+                            },
+                          ],
+                        })
+                      }
+                      className="inline-flex items-center gap-1 text-[12px] font-semibold text-brand-900 hover:underline"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Agregar nivel
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setCriterios((cs) => [
+                    ...cs,
+                    {
+                      orden: cs.length + 1,
+                      nombre: "",
+                      peso_max: 0,
+                      criterio_opciones: [
+                        { orden: 1, etiqueta: "", descripcion: "", puntos: 0 },
+                      ],
+                    },
+                  ])
+                }
+                className="btn-secondary min-h-[40px] text-[13px]"
+              >
+                <Plus className="h-4 w-4" /> Agregar criterio
+              </button>
+            </>
+          )}
+
+          {paso === 2 && (
+            <>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">
+                Documentos eliminatorios
+              </h2>
+              {docs.map((d, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    className="input h-8 flex-1 text-[12px]"
+                    value={d.descripcion}
+                    onChange={(e) =>
+                      setDocs((ds) =>
+                        ds.map((x, j) =>
+                          j === i ? { ...x, descripcion: e.target.value } : x
+                        )
+                      )
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setDocs((ds) => ds.filter((_, j) => j !== i))}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() =>
+                  setDocs((ds) => [...ds, { descripcion: "", eliminatorio: true }])
+                }
+                className="inline-flex items-center gap-1 text-[12px] font-semibold text-brand-900 hover:underline"
+              >
+                <Plus className="h-3.5 w-3.5" /> Agregar documento
+              </button>
+
+              <div className="rounded-xl border border-line bg-page/60 p-4 text-[12.5px] leading-6 text-ink-600">
+                <b className="text-ink-950">Resumen:</b> {criterios.length}{" "}
+                criterios · {totalPeso} pts totales ·{" "}
+                {docs.filter((d) => d.descripcion.trim()).length} documentos
+                eliminatorios · aplica a proveedores{" "}
+                {clasificacion === "critico" ? "críticos" : "regulares"}.
+                {totalPeso !== 100 && (
+                  <span className="font-semibold text-warn-700">
+                    {" "}
+                    Ojo: los pesos no suman 100.
+                  </span>
+                )}
+              </div>
+              {error && (
+                <p className="text-[12px] font-semibold text-danger-600">{error}</p>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="flex shrink-0 items-center justify-between gap-2 bg-ink-950 px-5 py-3">
         <Link
-          href={`/panel/configuracion/matrices/${matriz.id}`}
-          className="btn-secondary min-h-[40px]"
+          href="/panel/configuracion/matrices"
+          className="inline-flex min-h-[38px] items-center rounded-xl border border-white/25 px-4 text-[13px] font-bold text-white transition hover:bg-white/10"
         >
           Cancelar
         </Link>
-        <button
-          type="button"
-          className="btn"
-          disabled={!valido || guardando}
-          onClick={guardar}
-        >
-          <Save className="h-4 w-4" />
-          {guardando
-            ? "Guardando…"
-            : `Guardar y activar v${matriz.version + 1}`}
-        </button>
+        <div className="flex items-center gap-2">
+          {paso > 0 && (
+            <button
+              type="button"
+              onClick={() => irA(paso - 1)}
+              className="inline-flex min-h-[38px] items-center gap-2 rounded-xl border border-white/25 px-4 text-[13px] font-bold text-white transition hover:bg-white/10"
+            >
+              <ArrowLeft className="h-4 w-4" /> Anterior
+            </button>
+          )}
+          {!esUltimo ? (
+            <button
+              type="button"
+              disabled={!pasoValido(paso)}
+              onClick={() => irA(paso + 1)}
+              className="inline-flex min-h-[38px] items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-bold text-ink-950 transition hover:bg-brand-100 disabled:opacity-50"
+            >
+              Siguiente <ArrowRight className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={!valido || guardando}
+              onClick={guardar}
+              className="inline-flex min-h-[38px] items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-bold text-ink-950 transition hover:bg-brand-100 disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" />
+              {guardando ? "Guardando…" : `Guardar y activar v${matriz.version + 1}`}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,5 +1,21 @@
 # CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 CONSTRUIDA)
 
+## ⚡ FASE 2.3 — Editor de matriz como modal wizard + fixes (14-jul noche)
+- **REGLA CORE reafirmada y AMPLIADA**: NINGUNA vista de edición/creación hace
+  scroll de página. TODO formulario largo = modal centrado one-view con Stepper
+  y scroll SOLO en .modal-body. Única excepción: documentos imprimibles
+  (actas, matriz imprimible) que son formato papel para Imprimir/Guardar PDF.
+- **MatrizEditor reescrito como wizard** (Datos · Criterios · Documentos) dentro
+  de modal overlay en /matrices/[id]/editar (header oscuro con X, footer oscuro
+  Cancelar/Anterior/Siguiente/Guardar). Al guardar o cancelar → vuelve a la
+  LISTA de matrices (nunca al documento imprimible).
+- **Las 3 superficies de matriz, aclaradas**: (1) modal de CONSULTA desde la
+  lista (Stepper 3 pasos, solo lectura); (2) modal wizard de EDICIÓN;
+  (3) /matrices/[id] = SOLO "Versión imprimible" (documento formato papel,
+  se llega únicamente desde el botón del modal de consulta).
+- **UserMenu**: el dropdown ahora abre HACIA ARRIBA (bottom-full mb-2) porque
+  vive al fondo del sidebar — antes el "Cerrar sesión" se salía de pantalla.
+
 ## ⚡ FASE 2.2 — Estandarización UX (14-jul, segundo feedback con screenshots)
 - **`components/ConfigHeader.tsx`**: cabecera ÚNICA de todas las páginas de
   Configuración — breadcrumb (Configuración › Página) + botón cuadrado con

@@ -75,7 +75,7 @@ export default function UserMenu({
       {abierto && (
         <div
           role="menu"
-          className="absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg"
+          className="absolute bottom-full left-0 z-30 mb-2 w-56 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg"
         >
           <div className="border-b border-line px-4 py-3">
             <div className="text-sm font-bold text-ink-900">{nombre}</div>
