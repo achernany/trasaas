@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Plus, Trash2, Save, AlertTriangle } from "lucide-react";
 import Stepper from "@/components/Stepper";
+import Confirmar from "@/components/Confirmar";
 import { createClient } from "@/lib/supabase/client";
 import Select from "@/components/Select";
 
@@ -64,6 +65,7 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
     }))
   );
   const [paso, setPaso] = useState(0);
+  const [confirmando, setConfirmando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,6 +73,45 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
     () => criterios.reduce((s, c) => s + (Number(c.peso_max) || 0), 0),
     [criterios]
   );
+
+  // Norma UX: sin cambios no hay nada que guardar
+  const snapshotInicial = useMemo(
+    () =>
+      JSON.stringify({
+        nombre: matriz.nombre,
+        clasificacion: matriz.clasificacion,
+        uc: matriz.umbral_confiable,
+        um: matriz.umbral_medianamente,
+        criterios: [...matriz.criterios]
+          .sort((a, b) => a.orden - b.orden)
+          .map((c) => ({
+            n: c.nombre,
+            p: Number(c.peso_max),
+            o: [...c.criterio_opciones]
+              .sort((a, b) => a.orden - b.orden)
+              .map((o) => ({ e: o.etiqueta, d: o.descripcion ?? "", pt: Number(o.puntos) })),
+          })),
+        docs: matriz.matriz_documentos.map((d) => d.descripcion),
+      }),
+    [matriz]
+  );
+  const hayCambios =
+    JSON.stringify({
+      nombre,
+      clasificacion,
+      uc: umbralC,
+      um: umbralM,
+      criterios: criterios.map((c) => ({
+        n: c.nombre,
+        p: Number(c.peso_max),
+        o: c.criterio_opciones.map((o) => ({
+          e: o.etiqueta,
+          d: o.descripcion ?? "",
+          pt: Number(o.puntos),
+        })),
+      })),
+      docs: docs.map((d) => d.descripcion),
+    }) !== snapshotInicial;
 
   function setCriterio(i: number, patch: Partial<Criterio>) {
     setCriterios((cs) => cs.map((c, j) => (j === i ? { ...c, ...patch } : c)));
@@ -517,16 +558,34 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
           ) : (
             <button
               type="button"
-              disabled={!valido || guardando}
-              onClick={guardar}
+              disabled={!valido || !hayCambios || guardando}
+              title={!hayCambios ? "No hay cambios que guardar" : undefined}
+              onClick={() => setConfirmando(true)}
               className="inline-flex min-h-[38px] items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-bold text-ink-950 transition hover:bg-brand-100 disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
-              {guardando ? "Guardando…" : `Guardar y activar v${matriz.version + 1}`}
+              {guardando
+                ? "Guardando…"
+                : hayCambios
+                  ? `Guardar y activar v${matriz.version + 1}`
+                  : "Sin cambios"}
             </button>
           )}
         </div>
       </div>
+
+      <Confirmar
+        abierto={confirmando}
+        titulo={`¿Activar la v${matriz.version + 1} de esta matriz?`}
+        mensaje={`La v${matriz.version} quedará archivada (solo consulta) y la nueva versión se aplicará a TODAS las evaluaciones futuras. Las evaluaciones históricas conservan su matriz original. Esta acción queda registrada en auditoría.`}
+        confirmLabel={`Sí, activar v${matriz.version + 1}`}
+        cargando={guardando}
+        onCancelar={() => setConfirmando(false)}
+        onConfirmar={() => {
+          setConfirmando(false);
+          guardar();
+        }}
+      />
     </>
   );
 }

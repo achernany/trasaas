@@ -1,5 +1,20 @@
 # CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 CONSTRUIDA)
 
+## ⚡ FASE 2.4 — NORMA: dirty-check + confirmación en procesos sensibles (14-jul)
+- **NORMA UX nueva (aplicar SIEMPRE)**: (a) si no hay cambios, el botón Guardar
+  se deshabilita y dice "Sin cambios" (comparación por snapshot JSON del estado
+  inicial); (b) toda acción sensible/irreversible pasa por el modal estándar
+  `components/Confirmar.tsx` (título + consecuencias + Cancelar/Confirmar,
+  tono "brand" o "peligro", footer oscuro) antes de ejecutarse.
+- Aplicado en: MatrizEditor (dirty-check + confirmación de activar vN+1),
+  AprobarCuadro (aprobar/rechazar), ValidarRegistro (validar expediente),
+  UsuariosAdmin (cambio de rol), eliminaciones en DestinatariosAdmin,
+  AprobadoresAdmin y ExpedienteCompra (tono peligro), SeleccionTabla
+  (dirty-check en edición; "Seleccionar" de un registrado siempre habilitado
+  porque la transición de estado ES la acción).
+- Los mensajes de confirmación explican la CONSECUENCIA (qué se archiva, qué
+  queda en auditoría) — pedagogía consistente con los Hints.
+
 ## ⚡ FASE 2.3 — Editor de matriz como modal wizard + fixes (14-jul noche)
 - **REGLA CORE reafirmada y AMPLIADA**: NINGUNA vista de edición/creación hace
   scroll de página. TODO formulario largo = modal centrado one-view con Stepper

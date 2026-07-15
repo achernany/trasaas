@@ -11,6 +11,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import Confirmar from "@/components/Confirmar";
 
 type Doc = {
   id: string;
@@ -38,6 +39,7 @@ export default function ExpedienteCompra({
   const router = useRouter();
   const [subiendo, setSubiendo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [porEliminar, setPorEliminar] = useState<Doc | null>(null);
 
   const tieneOC = documentos.some((d) => d.tipo === "oc");
 
@@ -157,7 +159,7 @@ export default function ExpedienteCompra({
                       <ExternalLink className="h-3 w-3 shrink-0 text-ink-400" />
                       <button
                         type="button"
-                        onClick={() => eliminar(d)}
+                        onClick={() => setPorEliminar(d)}
                         className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
                         title="Quitar"
                       >
@@ -174,6 +176,24 @@ export default function ExpedienteCompra({
       {error && (
         <p className="mt-3 text-[12px] font-semibold text-danger-600">{error}</p>
       )}
+
+      <Confirmar
+        abierto={porEliminar !== null}
+        titulo="¿Quitar este documento del expediente?"
+        mensaje={
+          porEliminar
+            ? `"${porEliminar.nombre}" dejará de formar parte de la trazabilidad de esta compra. Esta acción es sensible para auditoría.`
+            : ""
+        }
+        confirmLabel="Sí, quitar"
+        tono="peligro"
+        onCancelar={() => setPorEliminar(null)}
+        onConfirmar={() => {
+          const d = porEliminar!;
+          setPorEliminar(null);
+          eliminar(d);
+        }}
+      />
     </div>
   );
 }

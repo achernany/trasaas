@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import Confirmar from "@/components/Confirmar";
 
 export default function AprobarCuadro({
   cuadroId,
@@ -15,6 +16,7 @@ export default function AprobarCuadro({
   const router = useRouter();
   const [comentario, setComentario] = useState("");
   const [trabajando, setTrabajando] = useState(false);
+  const [pendiente, setPendiente] = useState<"aprobado" | "rechazado" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function resolver(accion: "aprobado" | "rechazado") {
@@ -85,19 +87,42 @@ export default function AprobarCuadro({
         <button
           className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-danger-600 px-5 text-sm font-bold text-white transition hover:bg-danger-600/80 disabled:opacity-50"
           disabled={trabajando || !comentario.trim()}
-          onClick={() => resolver("rechazado")}
+          onClick={() => setPendiente("rechazado")}
         >
           <XCircle className="h-4 w-4" /> Rechazar
         </button>
         <button
           className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-ok-600 px-5 text-sm font-bold text-white transition hover:bg-ok-600/80 disabled:opacity-50"
           disabled={trabajando}
-          onClick={() => resolver("aprobado")}
+          onClick={() => setPendiente("aprobado")}
         >
           <CheckCircle2 className="h-4 w-4" />
           {trabajando ? "Guardando…" : "Aprobar"}
         </button>
       </div>
+
+      <Confirmar
+        abierto={pendiente !== null}
+        titulo={
+          pendiente === "aprobado"
+            ? "¿Aprobar este cuadro comparativo?"
+            : "¿Rechazar este cuadro comparativo?"
+        }
+        mensaje={
+          pendiente === "aprobado"
+            ? "El proveedor ganador pasará al estado Aprobado y podrá ser evaluado periódicamente. La resolución queda firmada con tu usuario, fecha y hora en el registro de auditoría."
+            : "El cuadro quedará rechazado con tu comentario como sustento. La resolución queda firmada con tu usuario, fecha y hora en el registro de auditoría."
+        }
+        confirmLabel={pendiente === "aprobado" ? "Sí, aprobar" : "Sí, rechazar"}
+        tono={pendiente === "rechazado" ? "peligro" : "brand"}
+        cargando={trabajando}
+        onCancelar={() => setPendiente(null)}
+        onConfirmar={() => {
+          const accion = pendiente!;
+          setPendiente(null);
+          resolver(accion);
+        }}
+      />
     </div>
   );
 }

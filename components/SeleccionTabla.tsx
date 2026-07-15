@@ -47,6 +47,7 @@ export default function SeleccionTabla({
   const [clasificacion, setClasificacion] = useState<"regular" | "critico">("regular");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inicial, setInicial] = useState("");
 
   function abrir(p: Prov) {
     setAbierto(p);
@@ -54,7 +55,21 @@ export default function SeleccionTabla({
     setSuministro(p.proveedor_categorias[0]?.suministro ?? "");
     setClasificacion(p.clasificacion ?? "regular");
     setError(null);
+    setInicial(
+      JSON.stringify({
+        c: p.proveedor_categorias[0]?.categorias?.id ?? "",
+        s: p.proveedor_categorias[0]?.suministro ?? "",
+        cl: p.clasificacion ?? "regular",
+      })
+    );
   }
+
+  // Norma UX: si es "Seleccionar" (registrado) siempre hay acción; si es
+  // edición, el guardar se habilita solo con cambios.
+  const hayCambios =
+    abierto?.estado === "registrado" ||
+    JSON.stringify({ c: categoriaId, s: suministro, cl: clasificacion }) !==
+      inicial;
 
   async function guardar() {
     if (!abierto || !categoriaId) return;
@@ -288,12 +303,16 @@ export default function SeleccionTabla({
               </button>
               <button
                 type="button"
-                disabled={!categoriaId || guardando}
+                disabled={!categoriaId || !hayCambios || guardando}
                 onClick={guardar}
                 className="inline-flex min-h-[38px] items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-bold text-ink-950 transition hover:bg-brand-100 disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                {guardando ? "Guardando…" : "Guardar selección"}
+                {guardando
+                  ? "Guardando…"
+                  : hayCambios
+                    ? "Guardar selección"
+                    : "Sin cambios"}
               </button>
             </div>
           </div>

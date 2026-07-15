@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Power } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import Confirmar from "@/components/Confirmar";
 
 const TIPOS = [
   { v: "nuevos_proveedores", t: "Nuevos proveedores" },
@@ -32,6 +33,7 @@ export default function DestinatariosAdmin({
   const [tipos, setTipos] = useState<string[]>([]);
   const [trabajando, setTrabajando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [porEliminar, setPorEliminar] = useState<string | null>(null);
 
   function toggleTipo(v: string) {
     setTipos((ts) =>
@@ -182,7 +184,7 @@ export default function DestinatariosAdmin({
                     </button>
                     <button
                       type="button"
-                      onClick={() => eliminar(d.id)}
+                      onClick={() => setPorEliminar(d.id)}
                       title="Eliminar"
                       className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
                     >
@@ -202,6 +204,19 @@ export default function DestinatariosAdmin({
           </tbody>
         </table>
       </div>
+      <Confirmar
+        abierto={porEliminar !== null}
+        titulo="¿Eliminar este destinatario?"
+        mensaje="Dejará de recibir todas las notificaciones configuradas. Si solo quieres pausarlo temporalmente, usa el botón de pausa."
+        confirmLabel="Sí, eliminar"
+        tono="peligro"
+        onCancelar={() => setPorEliminar(null)}
+        onConfirmar={() => {
+          const id = porEliminar!;
+          setPorEliminar(null);
+          eliminar(id);
+        }}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Power, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import Confirmar from "@/components/Confirmar";
 import Select from "@/components/Select";
 import { AREAS } from "@/lib/areas";
 
@@ -30,6 +31,7 @@ export default function AprobadoresAdmin({
   const [monto, setMonto] = useState("");
   const [trabajando, setTrabajando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [porEliminar, setPorEliminar] = useState<string | null>(null);
 
   async function agregar() {
     if (!nombre.trim() || !email.trim()) return;
@@ -193,7 +195,7 @@ export default function AprobadoresAdmin({
                     </button>
                     <button
                       type="button"
-                      onClick={() => eliminar(a.id)}
+                      onClick={() => setPorEliminar(a.id)}
                       title="Eliminar"
                       className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 transition hover:bg-danger-100 hover:text-danger-600"
                     >
@@ -213,6 +215,19 @@ export default function AprobadoresAdmin({
           </tbody>
         </table>
       </div>
+      <Confirmar
+        abierto={porEliminar !== null}
+        titulo="¿Eliminar este aprobador?"
+        mensaje="Los comparativos dejarán de sugerirlo. Los cuadros ya aprobados por él conservan su registro histórico. Si es temporal, usa pausar."
+        confirmLabel="Sí, eliminar"
+        tono="peligro"
+        onCancelar={() => setPorEliminar(null)}
+        onConfirmar={() => {
+          const id = porEliminar!;
+          setPorEliminar(null);
+          eliminar(id);
+        }}
+      />
     </div>
   );
 }

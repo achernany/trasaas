@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import Confirmar from "@/components/Confirmar";
 
 export default function ValidarRegistro({
   registroId,
@@ -19,6 +20,7 @@ export default function ValidarRegistro({
 }) {
   const router = useRouter();
   const [trabajando, setTrabajando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
 
   async function validar() {
     setTrabajando(true);
@@ -63,14 +65,28 @@ export default function ValidarRegistro({
   }
 
   return (
+    <>
     <button
       type="button"
-      onClick={validar}
+      onClick={() => setConfirmando(true)}
       disabled={trabajando}
       className="inline-flex min-h-[32px] items-center gap-1 rounded-lg bg-ok-600 px-3 text-[11px] font-bold text-white transition hover:bg-ok-600/85 disabled:opacity-50"
     >
       <CheckCircle2 className="h-3.5 w-3.5" />
       {trabajando ? "Validando…" : "Validar"}
     </button>
+    <Confirmar
+      abierto={confirmando}
+      titulo="¿Validar este registro?"
+      mensaje={`Se dará por verificado el expediente de ${datos.razon_social ?? "este proveedor"} y entrará al flujo de compra (aparecerá en Selección para ser categorizado). La validación queda registrada en auditoría con tu usuario.`}
+      confirmLabel="Sí, validar"
+      cargando={trabajando}
+      onCancelar={() => setConfirmando(false)}
+      onConfirmar={() => {
+        setConfirmando(false);
+        validar();
+      }}
+    />
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Select from "@/components/Select";
+import Confirmar from "@/components/Confirmar";
 import { ROLES } from "@/lib/areas";
 
 type Usuario = {
@@ -18,6 +19,7 @@ type Usuario = {
 export default function UsuariosAdmin({ iniciales }: { iniciales: Usuario[] }) {
   const router = useRouter();
   const [guardando, setGuardando] = useState<string | null>(null);
+  const [pendiente, setPendiente] = useState<{ u: Usuario; rol: string } | null>(null);
 
   async function cambiarRol(u: Usuario, rol: string) {
     setGuardando(u.id);
@@ -65,7 +67,9 @@ export default function UsuariosAdmin({ iniciales }: { iniciales: Usuario[] }) {
                 <Select
                   compacto
                   value={u.rol}
-                  onChange={(rol) => cambiarRol(u, rol)}
+                  onChange={(rol) => {
+                    if (rol !== u.rol) setPendiente({ u, rol });
+                  }}
                   opciones={ROLES}
                 />
                 {guardando === u.id && (
@@ -82,6 +86,24 @@ export default function UsuariosAdmin({ iniciales }: { iniciales: Usuario[] }) {
         (ej. matrices solo Director + Logística) se activa con la matriz de
         permisos que definirá Logística.
       </p>
+
+      <Confirmar
+        abierto={pendiente !== null}
+        titulo="¿Cambiar el rol de este usuario?"
+        mensaje={
+          pendiente
+            ? `${pendiente.u.nombre} pasará de "${pendiente.u.rol}" a "${pendiente.rol}". Sus permisos en el sistema cambian de inmediato y el cambio queda registrado en auditoría.`
+            : ""
+        }
+        confirmLabel="Sí, cambiar rol"
+        cargando={guardando !== null}
+        onCancelar={() => setPendiente(null)}
+        onConfirmar={() => {
+          const pp = pendiente!;
+          setPendiente(null);
+          cambiarRol(pp.u, pp.rol);
+        }}
+      />
     </div>
   );
 }
