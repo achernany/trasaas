@@ -1,32 +1,55 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import NuevoCuadro, { type ProvConfiable } from "@/components/NuevoCuadro";
+import NuevoCuadro, {
+  type Aprobador,
+  type ItemSig,
+  type ProvConfiable,
+} from "@/components/NuevoCuadro";
 
 export const dynamic = "force-dynamic";
 
 export default async function NuevoCuadroPage() {
   const supabase = createClient();
-  const [{ data: pcs }, { data: proyectos }] = await Promise.all([
-    supabase
-      .from("proveedor_categorias")
-      .select(
-        "proveedor_id, calificacion_actual, nota_actual, proveedores(razon_social, ruc)"
-      )
-      .eq("calificacion_actual", "confiable"),
-    supabase.from("proyectos").select("id, nombre").order("nombre"),
-  ]);
+  const [{ data: pcs }, { data: proyectos }, { data: cat }, { data: aps }] =
+    await Promise.all([
+      supabase
+        .from("proveedor_categorias")
+        .select(
+          "proveedor_id, calificacion_actual, nota_actual, proveedores(razon_social, ruc, estado)"
+        ),
+      supabase.from("proyectos").select("id, nombre").order("nombre"),
+      supabase
+        .from("items")
+        .select("id, codigo, descripcion, unidad, ultimo_costo")
+        .eq("activo", true)
+        .order("codigo")
+        .limit(2000),
+      supabase
+        .from("aprobadores")
+        .select("id, nombre, email, area, monto_max")
+        .eq("activo", true)
+        .order("monto_max", { ascending: true, nullsFirst: false }),
+    ]);
 
+  // Elegibles: confiables por evaluación, o seleccionados/aprobados aún sin
+  // evaluar (flujo nuevo). Medianamente y no confiables quedan fuera.
   const vistos = new Set<string>();
   const confiables: ProvConfiable[] = [];
   for (const pc of (pcs ?? []) as any[]) {
     if (vistos.has(pc.proveedor_id)) continue;
+    const estado = pc.proveedores?.estado;
+    const elegible =
+      pc.calificacion_actual === "confiable" ||
+      (!pc.calificacion_actual &&
+        (estado === "seleccionado" || estado === "aprobado"));
+    if (!elegible) continue;
     vistos.add(pc.proveedor_id);
     confiables.push({
       proveedor_id: pc.proveedor_id,
       razon_social: pc.proveedores?.razon_social ?? "",
       ruc: pc.proveedores?.ruc ?? "",
-      calificacion: pc.calificacion_actual,
+      calificacion: pc.calificacion_actual ?? "seleccionado",
       nota: pc.nota_actual,
     });
   }
@@ -41,7 +64,7 @@ export default async function NuevoCuadroPage() {
               Nuevo cuadro comparativo
             </h1>
             <p className="text-[11px] leading-4 text-white/50">
-              LOG-GN-F-P02-07 · solo confiables · matriz ponderada automática
+              LOG-GN-F-P02-07 · confiables y seleccionados · matriz ponderada automática
             </p>
           </div>
           <Link
@@ -52,7 +75,12 @@ export default async function NuevoCuadroPage() {
             <X className="h-[18px] w-[18px]" />
           </Link>
         </div>
-        <NuevoCuadro confiables={confiables} proyectos={proyectos ?? []} />
+        <NuevoCuadro
+          confiables={confiables}
+          proyectos={proyectos ?? []}
+          catalogo={(cat ?? []) as ItemSig[]}
+          aprobadores={(aps ?? []) as Aprobador[]}
+        />
       </div>
     </div>
   );

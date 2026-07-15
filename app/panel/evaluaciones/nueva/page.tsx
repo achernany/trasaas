@@ -17,6 +17,7 @@ export default async function NuevaEvaluacionPage({
       supabase
         .from("proveedores")
         .select("id, ruc, razon_social, clasificacion")
+        .eq("estado", "aprobado")
         .order("razon_social"),
       supabase.from("categorias").select("id, nombre").order("nombre"),
       supabase.from("proyectos").select("id, nombre").order("nombre"),

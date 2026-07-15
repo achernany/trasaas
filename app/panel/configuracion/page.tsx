@@ -1,23 +1,38 @@
 import Link from "next/link";
-import { SlidersHorizontal, Mail, FileBadge, ChevronRight } from "lucide-react";
+import { SlidersHorizontal, Mail, FileBadge, ChevronRight, Boxes, BadgeCheck, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function ConfiguracionPage() {
   const supabase = createClient();
-  const [{ count: nMatrices }, { count: nVigentes }, { count: nDest }] =
-    await Promise.all([
-      supabase.from("matrices").select("*", { count: "exact", head: true }),
-      supabase
-        .from("matrices")
-        .select("*", { count: "exact", head: true })
-        .eq("estado", "vigente"),
-      supabase
-        .from("notificacion_destinatarios")
-        .select("*", { count: "exact", head: true })
-        .eq("activo", true),
-    ]);
+  const [
+    { count: nMatrices },
+    { count: nVigentes },
+    { count: nDest },
+    { count: nItems },
+    { count: nAprob },
+    { count: nUsers },
+  ] = await Promise.all([
+    supabase.from("matrices").select("*", { count: "exact", head: true }),
+    supabase
+      .from("matrices")
+      .select("*", { count: "exact", head: true })
+      .eq("estado", "vigente"),
+    supabase
+      .from("notificacion_destinatarios")
+      .select("*", { count: "exact", head: true })
+      .eq("activo", true),
+    supabase
+      .from("items")
+      .select("*", { count: "exact", head: true })
+      .eq("activo", true),
+    supabase
+      .from("aprobadores")
+      .select("*", { count: "exact", head: true })
+      .eq("activo", true),
+    supabase.from("usuarios").select("*", { count: "exact", head: true }),
+  ]);
 
   const secciones = [
     {
@@ -31,6 +46,24 @@ export default async function ConfiguracionPage() {
       Icon: Mail,
       titulo: "Correos y notificaciones",
       desc: `${nDest ?? 0} destinatarios activos. Define quién recibe avisos de nuevos proveedores, evaluaciones por vencer, encuestas y comparativos.`,
+    },
+    {
+      href: "/panel/configuracion/items",
+      Icon: Boxes,
+      titulo: "Códigos SIG · Productos y servicios",
+      desc: `${nItems ?? 0} ítems activos. Catálogo estandarizado del ERP con carga masiva; alimenta los comparativos y la alerta de precio histórico.`,
+    },
+    {
+      href: "/panel/configuracion/aprobadores",
+      Icon: BadgeCheck,
+      titulo: "Aprobadores de comparativos",
+      desc: `${nAprob ?? 0} activos. Define quién aprueba según área y monto; el máximo aprobador recibe las alertas de precio.`,
+    },
+    {
+      href: "/panel/configuracion/usuarios",
+      Icon: Users,
+      titulo: "Usuarios y roles",
+      desc: `${nUsers ?? 0} usuarios. Director, Coordinador, Analista, Comprador y Auditor (solo lectura).`,
     },
     {
       href: "#",

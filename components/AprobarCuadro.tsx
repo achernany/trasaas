@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function AprobarCuadro({ cuadroId }: { cuadroId: string }) {
+export default function AprobarCuadro({
+  cuadroId,
+  ganadorId,
+}: {
+  cuadroId: string;
+  ganadorId?: string | null;
+}) {
   const router = useRouter();
   const [comentario, setComentario] = useState("");
   const [trabajando, setTrabajando] = useState(false);
@@ -39,6 +45,14 @@ export default function AprobarCuadro({ cuadroId }: { cuadroId: string }) {
         .update({ estado: accion })
         .eq("id", cuadroId);
       if (e2) throw e2;
+
+      // Flujo: al aprobar el comparativo, el ganador pasa a "proveedor aprobado"
+      if (accion === "aprobado" && ganadorId) {
+        await supabase
+          .from("proveedores")
+          .update({ estado: "aprobado" })
+          .eq("id", ganadorId);
+      }
 
       await supabase.from("audit_log").insert({
         empresa_id: perfil!.empresa_id,

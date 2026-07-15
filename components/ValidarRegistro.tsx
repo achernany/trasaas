@@ -5,7 +5,18 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function ValidarRegistro({ registroId }: { registroId: string }) {
+export default function ValidarRegistro({
+  registroId,
+  datos,
+}: {
+  registroId: string;
+  datos: {
+    ruc?: string;
+    razon_social?: string;
+    direccion?: string;
+    distrito?: string;
+  };
+}) {
   const router = useRouter();
   const [trabajando, setTrabajando] = useState(false);
 
@@ -22,6 +33,25 @@ export default function ValidarRegistro({ registroId }: { registroId: string }) 
       .from("proveedor_registros")
       .update({ estado: "validado", validado_por: auth.user!.id })
       .eq("id", registroId);
+
+    // El proveedor validado entra al flujo: estado "registrado" → panel Selección
+    if (datos.ruc && datos.razon_social) {
+      const { data: existente } = await supabase
+        .from("proveedores")
+        .select("id")
+        .eq("ruc", datos.ruc)
+        .maybeSingle();
+      if (!existente) {
+        await supabase.from("proveedores").insert({
+          empresa_id: perfil!.empresa_id,
+          ruc: datos.ruc,
+          razon_social: datos.razon_social,
+          direccion: datos.direccion ?? null,
+          distrito: datos.distrito ?? null,
+          estado: "registrado",
+        });
+      }
+    }
     await supabase.from("audit_log").insert({
       empresa_id: perfil!.empresa_id,
       usuario_id: auth.user!.id,

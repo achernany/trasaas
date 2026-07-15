@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Plus,
   Trash2,
+  TriangleAlert,
   Trophy,
   Check,
   ArrowLeft,
@@ -14,6 +15,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import Stepper from "@/components/Stepper";
 import Select from "@/components/Select";
+import { AREAS } from "@/lib/areas";
 
 const PESOS = { precio: 30, lugar: 15, tiempo: 15, pago: 20, garantia: 10, feedback: 10 };
 const LUGARES = [
@@ -46,7 +48,30 @@ export type ProvConfiable = {
   nota: number | null;
 };
 
-type Item = { descripcion: string; cantidad: number; unidad: string };
+export type ItemSig = {
+  id: string;
+  codigo: string;
+  descripcion: string;
+  unidad: string;
+  ultimo_costo: number | null;
+};
+
+export type Aprobador = {
+  id: string;
+  nombre: string;
+  email: string;
+  area: string | null;
+  monto_max: number | null;
+};
+
+type Item = {
+  descripcion: string;
+  cantidad: number;
+  unidad: string;
+  item_id?: string | null;
+  codigo_sig?: string | null;
+  ultimo_costo?: number | null;
+};
 type Cot = {
   proveedor_id: string;
   lugar: string;
@@ -59,9 +84,13 @@ type Cot = {
 export default function NuevoCuadro({
   confiables,
   proyectos,
+  catalogo,
+  aprobadores,
 }: {
   confiables: ProvConfiable[];
   proyectos: { id: string; nombre: string }[];
+  catalogo: ItemSig[];
+  aprobadores: Aprobador[];
 }) {
   const router = useRouter();
   const [paso, setPaso] = useState(0);
@@ -75,6 +104,7 @@ export default function NuevoCuadro({
   ]);
   const [cots, setCots] = useState<Cot[]>([]);
   const [justificacion, setJustificacion] = useState("");
+  const [aprobadorId, setAprobadorId] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,6 +169,36 @@ export default function NuevoCuadro({
     });
     return idx;
   }, [puntajes, totales]);
+
+  // Alerta: algún ítem del ganador supera su último costo del ERP
+  const alertaPrecio = useMemo(() => {
+    if (idxGanador < 0) return false;
+    const g = cots[idxGanador];
+    return items.some(
+      (it, j) =>
+        it.ultimo_costo != null &&
+        Number(g.precios[j]) > Number(it.ultimo_costo)
+    );
+  }, [idxGanador, cots, items]);
+
+  const aprobadorSugerido = useMemo(() => {
+    const activos = aprobadores;
+    if (activos.length === 0) return null;
+    const maximo =
+      activos.find((a) => a.monto_max == null) ??
+      [...activos].sort(
+        (a, b) => Number(b.monto_max ?? 0) - Number(a.monto_max ?? 0)
+      )[0];
+    if (alertaPrecio) return maximo;
+    const total = idxGanador >= 0 ? totales[idxGanador] : 0;
+    const capaces = activos
+      .filter((a) => a.monto_max != null && Number(a.monto_max) >= total)
+      .sort((a, b) => Number(a.monto_max) - Number(b.monto_max));
+    return capaces[0] ?? maximo;
+  }, [aprobadores, alertaPrecio, idxGanador, totales]);
+
+  const aprobadorFinal =
+    aprobadores.find((a) => a.id === aprobadorId) ?? aprobadorSugerido;
 
   function pasoValido(i: number): boolean {
     if (pasos[i] === "Requerimiento") return Boolean(ticket.trim());
@@ -228,6 +288,8 @@ export default function NuevoCuadro({
             justificacion ||
             `Mayor puntaje ponderado (${puntajes[idxGanador].total}/100).`,
           proveedor_ganador_id: ganador.proveedor_id,
+          aprobador_id: aprobadorFinal?.id ?? null,
+          alerta_precio: alertaPrecio,
           creado_por: auth.user!.id,
         })
         .select("id")
@@ -243,6 +305,9 @@ export default function NuevoCuadro({
             descripcion: it.descripcion.trim(),
             cantidad: it.cantidad,
             unidad: it.unidad || "UND",
+            item_id: it.item_id ?? null,
+            codigo_sig: it.codigo_sig ?? null,
+            precio_historico: it.ultimo_costo ?? null,
           }))
         )
         .select("id, orden");
@@ -284,7 +349,14 @@ export default function NuevoCuadro({
         entidad: "cuadro",
         entidad_id: cuadro!.id,
         accion: "crear",
-        detalle: { codigo, ticket, tipo, cotizaciones: cots.length },
+        detalle: {
+          codigo,
+          ticket,
+          tipo,
+          cotizaciones: cots.length,
+          alerta_precio: alertaPrecio,
+          aprobador: aprobadorFinal?.nombre ?? null,
+        },
       });
 
       router.push(`/panel/cuadros/${cuadro!.id}`);
@@ -345,11 +417,11 @@ export default function NuevoCuadro({
               </div>
               <div>
                 <label className="label text-[12px]">Área solicitante</label>
-                <input
-                  className="input h-9 text-[13px]"
+                <Select
                   value={area}
-                  onChange={(e) => setArea(e.target.value)}
-                  placeholder="Ej. Operaciones"
+                  onChange={setArea}
+                  placeholder="Área…"
+                  opciones={AREAS.map((a) => ({ value: a, label: a }))}
                 />
               </div>
               <div>
@@ -382,14 +454,33 @@ export default function NuevoCuadro({
               </div>
               {items.map((it, i) => (
                 <div key={i} className="grid grid-cols-[1fr_80px_70px_36px] items-center gap-2">
-                  <input
-                    className="input h-9 text-[13px]"
-                    placeholder="Bien o servicio"
-                    value={it.descripcion}
-                    onChange={(e) =>
+                  <CatalogoPicker
+                    catalogo={catalogo}
+                    valor={it}
+                    onElegir={(sel) =>
                       setItems((xs) =>
                         xs.map((x, j) =>
-                          j === i ? { ...x, descripcion: e.target.value } : x
+                          j === i
+                            ? sel
+                              ? {
+                                  ...x,
+                                  descripcion: sel.descripcion,
+                                  unidad: sel.unidad,
+                                  item_id: sel.id,
+                                  codigo_sig: sel.codigo,
+                                  ultimo_costo: sel.ultimo_costo,
+                                }
+                              : { ...x, item_id: null, codigo_sig: null, ultimo_costo: null }
+                            : x
+                        )
+                      )
+                    }
+                    onTexto={(txt) =>
+                      setItems((xs) =>
+                        xs.map((x, j) =>
+                          j === i
+                            ? { ...x, descripcion: txt, item_id: null, codigo_sig: null, ultimo_costo: null }
+                            : x
                         )
                       )
                     }
@@ -574,6 +665,11 @@ export default function NuevoCuadro({
                           className="flex items-center gap-2 text-[11px]"
                         >
                           <span className="flex-1 truncate text-ink-600">
+                            {it.codigo_sig && (
+                              <span className="mr-1 font-mono text-[9px] font-bold text-brand-900">
+                                {it.codigo_sig}
+                              </span>
+                            )}
                             {it.descripcion || `Ítem ${j + 1}`} × {it.cantidad}
                           </span>
                           <span className="text-ink-400">S/</span>
@@ -658,6 +754,42 @@ export default function NuevoCuadro({
                   </tbody>
                 </table>
               </div>
+              {alertaPrecio && (
+                <div className="flex items-start gap-2.5 rounded-xl border border-danger-600/40 bg-danger-100/60 p-3">
+                  <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-danger-600" />
+                  <div className="text-[12px] leading-5 text-danger-600">
+                    <b>Alerta de precio histórico:</b> uno o más ítems del
+                    ganador superan su último costo registrado en el ERP. La
+                    aprobación escala automáticamente al máximo aprobador.
+                  </div>
+                </div>
+              )}
+
+              {aprobadores.length > 0 && (
+                <div>
+                  <label className="label text-[12px]">
+                    Aprobador del comparativo
+                  </label>
+                  <Select
+                    value={aprobadorFinal?.id ?? ""}
+                    onChange={setAprobadorId}
+                    opciones={aprobadores.map((a) => ({
+                      value: a.id,
+                      label: `${a.nombre}${a.area ? ` · ${a.area}` : ""}${
+                        a.monto_max != null
+                          ? ` · hasta S/ ${Number(a.monto_max).toLocaleString("es-PE")}`
+                          : " · máximo aprobador"
+                      }`,
+                    }))}
+                  />
+                  <p className="mt-1 text-[11px] text-ink-400">
+                    Sugerido automáticamente según el monto
+                    {alertaPrecio ? " y la alerta de precio" : ""} — puedes
+                    cambiarlo.
+                  </p>
+                </div>
+              )}
+
               <div>
                 <label className="label text-[12px]">
                   Justificación de selección
@@ -731,5 +863,87 @@ export default function NuevoCuadro({
         </div>
       </div>
     </>
+  );
+}
+
+
+/** Buscador del catálogo SIG: escribe código o descripción; permite texto libre si no hay catálogo */
+function CatalogoPicker({
+  catalogo,
+  valor,
+  onElegir,
+  onTexto,
+}: {
+  catalogo: ItemSig[];
+  valor: Item;
+  onElegir: (sel: ItemSig | null) => void;
+  onTexto: (txt: string) => void;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const sugerencias = useMemo(() => {
+    const q = valor.descripcion.trim().toLowerCase();
+    if (!q || valor.item_id) return [];
+    return catalogo
+      .filter(
+        (c) =>
+          c.codigo.toLowerCase().includes(q) ||
+          c.descripcion.toLowerCase().includes(q)
+      )
+      .slice(0, 8);
+  }, [catalogo, valor.descripcion, valor.item_id]);
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <input
+          className={`input h-9 text-[13px] ${valor.codigo_sig ? "pl-[74px]" : ""}`}
+          placeholder={
+            catalogo.length > 0
+              ? "Código SIG o descripción…"
+              : "Bien o servicio"
+          }
+          value={valor.descripcion}
+          onChange={(e) => {
+            onTexto(e.target.value);
+            setAbierto(true);
+          }}
+          onFocus={() => setAbierto(true)}
+          onBlur={() => setTimeout(() => setAbierto(false), 150)}
+        />
+        {valor.codigo_sig && (
+          <span className="absolute left-2 top-1/2 -translate-y-1/2 rounded bg-brand-100 px-1.5 py-0.5 font-mono text-[9px] font-bold text-brand-900">
+            {valor.codigo_sig}
+          </span>
+        )}
+      </div>
+      {abierto && sugerencias.length > 0 && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-line bg-white shadow-xl">
+          {sugerencias.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onElegir(c);
+                setAbierto(false);
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] transition hover:bg-brand-100/50"
+            >
+              <span className="shrink-0 font-mono text-[10px] font-bold text-brand-900">
+                {c.codigo}
+              </span>
+              <span className="min-w-0 flex-1 truncate font-semibold">
+                {c.descripcion}
+              </span>
+              {c.ultimo_costo != null && (
+                <span className="shrink-0 font-mono text-[10px] text-ink-400">
+                  S/ {Number(c.ultimo_costo).toFixed(2)}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

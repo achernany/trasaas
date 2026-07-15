@@ -1,4 +1,54 @@
-# CHECKPOINT — AlfaSource (actualizado 2026-07-11, tarde)
+# CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 CONSTRUIDA)
+
+## ⚡ FASE 2 — ejecutada el 14-jul (todo compilado; SQL db/fase2.sql YA CORRIDO en Supabase)
+- **Flujo nuevo completo**: nav = Dashboard · Registro · Selección · Comparativos ·
+  Proveedores · Evaluaciones. Estados de proveedores ampliados (registrado →
+  seleccionado → aprobado; históricos evaluados migrados a 'aprobado').
+- **/panel/seleccion** (nuevo): chips Por seleccionar/Seleccionados/Aprobados;
+  modal one-view por proveedor (categoría→define bien/servicio, suministro,
+  Regular/Crítico) → estado 'seleccionado'. `components/SeleccionTabla.tsx`.
+- **Validar registro** ahora crea el proveedor (estado 'registrado') con datos del
+  form → aparece en Selección. `ValidarRegistro` recibe prop `datos`.
+- **Nueva evaluación**: solo proveedores estado='aprobado' (evaluación periódica).
+- **Elegibles en comparativos**: confiables por evaluación O seleccionados/aprobados
+  sin evaluar (medianamente/no confiable fuera). En cuadros/nuevo/page.tsx.
+- **Catálogo SIG**: tabla `items` + /panel/configuracion/items (`ItemsAdmin`: alta,
+  búsqueda, activar/desactivar, CARGA MASIVA CSV con upsert por codigo). En
+  NuevoCuadro: `CatalogoPicker` (busca por código/descr., chip del código, texto
+  libre si el catálogo está vacío) → guarda item_id/codigo_sig/precio_historico.
+- **Alerta de precio histórico**: si un ítem del ganador supera ultimo_costo →
+  aviso rojo en Resumen + cuadros.alerta_precio + aprobación sugerida escala al
+  máximo aprobador.
+- **Aprobadores**: tabla `aprobadores` + /panel/configuracion/aprobadores
+  (área de lib/areas.ts AREAS, cargo, monto_max; null=máximo aprobador). Selector
+  en Resumen del comparativo con sugerencia automática por monto/alerta →
+  cuadros.aprobador_id. (El CORREO real espera Resend.)
+- **Aprobar comparativo** → ganador pasa a proveedores.estado='aprobado'
+  (AprobarCuadro prop ganadorId).
+- **Expediente de la compra**: tabla `cuadro_documentos` + bucket privado
+  `compras-docs` + `ExpedienteCompra` en el detalle del cuadro: adjuntar Ticket /
+  Cotizaciones / OC / Otros (subida directa del cliente con policies auth),
+  abrir con URL firmada 1h, badge "Ciclo cerrado con OC".
+- **Usuarios y roles**: /panel/configuracion/usuarios (`UsuariosAdmin`) — rol por
+  Select (ROLES en lib/areas.ts: admin/director/coordinador/analista/comprador/
+  auditor; constraint SQL ampliado). Permisos granulares por módulo = esperan
+  matriz de Fran.
+- **Exports membretados**: /api/export ahora genera **XLSX real (exceljs, nueva
+  dependencia)** con logo public/logo-alfaco.png, cabecera Alfa Co, periodo
+  (params desde/hasta filtran evaluaciones.fecha), zebra, autofiltro.
+  `ExportarPeriodo.tsx` = botón con popover de fechas en ambas listas.
+- **Dashboard v2 (parcial)**: banda "Cuadros comparativos" (elaborados/pendientes/
+  aprobados/rechazados → /panel/cuadros) + chips de filtro por categoría (?cat=)
+  que filtran clasificación y promedios. (Estética "menos pálida" general: aún
+  mejorable.)
+- **Instructivo presentación**: instructivo-alfasource.html en carpeta de marca
+  (flujo, 8 bondades, seguridad de datos) — imprimible para la directora.
+- PENDIENTE SOLO DE INSUMOS: pesos matriz + matriz críticos (lunes Fran, carga por
+  panel), subcategorías (Fran), CSV códigos SIG real (Fran), matriz de permisos
+  por módulo (Fran), Resend (Hernany) → correos aprobador/digest/encuestas,
+  membrete PDF actas con estructura final del acta (Fran/Auditoría).
+
+# (histórico anterior ↓)
 
 > **Regla de mantenimiento:** este archivo se actualiza al cierre de cada tanda
 > significativa de cambios, ANTES de cerrar la sesión o cambiar de ventana.

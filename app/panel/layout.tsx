@@ -27,9 +27,11 @@ export default async function PanelLayout({
 
   const links = [
     { href: "/panel", label: "Dashboard" },
+    { href: "/panel/registros", label: "Registro" },
+    { href: "/panel/seleccion", label: "Selección" },
+    { href: "/panel/cuadros", label: "Comparativos" },
     { href: "/panel/proveedores", label: "Proveedores" },
     { href: "/panel/evaluaciones", label: "Evaluaciones" },
-    { href: "/panel/cuadros", label: "Comparativos" },
   ];
 
   return (

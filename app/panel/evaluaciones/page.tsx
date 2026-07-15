@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Paginator from "@/components/Paginator";
+import ExportarPeriodo from "@/components/ExportarPeriodo";
 
 export const dynamic = "force-dynamic";
 
@@ -65,13 +66,7 @@ export default async function EvaluacionesPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <a
-              href="/api/export?tipo=evaluaciones"
-              className="btn-secondary min-h-[40px] px-4 text-[13px]"
-              title="Descargar como Excel (CSV)"
-            >
-              Exportar
-            </a>
+            <ExportarPeriodo tipo="evaluaciones" />
             <Link href="/panel/evaluaciones/nueva" className="btn">
               + Nueva evaluación
             </Link>

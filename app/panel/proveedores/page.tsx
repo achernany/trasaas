@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Paginator from "@/components/Paginator";
+import ExportarPeriodo from "@/components/ExportarPeriodo";
 import ProveedoresTabla, { type PcRow } from "@/components/ProveedoresTabla";
 
 export const dynamic = "force-dynamic";
@@ -126,13 +127,7 @@ export default async function ProveedoresPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <a
-              href="/api/export?tipo=proveedores"
-              className="btn-secondary min-h-[40px] px-4 text-[13px]"
-              title="Descargar como Excel (CSV)"
-            >
-              Exportar
-            </a>
+            <ExportarPeriodo tipo="proveedores" />
             <Link href="/panel/evaluaciones/nueva" className="btn">
               + Nueva evaluación
             </Link>

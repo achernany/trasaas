@@ -98,7 +98,15 @@ export default async function RegistrosPage() {
                   <div className="flex items-center gap-2">
                     <span className={est.cls}>{est.label}</span>
                     {r.estado === "enviado" && (
-                      <ValidarRegistro registroId={r.id} />
+                      <ValidarRegistro
+                        registroId={r.id}
+                        datos={{
+                          ruc: fd.ruc,
+                          razon_social: fd.razon_social,
+                          direccion: fd.direccion,
+                          distrito: fd.distrito,
+                        }}
+                      />
                     )}
                   </div>
                 </div>

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import {
-  Users,
+import {Scale, Users,
   ClipboardList,
   AlarmClock,
   CalendarClock,
@@ -10,16 +9,20 @@ import {
   ArrowRight,
   TrendingUp,
   ShieldCheck,
-  BarChart3,
-} from "lucide-react";
+  BarChart3,} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"];
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { cat?: string };
+}) {
   const supabase = createClient();
+  const catFiltro = searchParams.cat ?? "";
   const hoy = new Date().toISOString().slice(0, 10);
   const en30 = new Date(Date.now() + 30 * 24 * 3600 * 1000)
     .toISOString()
@@ -31,6 +34,7 @@ export default async function DashboardPage() {
     { count: totalEvals },
     { data: proximas },
     { data: evalsFechas },
+    { data: cuadrosData },
   ] = await Promise.all([
     supabase.from("proveedores").select("*", { count: "exact", head: true }),
     supabase
@@ -50,7 +54,28 @@ export default async function DashboardPage() {
       .select("fecha")
       .order("fecha", { ascending: false })
       .limit(1000),
+    supabase.from("cuadros").select("estado").limit(2000),
   ]);
+
+  const cc = { total: 0, pendientes: 0, aprobados: 0, rechazados: 0 };
+  for (const q of (cuadrosData ?? []) as any[]) {
+    cc.total++;
+    if (q.estado === "enviado" || q.estado === "reenviado") cc.pendientes++;
+    else if (q.estado === "aprobado") cc.aprobados++;
+    else if (q.estado === "rechazado") cc.rechazados++;
+  }
+
+  // filtro por categoría (chips)
+  const todasCats = Array.from(
+    new Set(
+      ((pcs ?? []) as any[])
+        .map((x) => x.categorias?.nombre)
+        .filter(Boolean) as string[]
+    )
+  ).sort();
+  const pcsFiltrados = catFiltro
+    ? ((pcs ?? []) as any[]).filter((x) => x.categorias?.nombre === catFiltro)
+    : ((pcs ?? []) as any[]);
 
   const porCal: Record<string, number> = {};
   let vencidas = 0;
@@ -59,7 +84,7 @@ export default async function DashboardPage() {
   let vigentes = 0;
   const porCat: Record<string, { suma: number; n: number }> = {};
 
-  for (const pc of (pcs ?? []) as any[]) {
+  for (const pc of pcsFiltrados as any[]) {
     if (pc.calificacion_actual)
       porCal[pc.calificacion_actual] = (porCal[pc.calificacion_actual] ?? 0) + 1;
     if (pc.proxima_evaluacion) {
@@ -77,7 +102,7 @@ export default async function DashboardPage() {
       porCat[cat].n++;
     }
   }
-  const totalPc = (pcs ?? []).length || 1;
+  const totalPc = pcsFiltrados.length || 1;
   const pctVigente = conFecha ? Math.round((vigentes / conFecha) * 100) : 0;
 
   // evaluaciones por mes (últimos 6 meses)
@@ -183,6 +208,62 @@ export default async function DashboardPage() {
           label="Vencen en 30 días"
           tip="Re-evaluaciones que vencerán en los próximos 30 días."
         />
+      </div>
+
+      {/* Comparativos: pipeline de compra */}
+      <div className="card p-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-3">
+          <h2 className="inline-flex items-center gap-2 text-sm font-semibold">
+            <Scale className="h-4 w-4 text-brand-900" /> Cuadros comparativos
+          </h2>
+          <Link
+            href="/panel/cuadros"
+            className="inline-flex items-center gap-1 text-[12px] font-bold text-brand-900 hover:underline"
+          >
+            Ver todos <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 divide-x divide-line sm:grid-cols-4">
+          {[
+            { v: cc.total, l: "Elaborados", cls: "text-ink-950" },
+            { v: cc.pendientes, l: "Pendientes de aprobar", cls: "text-warn-700" },
+            { v: cc.aprobados, l: "Aprobados", cls: "text-ok-600" },
+            { v: cc.rechazados, l: "Rechazados", cls: "text-danger-600" },
+          ].map((k) => (
+            <div key={k.l} className="px-5 py-4">
+              <div
+                className={`font-display text-[28px] font-semibold leading-8 tabular-nums ${k.cls}`}
+              >
+                {k.v}
+              </div>
+              <div className="mt-0.5 text-[12px] font-semibold text-ink-400">
+                {k.l}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Filtro por categoría */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-bold uppercase tracking-wide text-ink-400">
+          Categoría:
+        </span>
+        <Link
+          href="/panel"
+          className={`${!catFiltro ? "chip-active" : "chip"} min-h-[28px] px-3 text-[12px]`}
+        >
+          Todas
+        </Link>
+        {todasCats.map((c) => (
+          <Link
+            key={c}
+            href={`/panel?cat=${encodeURIComponent(c)}`}
+            className={`${catFiltro === c ? "chip-active" : "chip"} min-h-[28px] px-3 text-[12px]`}
+          >
+            {c}
+          </Link>
+        ))}
       </div>
 
       {/* Charts */}

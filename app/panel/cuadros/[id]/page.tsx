@@ -4,6 +4,7 @@ import { Trophy, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import AprobarCuadro from "@/components/AprobarCuadro";
 import PrintButton from "@/components/PrintButton";
+import ExpedienteCompra from "@/components/ExpedienteCompra";
 
 export const dynamic = "force-dynamic";
 
@@ -24,13 +25,14 @@ export default async function CuadroDetallePage({
   const { data: c } = await supabase
     .from("cuadros")
     .select(
-      `id, codigo, estado, moneda, matriz_pesos, justificacion, creado_en,
+      `id, codigo, estado, moneda, matriz_pesos, justificacion, creado_en, alerta_precio, aprobadores(nombre, email, area),
        requerimientos(ticket_avandesk, tipo, area_solicitante, proyectos(nombre)),
        proveedores(id, razon_social),
        usuarios(nombre),
        cuadro_items(id, orden, descripcion, cantidad, unidad),
        cotizaciones(id, proveedor_id, lugar_entrega, tiempo_entrega_dias, condicion_pago, garantia, puntaje_total, proveedores(razon_social, ruc), cotizacion_precios(item_id, precio_unitario)),
-       aprobaciones(accion, comentario, resuelto_en, usuarios(nombre))`
+       aprobaciones(accion, comentario, resuelto_en, usuarios(nombre)),
+       cuadro_documentos(id, tipo, nombre, archivo_url, creado_en)`
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -240,9 +242,16 @@ export default async function CuadroDetallePage({
 
       {cu.estado === "enviado" && (
         <div className="no-print">
-          <AprobarCuadro cuadroId={cu.id} />
+          <AprobarCuadro cuadroId={cu.id} ganadorId={cu.proveedores?.id ?? null} />
         </div>
       )}
+
+      <div className="no-print">
+        <ExpedienteCompra
+          cuadroId={cu.id}
+          documentos={(cu.cuadro_documentos ?? []) as any}
+        />
+      </div>
     </div>
   );
 }
