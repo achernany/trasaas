@@ -1,6 +1,7 @@
 import { UserCheck, Users, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import SeleccionTabla from "@/components/SeleccionTabla";
+import Hint from "@/components/Hint";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -61,8 +62,12 @@ export default async function SeleccionPage({
     <div>
       <div className="page-head space-y-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
             Selección de proveedores
+            <Hint
+              texto="Paso 2 del flujo de compra: aquí el comprador categoriza a cada proveedor registrado (la categoría define si es bien o servicio) y le asigna clasificación Regular o Crítico, que determina la matriz de su evaluación periódica. Un proveedor pasa a Aprobado cuando gana un comparativo aprobado."
+              roles={["comprador", "analista", "coordinador", "director"]}
+            />
           </h1>
           <p className="text-[12px] text-ink-400">
             Categoriza a los proveedores registrados: tipo (bien/servicio vía

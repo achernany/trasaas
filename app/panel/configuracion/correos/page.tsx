@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import ConfigHeader from "@/components/ConfigHeader";
 import DestinatariosAdmin from "@/components/DestinatariosAdmin";
 
 export const dynamic = "force-dynamic";
@@ -13,24 +12,12 @@ export default async function CorreosPage() {
     .order("creado_en");
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="page-head flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Correos y notificaciones
-          </h1>
-          <p className="text-[12px] text-ink-400">
-            Quién recibe cada tipo de aviso · el envío automático se activa al
-            conectar el servicio de correo
-          </p>
-        </div>
-        <Link
-          href="/panel/configuracion"
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-400 transition hover:text-brand-900"
-        >
-          <ArrowLeft className="h-4 w-4" /> Configuración
-        </Link>
-      </div>
+    <div className="mx-auto w-full max-w-5xl pb-6" style={{ minHeight: "calc(100vh - 96px)" }}>
+      <ConfigHeader
+        titulo="Correos y notificaciones"
+        desc="Quién recibe cada tipo de aviso · el envío automático se activa al conectar el servicio de correo"
+        hint="Agrega destinatarios y marca qué avisos recibe cada uno. Cuando el servicio de correo esté conectado, el sistema enviará automáticamente: nuevos registros de proveedores, resumen diario de evaluaciones por vencer/vencidas, encuestas y comparativos para aprobación."
+      />
 
       <div className="mt-4">
         <DestinatariosAdmin iniciales={(destinatarios ?? []) as any} />

@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import ConfigHeader from "@/components/ConfigHeader";
 import UsuariosAdmin from "@/components/UsuariosAdmin";
 
 export const dynamic = "force-dynamic";
@@ -13,25 +12,12 @@ export default async function UsuariosPage() {
     .order("nombre");
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="page-head flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Usuarios y roles
-          </h1>
-          <p className="text-[12px] text-ink-400">
-            Asigna el rol de cada usuario · el Auditor solo visualiza y
-            descarga · los permisos finos por módulo se configuran cuando
-            Logística defina la matriz de permisos
-          </p>
-        </div>
-        <Link
-          href="/panel/configuracion"
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-400 transition hover:text-brand-900"
-        >
-          <ArrowLeft className="h-4 w-4" /> Configuración
-        </Link>
-      </div>
+    <div className="mx-auto w-full max-w-5xl pb-6" style={{ minHeight: "calc(100vh - 96px)" }}>
+      <ConfigHeader
+        titulo="Usuarios y roles"
+        desc="Asigna el rol de cada usuario · el Auditor solo visualiza y descarga"
+        hint="Roles disponibles: Administrador, Director del área, Coordinador General, Analista de compras, Comprador y Auditor (solo lectura). La restricción fina por módulo (p. ej. matrices solo Director y Logística) se activa con la matriz de permisos que definirá Logística."
+      />
       <div className="mt-4">
         <UsuariosAdmin iniciales={(usuarios ?? []) as any} />
       </div>

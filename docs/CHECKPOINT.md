@@ -1,5 +1,30 @@
 # CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 CONSTRUIDA)
 
+## ⚡ FASE 2.2 — Estandarización UX (14-jul, segundo feedback con screenshots)
+- **`components/ConfigHeader.tsx`**: cabecera ÚNICA de todas las páginas de
+  Configuración — breadcrumb (Configuración › Página) + botón cuadrado con
+  ArrowLeft junto al título + Hint opcional. Aplicado a correos, items,
+  aprobadores, usuarios y matrices. REGLA: nunca más back-links sueltos ni
+  posiciones distintas.
+- **Ancho/alto uniformes en Configuración**: todas las páginas usan
+  `mx-auto w-full max-w-5xl` + minHeight calc(100vh-96px) — sin saltos de ancho
+  ni de alto entre vistas (regla "todo lisito" extendida a config).
+- **`components/Hint.tsx`**: iconito Info (lucide) con tooltip pedagógico (contenido
+  del instructivo). Props `roles`/`rolActual` para mostrarlo solo a los roles que
+  ejecutan ese proceso — el gating real se conecta cuando exista la matriz de
+  permisos (hoy: visible; patrón aplicado en Selección y en todos los
+  ConfigHeader). PENDIENTE: sembrar más Hints en Comparativos/Evaluaciones/
+  Registro con textos del instructivo.
+- **Matrices = modal wizard de CONSULTA** (`components/MatricesLista.tsx`):
+  fila → modal one-view con Stepper (Resumen · Criterios · Documentos), solo
+  lectura, footer oscuro con "Versión imprimible" (→ /matrices/[id], que sigue
+  siendo el doc printable) y "Editar (nueva versión)" si vigente. La lista
+  tiene alto fijo estándar.
+- **Cuadros**: eliminado el "+ Nuevo cuadro" duplicado del empty state (queda
+  solo el del head — posición consistente).
+- REGLA UX registrada: revisar redundancia de CTAs (un solo botón por acción
+  por vista) y homologar spacings en el resto del app cuando se toque cada vista.
+
 ## ⚡ FASE 2.1 — UI shell (14-jul, tras feedback con screenshots)
 - **SIDEBAR estilo Material** reemplaza al top navbar: `app/panel/layout.tsx` +
   `components/NavItem.tsx` (cliente, usePathname para activo, indicador de

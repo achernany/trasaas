@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import ConfigHeader from "@/components/ConfigHeader";
 import AprobadoresAdmin from "@/components/AprobadoresAdmin";
 
 export const dynamic = "force-dynamic";
@@ -13,24 +12,12 @@ export default async function AprobadoresPage() {
     .order("creado_en");
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="page-head flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Aprobadores de comparativos
-          </h1>
-          <p className="text-[12px] text-ink-400">
-            El aprobador varía según área y monto · si el precio supera el
-            histórico, la aprobación escala al máximo aprobador (sin tope)
-          </p>
-        </div>
-        <Link
-          href="/panel/configuracion"
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-400 transition hover:text-brand-900"
-        >
-          <ArrowLeft className="h-4 w-4" /> Configuración
-        </Link>
-      </div>
+    <div className="mx-auto w-full max-w-5xl pb-6" style={{ minHeight: "calc(100vh - 96px)" }}>
+      <ConfigHeader
+        titulo="Aprobadores de comparativos"
+        desc="El aprobador varía según área y monto · el máximo aprobador recibe las alertas de precio"
+        hint="Registra a cada aprobador con su área y monto máximo. Al enviar un comparativo, el sistema sugiere automáticamente al aprobador correcto según el total; si hay alerta de precio histórico, escala al máximo aprobador (el que no tiene tope)."
+      />
       <div className="mt-4">
         <AprobadoresAdmin iniciales={(aprobadores ?? []) as any} />
       </div>

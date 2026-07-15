@@ -50,9 +50,7 @@ export default async function CuadrosPage() {
             proveedores confiables y el sistema calcula el recomendado con la
             matriz ponderada.
           </p>
-          <Link href="/panel/cuadros/nuevo" className="btn mt-5">
-            + Nuevo cuadro
-          </Link>
+          
         </div>
       ) : (
         <div className="card mt-3 overflow-hidden p-0">
