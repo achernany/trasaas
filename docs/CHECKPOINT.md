@@ -1,4 +1,81 @@
-# CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 CONSTRUIDA)
+# CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 + LLAMADA CON FRAN)
+
+## 📞 LLAMADA HERNANY↔FRAN (14-jul) — ESPECIFICACIÓN DE LA PRÓXIMA TANDA
+**A. Precio histórico (refinamiento del ya construido):**
+- Política: PROHIBIDO comprar sobre el precio histórico; si el mercado subió,
+  pasa por aprobación especial de GERENCIA (nuestro "máximo aprobador" ✔).
+- El comprador NUNCA escribe precios históricos: vienen del catálogo de ítems.
+  Solo si el ítem existe pero NUNCA se compró (sin precio en catálogo), el
+  comparativo deja el histórico vacío sin alerta.
+- Los precios/el catálogo los administra el ADMIN en Configuración (ya ✔);
+  cuando gerencia aprueba un precio mayor, el admin actualiza el catálogo y la
+  alerta desaparece en futuros comparativos (flujo ya soportado por upsert ✔).
+- PENDIENTE UI: en el cuadro (vista + impresión): columna PRECIO HISTÓRICO +
+  FECHA DE ÚLTIMA COMPRA por ítem; precios unitarios que superen el histórico
+  EN ROJO por celda + columna/nota de observación "por encima del precio
+  histórico". Alerta visual por ítem, no solo global.
+
+**B. Estructura completa del cuadro comparativo (falta, espera su Excel de
+referencia LOGFP0202 que reenviará):**
+- ESPECIFICACIONES TÉCNICAS por ítem (obligatorio — comparabilidad: "camisa de
+  algodón vs drill no son comparables, lo observan").
+- Precio histórico + fecha última compra como columnas.
+- La matriz de ponderación visible/reflejada en el cuadro (el comprador ve el
+  puntaje formarse en vivo — nuestro wizard ya lo hace, revisar contra su Excel).
+
+**C. SLA de comparativos:**
+- Registrar fecha/hora de ENVÍO y fecha de APROBACIÓN; mostrar aging de
+  "pendientes por aprobar" (cuántos días llevan) en lista y dashboard.
+- (Futuro módulo tickets: SLA llegada→atención→cierre.)
+
+**D. Cierre del flujo de aprobación (DECISIONES DE LA LLAMADA):**
+- Se creará VISTA INTERNA DE APROBACIÓN con rol aprobador básico: ve el cuadro,
+  puede APROBAR / APROBAR PARCIALMENTE (por ítem) / RECHAZAR + observación.
+- Aprobación PARCIAL: ítems no aprobados quedan como "ÍTEMS PENDIENTES DE
+  COMPRA" en una bandeja: el comprador decide borrar o jalarlos a otro
+  comparativo. Estados: aprobar / parcial / rechazado.
+- Flujo alternativo POR CORREO (mientras tanto / complemento): el COMPRADOR
+  adjunta el PDF de aprobación del correo + SELECCIONA el proveedor aprobado →
+  el cuadro pasa a "aprobado" (esa es la llave). Coordinación audita que el
+  PDF coincida. Puede llevar observación.
+- Roles que arman/envían comparativos: coordinación, analistas y compradores.
+
+**E. Selección/Proveedores — filtros:**
+- En Selección: filtros por CRÍTICOS / REGULARES (además de estados). La
+  calificación confiable/medianamente/no confiable NO va en selección — es
+  exclusiva de la evaluación periódica.
+- En Proveedores: QUITAR chips confiable/medianamente/no confiable; dejar
+  vencidas/por vencer; añadir críticos/regulares.
+
+**F. Tiempos de re-evaluación por CLASIFICACIÓN (catálogo configurable):**
+- "Críticos cada X meses, regulares cada Y" administrable sin tocar matrices;
+  alimenta los vencidos del dashboard. Fran CONFIRMARÁ los tiempos.
+
+**G. Encuesta ligada a la matriz:** la encuesta del área usuaria ES el último
+criterio de la matriz de evaluación (10/5/0) y debe jalarse automático al
+puntaje. Espera la matriz aprobada.
+
+**H. Fran ENVIARÁ (un solo envío):** (1) matriz/criterios de categorización
+críticos-no críticos; (2) ENCABEZADO EXACTO del export de ítems+precios de su
+ERP (para configurar la carga masiva — NO construir el parser final hasta
+tenerlo); (3) cuadro comparativo de referencia (reenvío); (4) procedimiento
+actualizado (terminado 13-jul); (5) tiempos de re-evaluación; (6) matriz de
+aprobaciones. La vista nueva del comparativo DEPENDE de la matriz de ítems.
+
+**I. NEGOCIO (importante):**
+- MÓDULO DE TICKETS/REQUERIMIENTOS: reemplazo de AvanDesk (hoy solo recibe
+  Excels y calcula SLA). Áreas usuarias crearían requerimientos en el sistema
+  con SLA llegada→atención→cierre. HAY UN INTERESADO EN OTRA EMPRESA (jefe de
+  área) — Fran ya le dijo que eso lo cobra Hernany; reunión al cerrar esta
+  semana. Es VENTA NUEVA + módulo futuro del ecosistema.
+- Directora de TI preguntó por despliegue EN SERVIDOR DE LA EMPRESA
+  (on-premise): respondido que sí es posible (white-label, instancia propia)
+  sin perder el derecho de vender el producto a otros. Fran también vende
+  AlfaFleet a otras 2 empresas — modelo validado.
+- Repositorio de documentos: confirmado en llamada que vive EN el sistema
+  (no Drive) — ver/descargar desde la tabla ✔ (ya construido).
+
+
 
 ## ⚡ FASE 2.4 — NORMA: dirty-check + confirmación en procesos sensibles (14-jul)
 - **NORMA UX nueva (aplicar SIEMPRE)**: (a) si no hay cambios, el botón Guardar

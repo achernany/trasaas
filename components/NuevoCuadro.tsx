@@ -284,6 +284,7 @@ export default function NuevoCuadro({
           matriz_pesos: PESOS,
           moneda: "PEN",
           estado: "enviado",
+          enviado_en: new Date().toISOString(),
           justificacion:
             justificacion ||
             `Mayor puntaje ponderado (${puntajes[idxGanador].total}/100).`,

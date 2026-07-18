@@ -12,10 +12,11 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Confirmar from "@/components/Confirmar";
+import Select from "@/components/Select";
 
 type Doc = {
   id: string;
-  tipo: "ticket" | "cotizacion" | "oc" | "otro";
+  tipo: "ticket" | "cotizacion" | "oc" | "aprobacion" | "otro";
   nombre: string;
   archivo_url: string;
   creado_en: string;
@@ -24,6 +25,7 @@ type Doc = {
 const TIPOS: { v: Doc["tipo"]; t: string; ayuda: string }[] = [
   { v: "ticket", t: "Ticket de requerimiento", ayuda: "PDF o Excel del ticket (ERP/AvanDesk)" },
   { v: "cotizacion", t: "Cotización", ayuda: "PDF de cada proveedor" },
+  { v: "aprobacion", t: "Aprobación (correo)", ayuda: "PDF del correo de aprobación — cierra la aprobación del cuadro" },
   { v: "oc", t: "Orden de Compra", ayuda: "PDF de la OC — cierra el ciclo" },
   { v: "otro", t: "Otro documento", ayuda: "Cualquier sustento adicional" },
 ];
@@ -32,14 +34,22 @@ const TIPOS: { v: Doc["tipo"]; t: string; ayuda: string }[] = [
 export default function ExpedienteCompra({
   cuadroId,
   documentos,
+  estado,
+  cotizaciones = [],
 }: {
   cuadroId: string;
   documentos: Doc[];
+  estado?: string;
+  cotizaciones?: { proveedor_id: string; razon_social: string }[];
 }) {
   const router = useRouter();
   const [subiendo, setSubiendo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [porEliminar, setPorEliminar] = useState<Doc | null>(null);
+  const [cerrando, setCerrando] = useState(false);
+  const [ganadorId, setGanadorId] = useState("");
+  const [obs, setObs] = useState("");
+  const [cerrandoOk, setCerrandoOk] = useState(false);
 
   const tieneOC = documentos.some((d) => d.tipo === "oc");
 
@@ -76,11 +86,70 @@ export default function ExpedienteCompra({
         accion: "adjuntar",
         detalle: { tipo, nombre: file.name },
       });
-      router.refresh();
+      if (
+        tipo === "aprobacion" &&
+        (estado === "enviado" || estado === "reenviado")
+      ) {
+        setCerrando(true);
+      } else {
+        router.refresh();
+      }
     } catch (e: any) {
       setError(e?.message ?? "No se pudo subir el archivo");
     }
     setSubiendo(null);
+  }
+
+  /** Cierre del flujo por correo: PDF adjunto + proveedor seleccionado = aprobado */
+  async function cerrarAprobacion() {
+    if (!ganadorId) return;
+    setCerrandoOk(true);
+    const supabase = createClient();
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const { data: perfil } = await supabase
+        .from("usuarios")
+        .select("empresa_id")
+        .eq("id", auth.user!.id)
+        .single();
+      const { error: e1 } = await supabase
+        .from("cuadros")
+        .update({
+          estado: "aprobado",
+          proveedor_ganador_id: ganadorId,
+          resuelto_en: new Date().toISOString(),
+        })
+        .eq("id", cuadroId);
+      if (e1) throw e1;
+      await supabase
+        .from("proveedores")
+        .update({ estado: "aprobado" })
+        .eq("id", ganadorId);
+      await supabase.from("aprobaciones").insert({
+        empresa_id: perfil!.empresa_id,
+        cuadro_id: cuadroId,
+        aprobador_id: auth.user!.id,
+        token_email: crypto.randomUUID(),
+        accion: "aprobado",
+        comentario: obs.trim()
+          ? `Aprobación por correo adjunta. ${obs.trim()}`
+          : "Aprobación por correo adjunta al expediente.",
+        resuelto_en: new Date().toISOString(),
+      });
+      await supabase.from("audit_log").insert({
+        empresa_id: perfil!.empresa_id,
+        usuario_id: auth.user!.id,
+        entidad: "cuadro",
+        entidad_id: cuadroId,
+        accion: "aprobado_por_correo",
+        detalle: { proveedor_ganador_id: ganadorId, observacion: obs || null },
+      });
+      setCerrando(false);
+      router.refresh();
+    } catch (e: any) {
+      setError(e?.message ?? "No se pudo cerrar la aprobación");
+    }
+    setCerrandoOk(false);
   }
 
   async function abrir(doc: Doc) {
@@ -175,6 +244,70 @@ export default function ExpedienteCompra({
       </div>
       {error && (
         <p className="mt-3 text-[12px] font-semibold text-danger-600">{error}</p>
+      )}
+
+      {cerrando && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 px-4 backdrop-blur-sm">
+          <div className="step-enter w-full max-w-md overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
+            <div className="bg-ink-950 px-5 py-3">
+              <h3 className="text-base font-semibold text-white">
+                Cerrar aprobación del comparativo
+              </h3>
+              <p className="text-[11px] text-white/50">
+                El PDF de aprobación quedó adjunto · selecciona el proveedor
+                aprobado en el correo
+              </p>
+            </div>
+            <div className="space-y-3 p-5">
+              <div>
+                <label className="label text-[12px]">Proveedor aprobado *</label>
+                <Select
+                  value={ganadorId}
+                  onChange={setGanadorId}
+                  placeholder="Selecciona el proveedor…"
+                  opciones={cotizaciones.map((c) => ({
+                    value: c.proveedor_id,
+                    label: c.razon_social,
+                  }))}
+                />
+              </div>
+              <div>
+                <label className="label text-[12px]">Observación (opcional)</label>
+                <textarea
+                  className="input text-[13px]"
+                  rows={2}
+                  value={obs}
+                  onChange={(e) => setObs(e.target.value)}
+                  placeholder="Ej. aprobado parcialmente, ver correo"
+                />
+              </div>
+              <p className="rounded-lg bg-warn-100/60 p-2.5 text-[11px] leading-4 text-warn-700">
+                Coordinación audita que el proveedor seleccionado coincida con
+                el PDF adjunto. Todo queda en el registro de auditoría.
+              </p>
+            </div>
+            <div className="flex items-center justify-between bg-ink-950 px-5 py-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setCerrando(false);
+                  router.refresh();
+                }}
+                className="inline-flex min-h-[36px] items-center rounded-xl border border-white/25 px-4 text-[13px] font-bold text-white transition hover:bg-white/10"
+              >
+                Solo adjuntar
+              </button>
+              <button
+                type="button"
+                disabled={!ganadorId || cerrandoOk}
+                onClick={cerrarAprobacion}
+                className="inline-flex min-h-[36px] items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-bold text-ink-950 transition hover:bg-brand-100 disabled:opacity-50"
+              >
+                {cerrandoOk ? "Cerrando…" : "Marcar como aprobado"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <Confirmar

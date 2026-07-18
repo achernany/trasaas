@@ -1,4 +1,4 @@
-import { UserCheck, Users, CheckCircle2 } from "lucide-react";
+import { UserCheck, Users, CheckCircle2, Shield, ShieldAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import SeleccionTabla from "@/components/SeleccionTabla";
 import Hint from "@/components/Hint";
@@ -45,7 +45,11 @@ export default async function SeleccionPage({
         p.razon_social?.toLowerCase().includes(qq) || p.ruc?.includes(qq)
     );
   }
-  if (filtro === "pendientes")
+  if (filtro === "criticos")
+    rows = rows.filter((p) => p.clasificacion === "critico");
+  else if (filtro === "regulares")
+    rows = rows.filter((p) => p.clasificacion !== "critico");
+  else if (filtro === "pendientes")
     rows = rows.filter((p) => p.estado === "registrado");
   else if (filtro === "seleccionados")
     rows = rows.filter((p) => p.estado === "seleccionado");
@@ -56,6 +60,16 @@ export default async function SeleccionPage({
     { key: "pendientes", label: `Por seleccionar (${conteos.pendientes})`, Icon: Users },
     { key: "seleccionados", label: `Seleccionados (${conteos.seleccionados})`, Icon: UserCheck },
     { key: "aprobados", label: `Aprobados (${conteos.aprobados})`, Icon: CheckCircle2 },
+    {
+      key: "criticos",
+      label: `Críticos (${(provs ?? []).filter((p: any) => p.clasificacion === "critico").length})`,
+      Icon: ShieldAlert,
+    },
+    {
+      key: "regulares",
+      label: `Regulares (${(provs ?? []).filter((p: any) => p.clasificacion !== "critico").length})`,
+      Icon: Shield,
+    },
   ];
 
   return (

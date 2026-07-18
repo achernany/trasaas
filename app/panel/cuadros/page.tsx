@@ -17,7 +17,7 @@ export default async function CuadrosPage() {
   const { data: cuadros } = await supabase
     .from("cuadros")
     .select(
-      "id, codigo, estado, moneda, creado_en, requerimientos(ticket_avandesk, tipo, area_solicitante), proveedores(razon_social)"
+      "id, codigo, estado, enviado_en, moneda, creado_en, requerimientos(ticket_avandesk, tipo, area_solicitante), proveedores(razon_social)"
     )
     .order("creado_en", { ascending: false })
     .limit(100);
@@ -64,6 +64,7 @@ export default async function CuadrosPage() {
                 <th className="th">Tipo</th>
                 <th className="th">Recomendado</th>
                 <th className="th">Estado</th>
+                <th className="th">SLA</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -95,6 +96,33 @@ export default async function CuadrosPage() {
                       <span className={e.cls}>
                         <e.Icon className="h-3.5 w-3.5" /> {e.label}
                       </span>
+                    </td>
+                    <td className="td py-3">
+                      {(c.estado === "enviado" || c.estado === "reenviado") &&
+                      c.enviado_en ? (
+                        (() => {
+                          const dias = Math.floor(
+                            (Date.now() - new Date(c.enviado_en).getTime()) /
+                              86400000
+                          );
+                          return (
+                            <span
+                              className={`font-mono text-[11px] font-bold ${
+                                dias >= 3
+                                  ? "text-danger-600"
+                                  : dias >= 1
+                                    ? "text-warn-700"
+                                    : "text-ink-400"
+                              }`}
+                              title={`Enviado hace ${dias} día(s) sin resolución`}
+                            >
+                              {dias}d
+                            </span>
+                          );
+                        })()
+                      ) : (
+                        <span className="text-[11px] text-ink-400">—</span>
+                      )}
                     </td>
                   </tr>
                 );

@@ -31,7 +31,7 @@ export default async function ProveedoresPage({
   const { data: pcs } = await supabase
     .from("proveedor_categorias")
     .select(
-      "id, suministro, calificacion_actual, nota_actual, proxima_evaluacion, proveedores(id, ruc, razon_social, distrito), categorias(id, nombre)"
+      "id, suministro, calificacion_actual, nota_actual, proxima_evaluacion, proveedores(id, ruc, razon_social, distrito, clasificacion), categorias(id, nombre)"
     )
     .order("proxima_evaluacion", { ascending: true })
     .limit(500);
@@ -76,6 +76,14 @@ export default async function ProveedoresPage({
         r.proxima_evaluacion >= hoy &&
         r.proxima_evaluacion <= en30
     );
+  else if (filtro === "criticos")
+    rows = rows.filter(
+      (r: any) => r.proveedores?.clasificacion === "critico"
+    );
+  else if (filtro === "regulares")
+    rows = rows.filter(
+      (r: any) => r.proveedores?.clasificacion !== "critico"
+    );
   else if (filtro !== "todas")
     rows = rows.filter((r) => r.calificacion_actual === filtro);
 
@@ -84,22 +92,20 @@ export default async function ProveedoresPage({
   const page = Math.min(pages, Math.max(1, Number(searchParams.page) || 1));
   const visibles = rows.slice((page - 1) * per, page * per);
 
+  const nCriticos = ((pcs ?? []) as any[]).filter(
+    (r: any) => r.proveedores?.clasificacion === "critico"
+  ).length;
   const chips = [
     { key: "todas", label: `Todas (${conteos.todas})`, Icon: Users },
     {
-      key: "confiable",
-      label: `Confiables (${conteos.confiable})`,
-      Icon: CheckCircle2,
-    },
-    {
-      key: "medianamente_confiable",
-      label: `Medianamente (${conteos.medianamente_confiable})`,
-      Icon: AlertTriangle,
-    },
-    {
-      key: "no_confiable",
-      label: `No confiables (${conteos.no_confiable})`,
+      key: "criticos",
+      label: `Críticos (${nCriticos})`,
       Icon: XCircle,
+    },
+    {
+      key: "regulares",
+      label: `Regulares (${conteos.todas - nCriticos})`,
+      Icon: CheckCircle2,
     },
     {
       key: "vencidas",

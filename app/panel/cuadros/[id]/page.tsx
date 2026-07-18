@@ -250,6 +250,11 @@ export default async function CuadroDetallePage({
         <ExpedienteCompra
           cuadroId={cu.id}
           documentos={(cu.cuadro_documentos ?? []) as any}
+          estado={cu.estado}
+          cotizaciones={cots.map((c: any) => ({
+            proveedor_id: c.proveedor_id,
+            razon_social: c.proveedores?.razon_social ?? "—",
+          }))}
         />
       </div>
     </div>

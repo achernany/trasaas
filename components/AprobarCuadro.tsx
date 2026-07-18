@@ -44,7 +44,7 @@ export default function AprobarCuadro({
 
       const { error: e2 } = await supabase
         .from("cuadros")
-        .update({ estado: accion })
+        .update({ estado: accion, resuelto_en: new Date().toISOString() })
         .eq("id", cuadroId);
       if (e2) throw e2;
 
