@@ -17,13 +17,18 @@ export default async function PanelLayout({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: perfil }, { count: registrosNuevos }] = await Promise.all([
-    supabase.from("usuarios").select("nombre, rol").eq("id", user.id).single(),
-    supabase
-      .from("proveedor_registros")
-      .select("*", { count: "exact", head: true })
-      .eq("estado", "enviado"),
-  ]);
+  const [{ data: perfil }, { count: registrosNuevos }, { count: pendientes }] =
+    await Promise.all([
+      supabase.from("usuarios").select("nombre, rol").eq("id", user.id).single(),
+      supabase
+        .from("proveedor_registros")
+        .select("*", { count: "exact", head: true })
+        .eq("estado", "enviado"),
+      supabase
+        .from("cuadro_items")
+        .select("*", { count: "exact", head: true })
+        .eq("estado_aprobacion", "no_aprobado"),
+    ]);
 
   const links = [
     { href: "/panel", label: "Dashboard", icon: "dashboard" },
@@ -35,6 +40,12 @@ export default async function PanelLayout({
     },
     { href: "/panel/seleccion", label: "Selección", icon: "seleccion" },
     { href: "/panel/cuadros", label: "Comparativos", icon: "cuadros" },
+    {
+      href: "/panel/pendientes",
+      label: "Ítems pendientes",
+      icon: "pendientes",
+      badge: pendientes ?? 0,
+    },
     { href: "/panel/proveedores", label: "Proveedores", icon: "proveedores" },
     { href: "/panel/evaluaciones", label: "Evaluaciones", icon: "evaluaciones" },
   ];

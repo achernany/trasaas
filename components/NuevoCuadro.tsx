@@ -57,6 +57,7 @@ export type ItemSig = {
   descripcion: string;
   unidad: string;
   ultimo_costo: number | null;
+  fecha_ultima_compra?: string | null;
 };
 
 export type Aprobador = {
@@ -74,6 +75,9 @@ type Item = {
   item_id?: string | null;
   codigo_sig?: string | null;
   ultimo_costo?: number | null;
+  fecha_ultima_compra?: string | null;
+  /** ítem que viene de la bandeja de pendientes de compra */
+  origen_item_id?: string | null;
 };
 type Cot = {
   proveedor_id: string;
@@ -90,11 +94,13 @@ export default function NuevoCuadro({
   proyectos,
   catalogo,
   aprobadores,
+  precarga = [],
 }: {
   confiables: ProvConfiable[];
   proyectos: { id: string; nombre: string }[];
   catalogo: ItemSig[];
   aprobadores: Aprobador[];
+  precarga?: Item[];
 }) {
   const router = useRouter();
   const [paso, setPaso] = useState(0);
@@ -103,9 +109,11 @@ export default function NuevoCuadro({
   const [tipo, setTipo] = useState<"rutinario" | "emergencia">("rutinario");
   const [area, setArea] = useState("");
   const [proyectoId, setProyectoId] = useState("");
-  const [items, setItems] = useState<Item[]>([
-    { descripcion: "", cantidad: 1, unidad: "UND" },
-  ]);
+  const [items, setItems] = useState<Item[]>(
+    precarga.length > 0
+      ? precarga
+      : [{ descripcion: "", cantidad: 1, unidad: "UND" }]
+  );
   const [cots, setCots] = useState<Cot[]>([]);
   const [justificacion, setJustificacion] = useState("");
   const [tiempoRequerido, setTiempoRequerido] = useState(3);
@@ -325,10 +333,23 @@ export default function NuevoCuadro({
             item_id: it.item_id ?? null,
             codigo_sig: it.codigo_sig ?? null,
             precio_historico: it.ultimo_costo ?? null,
+            fecha_ultima_compra: it.fecha_ultima_compra ?? null,
+            origen_item_id: it.origen_item_id ?? null,
           }))
         )
         .select("id, orden");
       if (e3) throw e3;
+
+      // Ítems traídos de la bandeja: salen de pendientes (quedan trazados)
+      const origenes = items
+        .map((it) => it.origen_item_id)
+        .filter(Boolean) as string[];
+      if (origenes.length > 0) {
+        await supabase
+          .from("cuadro_items")
+          .update({ estado_aprobacion: "recomprado" })
+          .in("id", origenes);
+      }
 
       for (let i = 0; i < cots.length; i++) {
         const c = cots[i];
@@ -343,6 +364,8 @@ export default function NuevoCuadro({
             garantia: GARANTIAS.find((g) => g.v === c.garantia)?.t,
             archivo_url: "pendiente-adjuntar",
             puntaje_total: puntajes[i].total,
+            // Desglose congelado por criterio (auditoría del cuadro oficial)
+            puntajes: puntajes[i],
           })
           .select("id")
           .single();
@@ -499,8 +522,16 @@ export default function NuevoCuadro({
                                   item_id: sel.id,
                                   codigo_sig: sel.codigo,
                                   ultimo_costo: sel.ultimo_costo,
+                                  fecha_ultima_compra:
+                                    sel.fecha_ultima_compra ?? null,
                                 }
-                              : { ...x, item_id: null, codigo_sig: null, ultimo_costo: null }
+                              : {
+                                  ...x,
+                                  item_id: null,
+                                  codigo_sig: null,
+                                  ultimo_costo: null,
+                                  fecha_ultima_compra: null,
+                                }
                             : x
                         )
                       )
@@ -509,7 +540,14 @@ export default function NuevoCuadro({
                       setItems((xs) =>
                         xs.map((x, j) =>
                           j === i
-                            ? { ...x, descripcion: txt, item_id: null, codigo_sig: null, ultimo_costo: null }
+                            ? {
+                                ...x,
+                                descripcion: txt,
+                                item_id: null,
+                                codigo_sig: null,
+                                ultimo_costo: null,
+                                fecha_ultima_compra: null,
+                              }
                             : x
                         )
                       )

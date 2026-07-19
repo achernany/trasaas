@@ -9,8 +9,16 @@ import NuevoCuadro, {
 
 export const dynamic = "force-dynamic";
 
-export default async function NuevoCuadroPage() {
+export default async function NuevoCuadroPage({
+  searchParams,
+}: {
+  searchParams: { pendientes?: string };
+}) {
   const supabase = createClient();
+  const idsPendientes = (searchParams.pendientes ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   const [{ data: pcs }, { data: proyectos }, { data: cat }, { data: aps }] =
     await Promise.all([
       supabase
@@ -21,7 +29,9 @@ export default async function NuevoCuadroPage() {
       supabase.from("proyectos").select("id, nombre").order("nombre"),
       supabase
         .from("items")
-        .select("id, codigo, descripcion, unidad, ultimo_costo")
+        .select(
+          "id, codigo, descripcion, unidad, ultimo_costo, fecha_ultima_compra"
+        )
         .eq("activo", true)
         .order("codigo")
         .limit(2000),
@@ -52,6 +62,28 @@ export default async function NuevoCuadroPage() {
   }
   confiables.sort((a, b) => a.razon_social.localeCompare(b.razon_social));
 
+  // Ítems traídos desde la bandeja de pendientes de compra
+  let precarga: any[] = [];
+  if (idsPendientes.length > 0) {
+    const { data: pend } = await supabase
+      .from("cuadro_items")
+      .select(
+        "id, descripcion, cantidad, unidad, item_id, codigo_sig, precio_historico, fecha_ultima_compra"
+      )
+      .in("id", idsPendientes)
+      .eq("estado_aprobacion", "no_aprobado");
+    precarga = ((pend ?? []) as any[]).map((p) => ({
+      descripcion: p.descripcion,
+      cantidad: Number(p.cantidad),
+      unidad: p.unidad,
+      item_id: p.item_id ?? null,
+      codigo_sig: p.codigo_sig ?? null,
+      ultimo_costo:
+        p.precio_historico != null ? Number(p.precio_historico) : null,
+      origen_item_id: p.id,
+    }));
+  }
+
   return (
     <div className="fixed inset-0 z-40 flex justify-center bg-ink-900/45 px-4 py-10 backdrop-blur-sm">
       <div className="step-enter flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
@@ -61,7 +93,9 @@ export default async function NuevoCuadroPage() {
               Nuevo cuadro comparativo
             </h1>
             <p className="text-[11px] leading-4 text-white/50">
-              LOG-GN-F-P02-07 · proveedores clasificados (críticos y no críticos) · matriz ponderada automática
+              {precarga.length > 0
+                ? `LOG-GN-F-P02-07 · ${precarga.length} ítem(s) traídos de la bandeja de pendientes`
+                : "LOG-GN-F-P02-07 · proveedores clasificados (críticos y no críticos) · matriz ponderada automática"}
             </p>
           </div>
           <Link
@@ -77,6 +111,7 @@ export default async function NuevoCuadroPage() {
           proyectos={proyectos ?? []}
           catalogo={(cat ?? []) as ItemSig[]}
           aprobadores={(aps ?? []) as Aprobador[]}
+          precarga={precarga}
         />
       </div>
     </div>

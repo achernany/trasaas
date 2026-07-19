@@ -9,6 +9,7 @@ import {
   Scale,
   Users,
   ClipboardList,
+  ShoppingCart,
   Settings,
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ const ICONS: Record<string, any> = {
   cuadros: Scale,
   proveedores: Users,
   evaluaciones: ClipboardList,
+  pendientes: ShoppingCart,
   config: Settings,
 };
 

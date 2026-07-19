@@ -8,6 +8,11 @@ const ESTADO: Record<string, { cls: string; label: string; Icon: any }> = {
   borrador: { cls: "badge bg-page text-ink-600", label: "Borrador", Icon: Clock3 },
   enviado: { cls: "badge-medianamente", label: "Pend. aprobación", Icon: Clock3 },
   aprobado: { cls: "badge-confiable", label: "Aprobado", Icon: FileCheck2 },
+  aprobado_parcial: {
+    cls: "badge-medianamente",
+    label: "Aprobado parcial",
+    Icon: FileCheck2,
+  },
   rechazado: { cls: "badge-no-confiable", label: "Rechazado", Icon: XCircle },
   reenviado: { cls: "badge-medianamente", label: "Reenviado", Icon: Clock3 },
 };

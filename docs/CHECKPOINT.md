@@ -1,4 +1,47 @@
-# CHECKPOINT — AlfaSource (actualizado 2026-07-19: FASE 2.5 SOLO CRÍTICO/NO CRÍTICO/APROBADO)
+# CHECKPOINT — AlfaSource (actualizado 2026-07-19: FASE 2.6 CUADRO OFICIAL + APROBACIÓN PARCIAL)
+
+## 🧾 FASE 2.6 — CUADRO OFICIAL LOGFP0202 + APROBADOR INTERNO (19-jul)
+
+**SQL: db/fase2d.sql — YA EJECUTADO en Supabase ("Success. No rows returned").**
+cotizaciones.puntajes jsonb · cuadro_items.estado_aprobacion /
+observacion_aprobador / resuelto_en / origen_item_id · checks ampliados
+(cuadros.estado + 'aprobado_parcial'; aprobaciones.accion + 'aprobado_parcial').
+
+**1. /panel/cuadros/[id] reescrito con el formato oficial LOGFP0202:**
+columnas N° · Cód. SIG · Bien/Servicio · Cant · Und · Fecha últ. compra ·
+Precio histórico · Total histórico · y por proveedor P.U. / TOTAL /
+ESPECIFICACIÓN-MARCA; filas SUBTOTAL / IGV 18% / TOTAL; celdas en ROJO cuando
+el P.U. supera el precio histórico (con tooltip); banner de alerta de precio.
+Sección **CONDICIONES COMERCIALES Y EVALUACIÓN** con lugar/tiempo/pago/garantía/
+clasificación + puntaje POR CRITERIO (desde cotizaciones.puntajes) y PUNTAJE
+TOTAL con trofeo al ganador. **Dashboard de decisión** (proveedores comparados,
+total seleccionado c/IGV, referencia histórica, ahorro o sobrecosto % en verde/
+rojo). Bloque PROVEEDOR SELECCIONADO + JUSTIFICACIÓN + nota al pie citando
+LOG-GN-P-02 y la matriz aprobada.
+Los cuadros anteriores al 19-jul no tienen desglose: se avisa en nota al pie.
+
+**2. Vista interna del aprobador (components/AprobarCuadro.tsx):**
+sin correo. Tres salidas: **Aprobar todo** · **Aprobar parcialmente por ítem**
+(toggle que abre tabla con check por ítem + observación individual; botón
+"Aprobar N de M"; exige observación general) · **Rechazar** (exige comentario).
+Cada ítem guarda estado_aprobacion aprobado/no_aprobado + observación + fecha.
+Confirmar obligatorio en las tres. audit_log guarda el detalle de no aprobados.
+
+**3. Bandeja "Ítems pendientes de compra" (/panel/pendientes):**
+lista los cuadro_items en estado no_aprobado con su comparativo de origen
+(link), observación del aprobador y precio histórico. Selección múltiple →
+**Descartar** (confirmación, pasa a 'descartado', audit) o **Llevar a nuevo
+comparativo** → /panel/cuadros/nuevo?pendientes=ids: NuevoCuadro precarga esos
+ítems (descripción, cantidad, unidad, código SIG, precio y fecha histórica) y
+al guardar marca los originales como 'recomprado' + guarda origen_item_id
+(trazabilidad de qué ítem viene de qué cuadro). Nav item en sidebar con badge
+de conteo.
+
+**4. Trazabilidad del puntaje:** NuevoCuadro ahora congela el desglose por
+criterio en cotizaciones.puntajes al crear el cuadro (aunque la matriz cambie
+después, el cuadro demuestra con qué puntajes se decidió). También guarda
+fecha_ultima_compra del catálogo en el ítem del cuadro.
+
 
 ## 🚨 FASE 2.5 — SOLO CRÍTICO / NO CRÍTICO / APROBADO (19-jul) — REGLA ABSOLUTA
 
@@ -40,15 +83,9 @@ estado/clasificación del proveedor en el flujo de compras.
   tooltips del dashboard reescritos como "en su evaluación periódica";
   dashboard sección "Calificación de evaluaciones (periódicas)".
 
-**PRÓXIMA TANDA (definida, no arrancada):** formato oficial del cuadro
-LOGFP0202 en /panel/cuadros/[id] (cód. SIG, fecha última compra, precio
-histórico + total histórico, P.U./TOTAL/ESPECIFICACIÓN por proveedor, celdas
-rojas sobre histórico, CONDICIONES COMERCIALES Y EVALUACIÓN con puntajes,
-seleccionado + justificación + nota, dashboard de decisión) + vista interna
-del aprobador (aprobar / aprobar PARCIALMENTE por ítem / rechazar con
-observación; ítems no aprobados → bandeja "pendientes de compra": borrar o
-jalar a otro comparativo). Leer a fondo LOG-GN-P-02 VD.docx. Catálogo de
-tiempos de re-evaluación por clasificación espera confirmación de Fran.
+**Esta tanda quedó ENTREGADA en la Fase 2.6 (ver arriba).** Sigue pendiente:
+leer a fondo LOG-GN-P-02 VD.docx y el catálogo de tiempos de re-evaluación por
+clasificación (espera confirmación de Fran).
 
 ## 📦 ARCHIVOS DE FRAN RECIBIDOS Y DECODIFICADOS (18-jul) — YA EN EJECUCIÓN
 Los 4 archivos (en uploads de la sesión; análisis completo aquí):
