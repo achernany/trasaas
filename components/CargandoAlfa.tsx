@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 
 const TIPS = [
   "Las compras rutinarias requieren mínimo 3 cotizaciones",
-  "Solo proveedores confiables participan en comparativos",
-  "Confiable ≥ 71 puntos · re-evaluación en 6 meses",
+  "Solo proveedores clasificados (críticos y no críticos) participan en comparativos",
+  "La matriz LOG-GN-A-P02-02 guía la clasificación crítico / no crítico",
   "Un “No cumple” en documentos de legalidad es eliminatorio",
   "La encuesta del área usuaria queda como evidencia en el acta",
   "Cada cambio de matriz crea una versión auditable",

@@ -16,7 +16,7 @@ export default async function NuevoCuadroPage() {
       supabase
         .from("proveedor_categorias")
         .select(
-          "proveedor_id, calificacion_actual, nota_actual, proveedores(razon_social, ruc, estado)"
+          "proveedor_id, calificacion_actual, nota_actual, proveedores(razon_social, ruc, estado, clasificacion)"
         ),
       supabase.from("proyectos").select("id, nombre").order("nombre"),
       supabase
@@ -32,24 +32,21 @@ export default async function NuevoCuadroPage() {
         .order("monto_max", { ascending: true, nullsFirst: false }),
     ]);
 
-  // Elegibles: confiables por evaluación, o seleccionados/aprobados aún sin
-  // evaluar (flujo nuevo). Medianamente y no confiables quedan fuera.
+  // Elegibles: proveedores CLASIFICADOS (Selección) o ya Aprobados.
+  // Único criterio de entrada al comparativo — sin calificaciones.
   const vistos = new Set<string>();
   const confiables: ProvConfiable[] = [];
   for (const pc of (pcs ?? []) as any[]) {
     if (vistos.has(pc.proveedor_id)) continue;
     const estado = pc.proveedores?.estado;
-    const elegible =
-      pc.calificacion_actual === "confiable" ||
-      (!pc.calificacion_actual &&
-        (estado === "seleccionado" || estado === "aprobado"));
-    if (!elegible) continue;
+    if (estado !== "seleccionado" && estado !== "aprobado") continue;
     vistos.add(pc.proveedor_id);
     confiables.push({
       proveedor_id: pc.proveedor_id,
       razon_social: pc.proveedores?.razon_social ?? "",
       ruc: pc.proveedores?.ruc ?? "",
-      calificacion: pc.calificacion_actual ?? "seleccionado",
+      calificacion: pc.calificacion_actual ?? "",
+      clasificacion: pc.proveedores?.clasificacion ?? "regular",
       nota: pc.nota_actual,
     });
   }
@@ -64,7 +61,7 @@ export default async function NuevoCuadroPage() {
               Nuevo cuadro comparativo
             </h1>
             <p className="text-[11px] leading-4 text-white/50">
-              LOG-GN-F-P02-07 · confiables y seleccionados · matriz ponderada automática
+              LOG-GN-F-P02-07 · proveedores clasificados (críticos y no críticos) · matriz ponderada automática
             </p>
           </div>
           <Link

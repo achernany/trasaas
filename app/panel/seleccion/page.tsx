@@ -1,5 +1,6 @@
-import { UserCheck, Users, CheckCircle2, Shield, ShieldAlert } from "lucide-react";
+import { CheckCircle2, Shield, ShieldAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdmin } from "@supabase/supabase-js";
 import SeleccionTabla from "@/components/SeleccionTabla";
 import Hint from "@/components/Hint";
 import Link from "next/link";
@@ -12,7 +13,7 @@ export default async function SeleccionPage({
   searchParams: { filtro?: string; q?: string };
 }) {
   const supabase = createClient();
-  const filtro = searchParams.filtro ?? "pendientes";
+  const filtro = searchParams.filtro ?? "criticos";
   const q = (searchParams.q ?? "").trim();
 
   const [{ data: provs }, { data: categorias }] = await Promise.all([
@@ -21,7 +22,7 @@ export default async function SeleccionPage({
       .select(
         "id, ruc, razon_social, distrito, estado, clasificacion, creado_en, proveedor_categorias(id, suministro, categorias(id, nombre, tipo))"
       )
-      .in("estado", ["registrado", "seleccionado", "aprobado"])
+      .in("estado", ["seleccionado", "aprobado"])
       .order("creado_en", { ascending: false })
       .limit(500),
     supabase
@@ -32,9 +33,38 @@ export default async function SeleccionPage({
   ]);
 
   let rows = (provs ?? []) as any[];
+
+  // Cadena documental: docs que el proveedor subió en su registro (por RUC)
+  const admin = createAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { data: regs } = await admin
+    .from("proveedor_registros")
+    .select("form_data, proveedor_documentos(id, tipo, archivo_url)")
+    .in("estado", ["enviado", "validado"]);
+  const docsPorRuc: Record<
+    string,
+    { tipo: string; nombre: string; url: string }[]
+  > = {};
+  for (const r of (regs ?? []) as any[]) {
+    const ruc = r.form_data?.ruc;
+    if (!ruc) continue;
+    for (const d of r.proveedor_documentos ?? []) {
+      const { data: firmada } = await admin.storage
+        .from("registro-docs")
+        .createSignedUrl(d.archivo_url, 3600);
+      if (!firmada?.signedUrl) continue;
+      (docsPorRuc[ruc] ??= []).push({
+        tipo: d.tipo,
+        nombre: d.archivo_url.split("/").pop() ?? d.tipo,
+        url: firmada.signedUrl,
+      });
+    }
+  }
   const conteos = {
-    pendientes: rows.filter((p) => p.estado === "registrado").length,
-    seleccionados: rows.filter((p) => p.estado === "seleccionado").length,
+    criticos: rows.filter((p) => p.clasificacion === "critico").length,
+    no_criticos: rows.filter((p) => p.clasificacion !== "critico").length,
     aprobados: rows.filter((p) => p.estado === "aprobado").length,
   };
 
@@ -47,28 +77,26 @@ export default async function SeleccionPage({
   }
   if (filtro === "criticos")
     rows = rows.filter((p) => p.clasificacion === "critico");
-  else if (filtro === "regulares")
+  else if (filtro === "no_criticos")
     rows = rows.filter((p) => p.clasificacion !== "critico");
-  else if (filtro === "pendientes")
-    rows = rows.filter((p) => p.estado === "registrado");
-  else if (filtro === "seleccionados")
-    rows = rows.filter((p) => p.estado === "seleccionado");
   else if (filtro === "aprobados")
     rows = rows.filter((p) => p.estado === "aprobado");
 
   const chips = [
-    { key: "pendientes", label: `Por seleccionar (${conteos.pendientes})`, Icon: Users },
-    { key: "seleccionados", label: `Seleccionados (${conteos.seleccionados})`, Icon: UserCheck },
-    { key: "aprobados", label: `Aprobados (${conteos.aprobados})`, Icon: CheckCircle2 },
     {
       key: "criticos",
-      label: `Críticos (${(provs ?? []).filter((p: any) => p.clasificacion === "critico").length})`,
+      label: `Críticos (${conteos.criticos})`,
       Icon: ShieldAlert,
     },
     {
-      key: "regulares",
-      label: `Regulares (${(provs ?? []).filter((p: any) => p.clasificacion !== "critico").length})`,
+      key: "no_criticos",
+      label: `No críticos (${conteos.no_criticos})`,
       Icon: Shield,
+    },
+    {
+      key: "aprobados",
+      label: `Aprobados (${conteos.aprobados})`,
+      Icon: CheckCircle2,
     },
   ];
 
@@ -79,14 +107,14 @@ export default async function SeleccionPage({
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
             Selección de proveedores
             <Hint
-              texto="Paso 2 del flujo de compra: aquí el comprador categoriza a cada proveedor registrado (la categoría define si es bien o servicio) y le asigna clasificación Regular o Crítico, que determina la matriz de su evaluación periódica. Un proveedor pasa a Aprobado cuando gana un comparativo aprobado."
+              texto="Aquí llegan los proveedores clasificados desde Registro (Matriz LOG-GN-A-P02-02). Solo existen tres estados: Crítico, No crítico y Aprobado. Desde aquí compiten en comparativos; al ganar uno aprobado pasan a Aprobados. La clasificación define la matriz de su evaluación periódica."
               roles={["comprador", "analista", "coordinador", "director"]}
             />
           </h1>
           <p className="text-[12px] text-ink-400">
-            Categoriza a los proveedores registrados: tipo (bien/servicio vía
-            categoría) y clasificación Regular/Crítico · el estado Aprobado se
-            gana al ganar un comparativo aprobado
+            Proveedores clasificados desde Registro · Crítico / No crítico /
+            Aprobado · el estado Aprobado se gana al ganar un comparativo
+            aprobado
           </p>
         </div>
         <form className="flex gap-2">
@@ -118,7 +146,11 @@ export default async function SeleccionPage({
       </div>
 
       <div className="mt-3">
-        <SeleccionTabla rows={rows} categorias={(categorias ?? []) as any} />
+        <SeleccionTabla
+          rows={rows}
+          categorias={(categorias ?? []) as any}
+          docsPorRuc={docsPorRuc}
+        />
       </div>
     </div>
   );

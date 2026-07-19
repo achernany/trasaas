@@ -14,7 +14,7 @@ const SLIDES = [
   },
   {
     img: "https://alfaco.com.pe/wp-content/uploads/2023/03/alfaco-800x600-A3.jpg",
-    titulo: "Solo proveedores confiables en tus compras.",
+    titulo: "Solo proveedores aprobados en tus compras.",
     texto:
       "El comparativo aplica el procedimiento por ti: mínimo 3 cotizaciones y matriz ponderada automática.",
   },

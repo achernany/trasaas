@@ -68,7 +68,7 @@ export default async function MatrizDetallePage({
             <p className="mt-1 text-xs text-slate-500">
               Proceso: {mx.tipo === "seleccion" ? "Selección" : "Evaluación"} ·
               Aplica a proveedores{" "}
-              {mx.clasificacion === "critico" ? "críticos" : "regulares"}
+              {mx.clasificacion === "critico" ? "críticos" : "no críticos"}
             </p>
           </div>
           <div className="text-right text-sm">

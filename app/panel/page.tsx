@@ -132,7 +132,7 @@ export default async function DashboardPage({
       badge: "badge-confiable",
       Icon: CheckCircle2,
       bar: "bg-ok-600",
-      tip: "Puntaje ≥ 71. Aprobado, seguimiento normal. Re-evaluación a los 6 meses.",
+      tip: "Puntaje ≥ 71 en su evaluación periódica. Re-evaluación a los 6 meses.",
     },
     {
       key: "medianamente_confiable",
@@ -140,7 +140,7 @@ export default async function DashboardPage({
       badge: "badge-medianamente",
       Icon: AlertTriangle,
       bar: "bg-warn-700",
-      tip: "Puntaje 31–70. Aprobado con reserva. Re-evaluación a los 3 meses.",
+      tip: "Puntaje 31–70 en su evaluación periódica. Re-evaluación a los 3 meses.",
     },
     {
       key: "no_confiable",
@@ -148,7 +148,7 @@ export default async function DashboardPage({
       badge: "badge-no-confiable",
       Icon: XCircle,
       bar: "bg-danger-600",
-      tip: "Puntaje ≤ 30. No aprobado. Si se usa por excepción, re-evaluación al mes.",
+      tip: "Puntaje ≤ 30 en su evaluación periódica. Si se usa por excepción, re-evaluación al mes.",
     },
   ];
 
@@ -368,7 +368,7 @@ export default async function DashboardPage({
 
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="card lg:col-span-3">
-          <h2 className="mb-5 text-xl font-semibold">Clasificación vigente</h2>
+          <h2 className="mb-5 text-xl font-semibold">Calificación de evaluaciones (periódicas)</h2>
           <div className="mb-5 flex h-4 w-full overflow-hidden rounded-full bg-page">
             {CAL.map((c) => (
               <div

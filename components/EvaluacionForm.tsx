@@ -389,14 +389,14 @@ export default function EvaluacionForm({
                             : "border-line bg-white text-ink-600 hover:bg-page"
                         }`}
                       >
-                        {cl === "critico" ? "Crítico" : "Regular"}
+                        {cl === "critico" ? "Crítico" : "No crítico"}
                       </button>
                     ))}
                   </div>
                   {!matrizExactaExiste && clasificacion === "critico" && (
                     <p className="mt-1 text-[11px] text-warn-700">
                       Sin matriz vigente para críticos: se aplica la matriz
-                      regular. Créala en Configuración → Matrices.
+                      de No críticos. Créala en Configuración → Matrices.
                     </p>
                   )}
                 </div>
@@ -583,7 +583,7 @@ export default function EvaluacionForm({
                   <Fila k="Categoría" v={catSel?.nombre ?? "—"} />
                   <Fila
                     k="Proceso"
-                    v={`${proceso === "seleccion" ? "Selección" : "Evaluación"} · Prov. ${clasificacion === "critico" ? "crítico" : "regular"}`}
+                    v={`${proceso === "seleccion" ? "Selección" : "Evaluación"} · Prov. ${clasificacion === "critico" ? "crítico" : "no crítico"}`}
                   />
                 </div>
                 <div className="divide-y divide-line border-t border-line pt-1">

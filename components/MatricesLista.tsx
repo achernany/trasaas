@@ -97,7 +97,7 @@ export default function MatricesLista({ rows }: { rows: Matriz[] }) {
                       ) : (
                         <>
                           <Shield className="h-3.5 w-3.5 text-brand-700" />
-                          Regular
+                          No crítico
                         </>
                       )}
                     </span>
@@ -127,7 +127,7 @@ export default function MatricesLista({ rows }: { rows: Matriz[] }) {
                   v{abierta.version} · {abierta.estado} ·{" "}
                   {abierta.tipo === "seleccion" ? "Selección" : "Evaluación"} ·
                   proveedores{" "}
-                  {abierta.clasificacion === "critico" ? "críticos" : "regulares"}{" "}
+                  {abierta.clasificacion === "critico" ? "críticos" : "no críticos"}{" "}
                   · solo consulta
                 </p>
               </div>

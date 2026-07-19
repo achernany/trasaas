@@ -57,7 +57,7 @@ export async function GET(req: Request) {
       r.proveedores?.razon_social,
       r.proveedores?.distrito,
       r.proveedores?.estado,
-      r.proveedores?.clasificacion === "critico" ? "Crítico" : "Regular",
+      r.proveedores?.clasificacion === "critico" ? "Crítico" : "No crítico",
       r.categorias?.nombre,
       r.suministro,
       CAL_LABEL[r.calificacion_actual] ?? r.calificacion_actual,

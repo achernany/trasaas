@@ -47,6 +47,7 @@ export type ProvConfiable = {
   razon_social: string;
   ruc: string;
   calificacion: string;
+  clasificacion?: string;
   nota: number | null;
 };
 
@@ -592,7 +593,7 @@ export default function NuevoCuadro({
                   placeholder="+ Agregar proveedor…"
                   opciones={disponibles.map((p) => ({
                     value: p.proveedor_id,
-                    label: `${p.razon_social} — ${p.ruc}`,
+                    label: `${p.razon_social} — ${p.ruc}${p.clasificacion === "critico" ? " · CRÍTICO" : " · No crítico"}`,
                   }))}
                 />
               </div>

@@ -47,7 +47,7 @@ export default async function CuadrosPage() {
           <h2 className="text-lg font-semibold">Aún no hay cuadros</h2>
           <p className="mx-auto mt-1 max-w-md text-sm text-ink-400">
             Crea el primero: ticket de AvanDesk, ítems, cotizaciones de
-            proveedores confiables y el sistema calcula el recomendado con la
+            proveedores clasificados y el sistema calcula el recomendado con la
             matriz ponderada.
           </p>
           

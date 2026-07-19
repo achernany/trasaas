@@ -301,7 +301,7 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
                     value={clasificacion}
                     onChange={setClasificacion}
                     opciones={[
-                      { value: "regular", label: "Regulares" },
+                      { value: "regular", label: "No críticos" },
                       { value: "critico", label: "Críticos" },
                     ]}
                   />
@@ -513,7 +513,7 @@ export default function MatrizEditor({ matriz }: { matriz: MatrizFull }) {
                 criterios · {totalPeso} pts totales ·{" "}
                 {docs.filter((d) => d.descripcion.trim()).length} documentos
                 eliminatorios · aplica a proveedores{" "}
-                {clasificacion === "critico" ? "críticos" : "regulares"}.
+                {clasificacion === "critico" ? "críticos" : "no críticos"}.
                 {totalPeso !== 100 && (
                   <span className="font-semibold text-warn-700">
                     {" "}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, UserCheck, Shield, ShieldAlert, Save } from "lucide-react";
+import { X, UserCheck, Shield, ShieldAlert, Save, FileText, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Select from "@/components/Select";
 
@@ -33,12 +33,16 @@ const ESTADO_BADGE: Record<string, { cls: string; label: string }> = {
   aprobado: { cls: "badge-confiable", label: "Aprobado" },
 };
 
+type DocReg = { tipo: string; nombre: string; url: string };
+
 export default function SeleccionTabla({
   rows,
   categorias,
+  docsPorRuc = {},
 }: {
   rows: Prov[];
   categorias: Cat[];
+  docsPorRuc?: Record<string, DocReg[]>;
 }) {
   const router = useRouter();
   const [abierto, setAbierto] = useState<Prov | null>(null);
@@ -145,6 +149,7 @@ export default function SeleccionTabla({
                 <th className="th">RUC</th>
                 <th className="th">Categorías</th>
                 <th className="th">Clasificación</th>
+                <th className="th">Docs</th>
                 <th className="th">Estado</th>
                 <th className="th"></th>
               </tr>
@@ -187,7 +192,22 @@ export default function SeleccionTabla({
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-ink-600">
-                          <Shield className="h-3.5 w-3.5 text-brand-700" /> Regular
+                          <Shield className="h-3.5 w-3.5 text-brand-700" /> No crítico
+                        </span>
+                      )}
+                    </td>
+                    <td className="td py-3">
+                      {(docsPorRuc[p.ruc]?.length ?? 0) > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-900">
+                          <FileText className="h-3.5 w-3.5" />
+                          {docsPorRuc[p.ruc].length}
+                        </span>
+                      ) : (
+                        <span
+                          className="text-[11px] font-bold text-warn-700"
+                          title="Sin documentos de registro — alerta de auditoría"
+                        >
+                          0
                         </span>
                       )}
                     </td>
@@ -209,7 +229,7 @@ export default function SeleccionTabla({
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td className="td py-10 text-center text-ink-400" colSpan={6}>
+                  <td className="td py-10 text-center text-ink-400" colSpan={7}>
                     No hay proveedores en este estado
                   </td>
                 </tr>
@@ -280,13 +300,46 @@ export default function SeleccionTabla({
                           : "border-line bg-white text-ink-600 hover:bg-page"
                       }`}
                     >
-                      {cl === "critico" ? "Crítico" : "Regular"}
+                      {cl === "critico" ? "Crítico" : "No crítico"}
                     </button>
                   ))}
                 </div>
                 <p className="mt-1 text-[11px] text-ink-400">
                   Define qué matriz se aplicará en su evaluación periódica.
                 </p>
+              </div>
+              <div>
+                <label className="label text-[12px]">
+                  Cadena documental del registro
+                </label>
+                {(docsPorRuc[abierto.ruc]?.length ?? 0) > 0 ? (
+                  <ul className="space-y-1 rounded-xl border border-line p-3">
+                    {docsPorRuc[abierto.ruc].map((d, i) => (
+                      <li key={i} className="flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 shrink-0 text-brand-900" />
+                        <a
+                          href={d.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="min-w-0 flex-1 truncate text-[12px] font-semibold text-brand-900 hover:underline"
+                          title={d.nombre}
+                        >
+                          {d.tipo === "dj_veracidad"
+                            ? "DJ de Veracidad"
+                            : d.tipo === "sustento"
+                              ? "Documento de sustento"
+                              : d.nombre}
+                        </a>
+                        <ExternalLink className="h-3 w-3 shrink-0 text-ink-400" />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="rounded-xl bg-warn-100/60 p-3 text-[12px] font-semibold text-warn-700">
+                    Sin documentos de registro adjuntos — revisar antes de
+                    operar con este proveedor.
+                  </p>
+                )}
               </div>
               {error && (
                 <p className="text-[12px] font-semibold text-danger-600">{error}</p>

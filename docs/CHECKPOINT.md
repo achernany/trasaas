@@ -1,4 +1,54 @@
-# CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 + LLAMADA CON FRAN)
+# CHECKPOINT — AlfaSource (actualizado 2026-07-19: FASE 2.5 SOLO CRÍTICO/NO CRÍTICO/APROBADO)
+
+## 🚨 FASE 2.5 — SOLO CRÍTICO / NO CRÍTICO / APROBADO (19-jul) — REGLA ABSOLUTA
+
+**Regla del usuario (textual): "No puede haber por ningún lado en el app ningún
+otro estado o referencia de clasificación que no sea: Crítico, No Crítico o
+aprobado."** La calificación Confiable/Medianamente/No confiable existe SOLO en
+el dominio de evaluación periódica (matrices, evaluaciones, dashboard de
+calificaciones) y siempre enmarcada como "evaluación periódica" — jamás como
+estado/clasificación del proveedor en el flujo de compras.
+
+- DB: el valor `clasificacion = 'regular'` PERSISTE como storage (no migrar);
+  la UI SIEMPRE muestra "No crítico". Estados del flujo: registrado →
+  seleccionado → aprobado.
+- **Clasificación desde Registro, uno por uno** → `components/ClasificarProveedor.tsx`:
+  modal en /panel/registros para registros validados. Pills CRÍTICO / NO CRÍTICO
+  + tabla colapsable con los 9 criterios de la matriz LOG-GN-A-P02-02 (guía
+  CUALITATIVA — Fran esperaba criterios numéricos, el archivo oficial define
+  comparación cualitativa). Al guardar: upsert proveedor por RUC → estado
+  'seleccionado' + clasificacion + audit_log accion 'clasificar'.
+- **Selección = SOLO 3 filtros**: Críticos / No críticos / Aprobados
+  (default: criticos). Query solo estados seleccionado/aprobado.
+- **Cadena documental visible de Registro a Selección**: seleccion/page.tsx
+  construye `docsPorRuc` con admin client (service role) + signed URLs del
+  bucket 'registro-docs'; SeleccionTabla muestra columna "Docs" (0 en warn =
+  alerta de auditoría) y sección "Cadena documental del registro" en el modal
+  con links que abren cada documento (DJ de Veracidad, sustento…).
+- **Comparativo**: elegibilidad = estado seleccionado/aprobado (gate de
+  calificación ELIMINADO); dropdown muestra " · CRÍTICO"/" · No crítico".
+- **SIN CORREO por ahora** (decisión de la llamada: "no es trackeable").
+  Cierre del comparativo: el comprador adjunta el PDF de aprobación en el
+  Expediente → modal de cierre → selecciona proveedor ganador (la "llave") +
+  observación opcional → cuadro aprobado + proveedor→aprobado + trazabilidad
+  (aprobaciones + audit 'aprobado_por_correo'). Coordinación audita que el PDF
+  coincida con el proveedor elegido. NO configurar Resend todavía.
+- Renombrado global UI Regular→"No crítico" (SeleccionTabla, EvaluacionForm,
+  MatricesLista, MatrizEditor, matrices/[id], export, chips de proveedores;
+  filtro URL ?filtro=no_criticos con retrocompat 'regulares').
+- Barrido de copy: login ("Solo proveedores aprobados…"), CargandoAlfa tips,
+  tooltips del dashboard reescritos como "en su evaluación periódica";
+  dashboard sección "Calificación de evaluaciones (periódicas)".
+
+**PRÓXIMA TANDA (definida, no arrancada):** formato oficial del cuadro
+LOGFP0202 en /panel/cuadros/[id] (cód. SIG, fecha última compra, precio
+histórico + total histórico, P.U./TOTAL/ESPECIFICACIÓN por proveedor, celdas
+rojas sobre histórico, CONDICIONES COMERCIALES Y EVALUACIÓN con puntajes,
+seleccionado + justificación + nota, dashboard de decisión) + vista interna
+del aprobador (aprobar / aprobar PARCIALMENTE por ítem / rechazar con
+observación; ítems no aprobados → bandeja "pendientes de compra": borrar o
+jalar a otro comparativo). Leer a fondo LOG-GN-P-02 VD.docx. Catálogo de
+tiempos de re-evaluación por clasificación espera confirmación de Fran.
 
 ## 📦 ARCHIVOS DE FRAN RECIBIDOS Y DECODIFICADOS (18-jul) — YA EN EJECUCIÓN
 Los 4 archivos (en uploads de la sesión; análisis completo aquí):

@@ -80,7 +80,7 @@ export default async function ProveedoresPage({
     rows = rows.filter(
       (r: any) => r.proveedores?.clasificacion === "critico"
     );
-  else if (filtro === "regulares")
+  else if (filtro === "regulares" || filtro === "no_criticos")
     rows = rows.filter(
       (r: any) => r.proveedores?.clasificacion !== "critico"
     );
@@ -103,8 +103,8 @@ export default async function ProveedoresPage({
       Icon: XCircle,
     },
     {
-      key: "regulares",
-      label: `Regulares (${conteos.todas - nCriticos})`,
+      key: "no_criticos",
+      label: `No críticos (${conteos.todas - nCriticos})`,
       Icon: CheckCircle2,
     },
     {

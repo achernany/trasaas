@@ -3,6 +3,7 @@ import { FileText, Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ValidarRegistro from "@/components/ValidarRegistro";
+import ClasificarProveedor from "@/components/ClasificarProveedor";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +98,16 @@ export default async function RegistrosPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={est.cls}>{est.label}</span>
+                    {r.estado === "validado" && (
+                      <ClasificarProveedor
+                        datos={{
+                          ruc: fd.ruc,
+                          razon_social: fd.razon_social,
+                          direccion: fd.direccion,
+                          distrito: fd.distrito,
+                        }}
+                      />
+                    )}
                     {r.estado === "enviado" && (
                       <ValidarRegistro
                         registroId={r.id}
