@@ -76,46 +76,20 @@ export default function ItemsAdmin({ iniciales }: { iniciales: Item[] }) {
     setTrabajando(false);
   }
 
-  /** Carga masiva CSV: codigo,descripcion,tipo,unidad,ultimo_costo (con o sin cabecera; separador , o ;) */
+  /** Carga masiva del export DATA SIG del ERP (.xlsx o .csv) vía API */
   async function importarCSV(file: File) {
     setTrabajando(true);
     setError(null);
     setMsg(null);
     try {
-      const texto = await file.text();
-      const sep = texto.includes(";") ? ";" : ",";
-      const lineas = texto
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter(Boolean);
-      const filas: any[] = [];
-      for (const linea of lineas) {
-        const c = linea.split(sep).map((x) => x.replace(/^"|"$/g, "").trim());
-        if (!c[0] || /^cod/i.test(c[0])) continue; // salta cabecera
-        filas.push({
-          codigo: c[0].toUpperCase(),
-          descripcion: (c[1] ?? "").toUpperCase(),
-          tipo: /serv/i.test(c[2] ?? "") ? "servicio" : "producto",
-          unidad: c[3]?.trim() || "UND",
-          ultimo_costo: c[4] && !isNaN(Number(c[4])) ? Number(c[4]) : null,
-        });
-      }
-      if (filas.length === 0) throw new Error("No se encontraron filas válidas");
-
-      const supabase = createClient();
-      const eid = await empresaId(supabase);
-      let ok = 0,
-        dup = 0;
-      // lotes de 200 con upsert por (empresa, codigo)
-      for (let i = 0; i < filas.length; i += 200) {
-        const lote = filas.slice(i, i + 200).map((f) => ({ ...f, empresa_id: eid }));
-        const { error: e } = await supabase
-          .from("items")
-          .upsert(lote, { onConflict: "empresa_id,codigo" });
-        if (e) dup += lote.length;
-        else ok += lote.length;
-      }
-      setMsg(`Importados/actualizados ${ok} ítems${dup ? ` · ${dup} con error` : ""}`);
+      const fd = new FormData();
+      fd.append("archivo", file);
+      const res = await fetch("/api/items/import", { method: "POST", body: fd });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j?.error ?? "Error al importar");
+      setMsg(
+        `Importados/actualizados ${j.ok} ítems (${j.filas} filas leídas, se toma el precio más reciente por código)`
+      );
       router.refresh();
     } catch (e: any) {
       setError(e?.message ?? "No se pudo importar el archivo");
@@ -139,11 +113,11 @@ export default function ItemsAdmin({ iniciales }: { iniciales: Item[] }) {
           </h2>
           <label className="inline-flex min-h-[36px] cursor-pointer items-center gap-2 rounded-xl border border-line bg-white px-4 text-[12px] font-bold text-ink-950 transition hover:border-brand-900 hover:text-brand-900">
             <Upload className="h-4 w-4" />
-            {trabajando ? "Procesando…" : "Carga masiva CSV"}
+            {trabajando ? "Procesando…" : "Carga masiva (Excel del ERP)"}
             <input
               ref={fileRef}
               type="file"
-              accept=".csv,text/csv"
+              accept=".csv,.xlsx,.xls"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
@@ -190,8 +164,7 @@ export default function ItemsAdmin({ iniciales }: { iniciales: Item[] }) {
           </div>
         </div>
         <p className="text-[11px] text-ink-400">
-          CSV esperado: <span className="font-mono">codigo; descripcion; tipo; unidad; ultimo_costo</span> —
-          los códigos existentes se actualizan (no se duplican).
+          Formato DATA SIG del ERP: <span className="font-mono">COD Material · Descripción · Tipo · Grupo Material · U.M. · Valor (Sin IGV) · Precio (Con IGV)</span> — códigos repetidos se actualizan con el precio más reciente.
         </p>
         {error && <p className="text-[12px] font-semibold text-danger-600">{error}</p>}
         {msg && <p className="text-[12px] font-semibold text-ok-600">{msg}</p>}

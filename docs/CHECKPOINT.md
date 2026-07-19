@@ -1,5 +1,67 @@
 # CHECKPOINT — AlfaSource (actualizado 2026-07-14: FASE 2 + LLAMADA CON FRAN)
 
+## 📦 ARCHIVOS DE FRAN RECIBIDOS Y DECODIFICADOS (18-jul) — YA EN EJECUCIÓN
+Los 4 archivos (en uploads de la sesión; análisis completo aquí):
+
+**1. "encabezado para subir materiales" (DATA SIG)** — formato REAL del import:
+COD Material · Descripción · Tipo(INDIV) · Grupo Material · U.M. · Valor (Sin
+IGV) · Precio (Con IGV). Cabecera en fila 6; códigos REPETIDOS por compra
+histórica → se toma la ÚLTIMA fila (precio más reciente).
+✅ CONSTRUIDO: /api/items/import (exceljs, detecta cabecera "COD Material",
+mapea, dedupe por código quedándose con la última, upsert) + ItemsAdmin acepta
+.xlsx/.csv. SQL fase2c (CORRIDO): items.grupo, items.precio_con_igv,
+items.fecha_ultima_compra; cotizacion_precios.especificacion;
+cuadros.tiempo_requerido_dias.
+
+**2. Matriz de aprobaciones (LOG-GN-A-P02-01-v1, aprobada 04-feb-2026)** —
+¡NOMBRES Y MONTOS REALES! (sin IGV): Directores Redes Hogar/Externas ≤50,000;
+Dir. Administrativo y Dir. Logística y TI ≤8,000... OJO: interpretación fina de
+columnas requiere leer notas completas. Aprobadores nombrados: Camilo Gómez
+(GG, >100k), Mauricio González (Country Manager ≤100k), Santiago Jaimes (G.
+Financiero ≤40k), Carlos Vela (G. Admin ≤40k), Blanca Jaramillo (Dir. Logística
+y TI ≤8k), José Novoa (Redes Ext ≤50k), Jairo Rangel (Hogar/Comercios ≤50k),
+Piero Cedano (Dir. Admin ≤8k), Mónica Gómez (Jefa Valorizaciones >100k).
+→ Fran los carga en el panel Aprobadores (correos los tiene ella). Flujograma:
+compra > S/50,000 la aprueba Dirección de Logística; ella (coordinadora)
+aprueba hasta cierto monto. "No restringir solo nosotras en el panel".
+
+**3. Matriz críticos/no críticos (LOG-GN-A-P02-02, aprobada 17-jul-2026)** —
+9 criterios comparativos (impacto operación, alternativas de mercado, switching
+cost, requisitos contractuales, impacto económico, info sensible, complejidad
+de compra, nivel de seguimiento, tipo de relación) + definiciones + ejemplos +
+estrategia de gestión. PENDIENTE: guía visible en el modal de Selección.
+
+**4. Cuadro comparativo LOGFP0202 v2** — LA MATRIZ DE PUNTAJES APROBADA:
+PRECIO 30% por RANKING (1° 30 / 2° 20 / 3° 10 / resto 0) · LUGAR 15%
+(destino 15/agencia 10/recojo 0) · TIEMPO 15% BINARIO (dentro del plazo
+requerido 15, fuera 0) · PAGO 20% en 5 NIVELES (61-90+:20 / 31-60:15 / 30:10 /
+15:5 / contado:0) · GARANTÍA 10% (total+postventa+cert:10/básica:5/sin:0) ·
+FEEDBACK/EXPERIENCIA/PRECIO HISTÓRICO 10% (positivo+exp+≤histórico:10 /
+neutro o >histórico:5 / negativo:0).
+✅ CONSTRUIDO en NuevoCuadro: scoring completo según matriz aprobada (ranking
+de precio, tiempo binario con input "tiempo requerido" en Requerimiento, 5
+niveles de pago, feedback base 5 sin evaluación y tope 5 si supera histórico),
+input ESPECIFICACIÓN/MARCA por ítem por proveedor (se guarda en
+cotizacion_precios.especificacion), precio histórico visible por ítem y CELDA
+EN ROJO cuando el P.U. lo supera.
+ESTRUCTURA DEL CUADRO (columnas oficiales): N°, BIEN/SERVICIO, CANT, UND,
+FECHA ULT. COMPRA, PRECIO HISTÓRICO, TOTAL HISTÓRICO, y por proveedor P.U./
+TOTAL/ESPECIFICACIÓN-MARCA + SUBTOTAL/IGV18%/TOTAL + sección CONDICIONES
+COMERCIALES Y EVALUACIÓN con puntajes por criterio + PROVEEDOR SELECCIONADO +
+JUSTIFICACIÓN + nota "lo registrado será considerado para la evaluación del
+proveedor". Hoja DASHBOARD TOMA DE DECISIONES: recomendado + cuadro de
+puntajes + semáforo de criterios + recomendación para jefatura.
+⏳ PENDIENTE SIGUIENTE TANDA: (a) detalle/impresión del cuadro en /panel/
+cuadros/[id] con el formato oficial completo (histórico+fecha+espec por
+columna, rojos, sección evaluación, dashboard-resumen); (b) guía críticos en
+Selección; (c) vista interna del aprobador (aprobar/parcial/rechazar por ítem
++ bandeja ítems pendientes); (d) leer a fondo el DOCX del procedimiento VD
+(rutinario 5-15 días hábiles ingreso antes 14:00, emergencia 1-5 días con
+aprobación de jefatura, estados de OC: Pendiente Aprob/Aprobado/Pendiente/
+Cerrada/Anulada, homologación críticos/alto riesgo HSE, contratos recurrentes,
+anticipos — del flujograma); (e) tiempos re-eval por clasificación (Fran
+confirma).
+
 ## 📞 LLAMADA HERNANY↔FRAN (14-jul) — ESPECIFICACIÓN DE LA PRÓXIMA TANDA
 **A. Precio histórico (refinamiento del ya construido):**
 - Política: PROHIBIDO comprar sobre el precio histórico; si el mercado subió,

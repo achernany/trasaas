@@ -17,22 +17,24 @@ import Stepper from "@/components/Stepper";
 import Select from "@/components/Select";
 import { AREAS } from "@/lib/areas";
 
+// Matriz de criterios y puntajes APROBADA (LOGFP0202, hoja "MATRIZ DE PUNTAJES")
 const PESOS = { precio: 30, lugar: 15, tiempo: 15, pago: 20, garantia: 10, feedback: 10 };
 const LUGARES = [
-  { v: "destino", t: "Entrega en destino", pts: 15 },
+  { v: "destino", t: "Entrega en destino (almacén)", pts: 15 },
   { v: "agencia", t: "Agencia de transporte", pts: 10 },
   { v: "recojo", t: "Recojo en proveedor", pts: 0 },
 ];
 const PAGOS = [
-  { v: "credito_45", t: "Crédito > 30 días", pts: 20 },
-  { v: "credito_30", t: "Crédito a 30 días", pts: 15 },
-  { v: "credito_15", t: "Crédito a 15 días", pts: 10 },
-  { v: "contado", t: "Contado / < 15 días", pts: 0 },
+  { v: "credito_90", t: "Crédito 61–90+ días", pts: 20 },
+  { v: "credito_60", t: "Crédito 31–60 días", pts: 15 },
+  { v: "credito_30", t: "Crédito a 30 días", pts: 10 },
+  { v: "credito_15", t: "Crédito a 15 días", pts: 5 },
+  { v: "contado", t: "Contado o < 15 días", pts: 0 },
 ];
 const GARANTIAS = [
-  { v: "total", t: "Total + certificados", pts: 10 },
-  { v: "basica", t: "Básica", pts: 5 },
-  { v: "sin", t: "Sin garantía", pts: 0 },
+  { v: "total", t: "Total + postventa + certificados", pts: 10 },
+  { v: "basica", t: "Básica sin postventa", pts: 5 },
+  { v: "sin", t: "Sin garantía ni certificado", pts: 0 },
 ];
 const FEEDBACK_PTS: Record<string, number> = {
   confiable: 10,
@@ -79,6 +81,7 @@ type Cot = {
   pago: string;
   garantia: string;
   precios: number[];
+  especs: string[];
 };
 
 export default function NuevoCuadro({
@@ -104,6 +107,7 @@ export default function NuevoCuadro({
   ]);
   const [cots, setCots] = useState<Cot[]>([]);
   const [justificacion, setJustificacion] = useState("");
+  const [tiempoRequerido, setTiempoRequerido] = useState(3);
   const [aprobadorId, setAprobadorId] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,24 +132,33 @@ export default function NuevoCuadro({
   );
 
   const puntajes = useMemo(() => {
-    const tv = totales.filter((t) => t > 0);
-    const minTotal = tv.length ? Math.min(...tv) : 0;
-    const ts = cots.map((c) => Number(c.tiempo) || 0).filter((t) => t > 0);
-    const minTiempo = ts.length ? Math.min(...ts) : 0;
+    // PRECIO por ranking (matriz aprobada): 1° 30, 2° 20, 3° 10, resto 0
+    const orden = totales
+      .map((t, i) => ({ t, i }))
+      .filter((x) => x.t > 0)
+      .sort((a, b) => a.t - b.t)
+      .map((x) => x.i);
+    const PRECIO_RANK = [30, 20, 10];
     return cots.map((c, i) => {
       const prov = confiables.find((p) => p.proveedor_id === c.proveedor_id);
-      const precio =
-        totales[i] > 0 && minTotal > 0
-          ? Math.round(PESOS.precio * (minTotal / totales[i]))
-          : 0;
+      const rank = orden.indexOf(i);
+      const precio = rank >= 0 ? (PRECIO_RANK[rank] ?? 0) : 0;
       const lugar = LUGARES.find((l) => l.v === c.lugar)?.pts ?? 0;
+      // TIEMPO binario: dentro del plazo requerido 15, fuera 0
       const tiempo =
-        Number(c.tiempo) > 0 && minTiempo > 0
-          ? Math.round(PESOS.tiempo * (minTiempo / Number(c.tiempo)))
+        Number(c.tiempo) > 0 && Number(c.tiempo) <= tiempoRequerido
+          ? PESOS.tiempo
           : 0;
       const pago = PAGOS.find((p) => p.v === c.pago)?.pts ?? 0;
       const garantia = GARANTIAS.find((g) => g.v === c.garantia)?.pts ?? 0;
-      const feedback = FEEDBACK_PTS[prov?.calificacion ?? ""] ?? 0;
+      // FEEDBACK: sin evaluación previa = neutro 5; supera histórico → tope 5
+      const superaHistorico = items.some(
+        (it, j) =>
+          it.ultimo_costo != null &&
+          Number(c.precios[j]) > Number(it.ultimo_costo)
+      );
+      let feedback = FEEDBACK_PTS[prov?.calificacion ?? ""] ?? 5;
+      if (superaHistorico) feedback = Math.min(feedback, 5);
       return {
         precio,
         lugar,
@@ -156,7 +169,7 @@ export default function NuevoCuadro({
         total: precio + lugar + tiempo + pago + garantia + feedback,
       };
     });
-  }, [cots, totales, confiables]);
+  }, [cots, totales, confiables, tiempoRequerido, items]);
 
   const idxGanador = useMemo(() => {
     let idx = -1;
@@ -233,6 +246,7 @@ export default function NuevoCuadro({
         pago: "credito_30",
         garantia: "total",
         precios: items.map(() => 0),
+        especs: items.map(() => ""),
       },
     ]);
   }
@@ -291,6 +305,7 @@ export default function NuevoCuadro({
           proveedor_ganador_id: ganador.proveedor_id,
           aprobador_id: aprobadorFinal?.id ?? null,
           alerta_precio: alertaPrecio,
+          tiempo_requerido_dias: tiempoRequerido,
           creado_por: auth.user!.id,
         })
         .select("id")
@@ -337,6 +352,7 @@ export default function NuevoCuadro({
             cotizacion_id: cot!.id,
             item_id: it.id,
             precio_unitario: Number(c.precios[j]) || 0,
+            especificacion: c.especs?.[j]?.trim() || null,
           }));
         const { error: e5 } = await supabase
           .from("cotizacion_precios")
@@ -356,6 +372,7 @@ export default function NuevoCuadro({
           tipo,
           cotizaciones: cots.length,
           alerta_precio: alertaPrecio,
+          tiempo_requerido_dias: tiempoRequerido,
           aprobador: aprobadorFinal?.nombre ?? null,
         },
       });
@@ -426,6 +443,17 @@ export default function NuevoCuadro({
                 />
               </div>
               <div>
+                <label className="label text-[12px]">
+                  Tiempo requerido (días) — criterio TIEMPO: dentro del plazo
+                  15 pts
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  className="input mb-3 h-9 text-[13px]"
+                  value={tiempoRequerido}
+                  onChange={(e) => setTiempoRequerido(Number(e.target.value))}
+                />
                 <label className="label text-[12px]">Proyecto</label>
                 <Select
                   value={proyectoId}
@@ -673,12 +701,51 @@ export default function NuevoCuadro({
                             )}
                             {it.descripcion || `Ítem ${j + 1}`} × {it.cantidad}
                           </span>
+                          {it.ultimo_costo != null && (
+                            <span
+                              className="font-mono text-[9px] text-ink-400"
+                              title="Precio histórico (ERP)"
+                            >
+                              hist. {Number(it.ultimo_costo).toFixed(2)}
+                            </span>
+                          )}
+                          <input
+                            className="input h-8 w-32 text-[10px]"
+                            placeholder="Espec./marca"
+                            value={c.especs?.[j] ?? ""}
+                            onChange={(e) =>
+                              setCots((cs) =>
+                                cs.map((x, k) =>
+                                  k === i
+                                    ? {
+                                        ...x,
+                                        especs: (x.especs ?? items.map(() => "")).map(
+                                          (sp, m) =>
+                                            m === j ? e.target.value : sp
+                                        ),
+                                      }
+                                    : x
+                                )
+                              )
+                            }
+                          />
                           <span className="text-ink-400">S/</span>
                           <input
                             type="number"
                             min={0}
                             step="any"
-                            className="input h-8 w-24 text-right text-[11px]"
+                            className={`input h-8 w-24 text-right text-[11px] ${
+                              it.ultimo_costo != null &&
+                              Number(c.precios[j]) > Number(it.ultimo_costo)
+                                ? "!border-danger-600 !text-danger-600 font-bold"
+                                : ""
+                            }`}
+                            title={
+                              it.ultimo_costo != null &&
+                              Number(c.precios[j]) > Number(it.ultimo_costo)
+                                ? "Por encima del precio histórico"
+                                : undefined
+                            }
                             value={c.precios[j] || ""}
                             onChange={(e) =>
                               setCots((cs) =>
