@@ -37,6 +37,14 @@ al guardar marca los originales como 'recomprado' + guarda origen_item_id
 (trazabilidad de qué ítem viene de qué cuadro). Nav item en sidebar con badge
 de conteo.
 
+**5. Filtros en /panel/cuadros (pedido de Fran 20-jul):** buscador por N° de
+ticket / código del cuadro / proveedor + chips por estado (Todos · Pend.
+aprobación [incluye reenviado] · Aprobados · Aprobados parciales · Rechazados)
+con conteos; empty state diferenciado "Sin resultados" vs "Aún no hay cuadros".
+Fran va a probar con casos reales; la carga masiva de códigos con precios está
+en Configuración → Códigos SIG → "Carga masiva (Excel del ERP)" (formato DATA
+SIG, código repetido = se toma la última fila).
+
 **4. Trazabilidad del puntaje:** NuevoCuadro ahora congela el desglose por
 criterio en cotizaciones.puntajes al crear el cuadro (aunque la matriz cambie
 después, el cuadro demuestra con qué puntajes se decidió). También guarda
