@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AlfaMark, AlfaLockup } from "@/components/Logo";
+import { TrasaasMark, TrasaasLockup } from "@/components/Logo";
 
 const SLIDES = [
   {
     img: "https://alfaco.com.pe/wp-content/uploads/2024/05/alfaco-multifamiliares-constructoras-06.jpg",
-    titulo: "Tu abastecimiento, llevado a su punto alfa.",
+    titulo: "Tu abastecimiento, con trazabilidad total.",
     texto:
       "Registro de proveedores, evaluación con matriz y trazabilidad completa para tus auditorías.",
   },
@@ -83,7 +83,7 @@ export default function LoginPage() {
       <div className="flex items-center justify-center p-6">
         <div className="w-full max-w-[380px]">
           <div className="mb-8">
-            <AlfaLockup conEndoso />
+            <TrasaasLockup conEndoso />
           </div>
           <h1 className="font-display text-2xl font-bold tracking-[-1px]">
             Bienvenido de nuevo
@@ -126,7 +126,7 @@ export default function LoginPage() {
             </button>
           </form>
           <p className="mt-8 text-[11px] text-ink-400">
-            © 2026 AlfaSource · Módulo de procurement de Alfa Co S.A.C. · ISO
+            © 2026 Trasaas · Módulo de procurement de Alfa Co S.A.C. · ISO
             9001
           </p>
         </div>
@@ -151,11 +151,11 @@ export default function LoginPage() {
           ))}
           {/* chevrons gigantes */}
           <div className="pointer-events-none absolute -right-16 -top-16 opacity-15">
-            <AlfaMark size={420} mono="white" />
+            <TrasaasMark size={420} mono="white" />
           </div>
 
           <div className="relative flex h-full flex-col justify-between p-10">
-            <AlfaLockup invertido />
+            <TrasaasLockup invertido />
 
             <div>
               <div key={slide} className="step-enter">

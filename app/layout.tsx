@@ -22,9 +22,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AlfaSource · Procurement de ALFACO",
+  title: "Trasaas · Procurement",
   description:
-    "AlfaSource — abastecimiento estratégico llevado a su punto alfa. Evaluación y selección de proveedores, comparativos y trazabilidad auditable.",
+    "Trasaas — evaluación y selección de proveedores, comparativos y trazabilidad auditable para tus compras.",
 };
 
 export default function RootLayout({

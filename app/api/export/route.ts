@@ -105,7 +105,7 @@ export async function GET(req: Request) {
 
   // ---------- Libro membretado ----------
   const wb = new ExcelJS.Workbook();
-  wb.creator = "AlfaSource";
+  wb.creator = "Trasaas";
   const ws = wb.addWorksheet("Reporte", {
     views: [{ showGridLines: false }],
   });
@@ -134,7 +134,7 @@ export async function GET(req: Request) {
   ws.getCell("C2").font = { bold: true, size: 10, color: { argb: "FF6C7280" } };
   ws.getCell("C3").value = titulo;
   ws.getCell("C3").font = { bold: true, size: 15 };
-  ws.getCell("C4").value = `${periodo} · Generado por AlfaSource el ${new Date()
+  ws.getCell("C4").value = `${periodo} · Generado por Trasaas el ${new Date()
     .toISOString()
     .slice(0, 16)
     .replace("T", " ")} UTC · ${filas.length} registros`;
@@ -190,7 +190,7 @@ export async function GET(req: Request) {
     headers: {
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="alfasource-${nombre}-${fecha}.xlsx"`,
+      "Content-Disposition": `attachment; filename="trasaas-${nombre}-${fecha}.xlsx"`,
     },
   });
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/** Watermark "alfasource" de punta a punta de la pantalla, mitad visible, con shimmer */
+/** Watermark "trasaas" de punta a punta de la pantalla, mitad visible, con shimmer */
 export default function Watermark() {
   const ref = useRef<HTMLSpanElement>(null);
   const [sx, setSx] = useState(1);
@@ -27,7 +27,7 @@ export default function Watermark() {
         className="wm-shine block w-max whitespace-nowrap font-display text-[17vw] font-bold leading-none tracking-[-0.06em]"
         style={{ transform: `scaleX(${sx})`, transformOrigin: "bottom left" }}
       >
-        alfasource
+        trasaas
       </span>
     </div>
   );

@@ -159,7 +159,7 @@ export default async function MatrizDetallePage({
         )}
 
         <p className="border-t border-slate-200 pt-4 text-xs text-slate-400">
-          Documento de referencia para auditorías · generado por AlfaSource ·
+          Documento de referencia para auditorías · generado por Trasaas ·
           matriz {mx.id.slice(0, 8).toUpperCase()} v{mx.version}
         </p>
       </div>

@@ -1,5 +1,5 @@
-import CargandoAlfa from "@/components/CargandoAlfa";
+import CargandoTrasaas from "@/components/CargandoTrasaas";
 
 export default function Loading() {
-  return <CargandoAlfa />;
+  return <CargandoTrasaas />;
 }

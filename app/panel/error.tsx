@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { CloudOff, RotateCcw } from "lucide-react";
-import { AlfaMark } from "@/components/Logo";
+import { TrasaasMark } from "@/components/Logo";
 
 export default function PanelError({
   error,
@@ -13,7 +13,7 @@ export default function PanelError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[AlfaSource]", error);
+    console.error("[Trasaas]", error);
   }, [error]);
 
   return (
@@ -43,8 +43,8 @@ export default function PanelError({
           </Link>
         </div>
         <div className="mt-8 flex items-center justify-center gap-2 opacity-40">
-          <AlfaMark size={16} mono="ink" />
-          <span className="text-[11px] font-bold text-ink-600">AlfaSource</span>
+          <TrasaasMark size={16} mono="ink" />
+          <span className="text-[11px] font-bold text-ink-600">Trasaas</span>
         </div>
       </div>
     </div>

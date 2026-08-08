@@ -1,4 +1,4 @@
-# AlfaSource — Contexto completo del producto y del código
+# Trasaas — Contexto completo del producto y del código
 
 > Documento de handoff para cualquier agente o desarrollador. Leyendo esto se
 > entiende qué es el producto, cómo funciona el dominio, cómo está construido el
@@ -11,9 +11,12 @@
 
 ## 1. El producto
 
-**AlfaSource** es un SaaS de gestión de proveedores y compras auditables
-construido para **Alfa Co S.A.C.** (constructora peruana, RUC 20601832390,
-sedes Ate e Ica, ~7 líneas de negocio, certificada ISO 9001/14001/45001).
+**Trasaas** es un SaaS white-label multi-empresa de gestión de proveedores y
+compras auditables. Su **primer tenant** es **Alfa Co S.A.C.** (constructora
+peruana, RUC 20601832390, sedes Ate e Ica, ~7 líneas de negocio, certificada
+ISO 9001/14001/45001). Los datos de Alfaco (razón social, RUC, logo, áreas,
+códigos LOG-*, IGV 18%, moneda) son configuración de ese tenant, no marca del
+producto — ver `docs/SAAS-ROADMAP.md` para el plan de separación.
 
 - **Dueños del producto:** Hernany Acosta (construye, decide técnica y
   comercialmente) y Francys "Fran" Nava (Coordinadora de Logística de Alfaco;
@@ -69,7 +72,7 @@ sedes Ate e Ica, ~7 líneas de negocio, certificada ISO 9001/14001/45001).
 
 - **Proxy first-party** `/sbproxy/:path*` → Supabase (rewrite en
   `next.config`). Existe para atravesar firewalls corporativos que bloquean
-  `*.supabase.co`. La cookie de sesión tiene nombre fijo `sb-alfasource-auth`.
+  `*.supabase.co`. La cookie de sesión tiene nombre fijo `sb-trasaas-auth`.
   **NUNCA renombrar ni el proxy ni la cookie** — rompe el login de todos.
 - **Multi-tenant por RLS:** toda tabla lleva `empresa_id`; las policies usan la
   función SQL `mi_empresa()` (lee la empresa del usuario autenticado). El
@@ -268,7 +271,7 @@ contextual por rol. (Matriz fina de permisos por rol: pendiente, la debe Fran.)
 |---|---|
 | `/` | redirect según sesión |
 | `/login` | login con carrusel de fotos de obra |
-| `/registro/[token]` | **form público del proveedor**: lobby full-screen (FondoObra crossfade + Watermark "alfasource"), modal wizard 11 pasos (RegistroForm), sube docs |
+| `/registro/[token]` | **form público del proveedor**: lobby full-screen (FondoObra crossfade + Watermark "trasaas"), modal wizard 11 pasos (RegistroForm), sube docs |
 | `/satisfaccion/[token]` | encuesta pública del área usuaria |
 | `/panel` | dashboard: KPIs, banda de comparativos (elaborados/pendientes/aprobados/rechazados), calificación de evaluaciones (periódicas), próximas re-evaluaciones |
 | `/panel/registros` | bandeja de registros: ValidarRegistro (estado enviado) y **ClasificarProveedor** (estado validado) |

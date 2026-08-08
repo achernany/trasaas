@@ -14,7 +14,7 @@ const TIPS = [
 ];
 
 /** Loader de marca: chevrones en avance + loop de tips del proceso */
-export default function CargandoAlfa({
+export default function CargandoTrasaas({
   pantallaCompleta,
 }: {
   pantallaCompleta?: boolean;

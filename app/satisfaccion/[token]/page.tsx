@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { AlfaLockup } from "@/components/Logo";
+import { TrasaasLockup } from "@/components/Logo";
 import EncuestaSatisfaccion from "@/components/EncuestaSatisfaccion";
 import { CheckCircle2 } from "lucide-react";
 
@@ -28,7 +28,7 @@ export default async function SatisfaccionPage({
     <main className="flex min-h-screen items-start justify-center bg-page px-4 py-10">
       <div className="w-full max-w-lg">
         <div className="mb-6 flex justify-center">
-          <AlfaLockup conEndoso />
+          <TrasaasLockup conEndoso />
         </div>
         {!fila ? (
           <div className="card text-center">
@@ -64,7 +64,7 @@ export default async function SatisfaccionPage({
           </div>
         )}
         <p className="mt-6 text-center text-[11px] text-ink-400">
-          AlfaSource · Evaluación de proveedores de Alfa Co S.A.C.
+          Trasaas · Evaluación de proveedores de Alfa Co S.A.C.
         </p>
       </div>
     </main>

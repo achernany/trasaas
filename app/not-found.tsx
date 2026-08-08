@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Compass } from "lucide-react";
-import { AlfaLockup } from "@/components/Logo";
+import { TrasaasLockup } from "@/components/Logo";
 
 export default function NotFound() {
   return (
@@ -25,7 +25,7 @@ export default function NotFound() {
           </Link>
         </div>
         <div className="mt-8 flex justify-center opacity-50">
-          <AlfaLockup />
+          <TrasaasLockup />
         </div>
       </div>
     </main>

@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-/** Tokens AlfaSource v1.2 — mapeados sobre los nombres de clase existentes */
+/** Tokens Trasaas v1.2 — mapeados sobre los nombres de clase existentes */
 export default {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {

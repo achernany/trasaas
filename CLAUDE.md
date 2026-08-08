@@ -1,10 +1,13 @@
-# AlfaSource — contexto del proyecto
+# Trasaas — contexto del proyecto
 
-SaaS de evaluación de proveedores y compras auditables para **Alfa Co S.A.C.**
-(constructora, Perú). Producto de Hernany + Francys "Fran" Nava (coordinadora de
-logística, la stakeholder que define requerimientos). Se venderá white-label a
-otras constructoras. **El producto ES la auditoría**: todo cambio sensible deja
-rastro en `audit_log` con usuario, fecha y detalle.
+**Trasaas** es un SaaS white-label multi-empresa de evaluación de proveedores y
+compras auditables. **Primer tenant: Alfa Co S.A.C.** (constructora, Perú) — sus
+datos (razón social, RUC, logo, áreas, códigos LOG-*, IGV, moneda) son
+CONFIGURACIÓN DE ESE TENANT, no marca del producto. Producto de Hernany +
+Francys "Fran" Nava (coordinadora de logística de Alfaco, la stakeholder que
+define requerimientos). Se vende white-label a otras constructoras. **El
+producto ES la auditoría**: todo cambio sensible deja rastro en `audit_log` con
+usuario, fecha y detalle.
 
 **Historial completo y decisiones: `docs/CHECKPOINT.md` (fuente de verdad viva —
 ACTUALIZARLO al cerrar cada tanda de trabajo).**
@@ -18,7 +21,9 @@ ACTUALIZARLO al cerrar cada tanda de trabajo).**
   multi-tenant (`empresa_id` + función `mi_empresa()`), Auth, Storage (buckets
   privados `registro-docs` y `compras-docs`, signed URLs).
 - Proxy first-party `/sbproxy/:path*` → Supabase (evita firewalls corporativos).
-  Cookie de auth fija: `sb-alfasource-auth`. **NUNCA renombrar ninguna de las dos.**
+  Cookie de auth fija: `sb-trasaas-auth` (renombrada desde `sb-alfasource-auth` en
+  el rebranding — ese cambio cerró todas las sesiones abiertas). **NUNCA renombrar
+  ni el proxy ni la cookie de nuevo.**
 - Migraciones en `db/*.sql` (schema, settings, fase2, fase2b, fase2c, fase2d —
   todas YA ejecutadas). Las nuevas se corren a mano en el SQL Editor de Supabase
   y el archivo queda versionado en `db/`.

@@ -1,4 +1,45 @@
-# CHECKPOINT — AlfaSource (actualizado 2026-07-19: FASE 2.6 CUADRO OFICIAL + APROBACIÓN PARCIAL)
+# CHECKPOINT — Trasaas (actualizado 2026-08-08: REBRANDING AlfaSource → Trasaas)
+
+## 🔁 REBRANDING AlfaSource → Trasaas (08-ago-2026)
+
+El producto dejó de llamarse **AlfaSource** (nombre heredado del cliente Alfa Co
+S.A.C.) y ahora es **Trasaas**, un SaaS white-label multi-empresa. Alfaco pasa a
+ser el **primer tenant**, no la marca.
+
+**Qué se renombró (marca del producto):** UI (sidebar, login, loader, watermark
+del registro, error boundaries, 404), metadatos de la app (`title`/
+`description`), encabezados de los exportes Excel (`creator`, pie "Generado
+por…", filename `trasaas-*.xlsx`), nota al pie de la matriz imprimible,
+componentes `AlfaMark`/`AlfaLockup` → `TrasaasMark`/`TrasaasLockup`,
+`components/CargandoAlfa.tsx` → `CargandoTrasaas.tsx`, comentarios,
+`README.md`, `CONTRIBUTING.md`, `CLAUDE.md` y `docs/CONTEXT.md`.
+
+**Cookie de auth (commit aparte — CIERRA TODAS LAS SESIONES):**
+`sb-alfasource-auth` → `sb-trasaas-auth` en `middleware.ts`,
+`lib/supabase/server.ts`, `lib/supabase/client.ts`. Al desplegarse, todos los
+usuarios logueados vuelven a ingresar. Fue una decisión consciente del
+rebranding.
+
+**Qué NO se tocó (datos del tenant Alfaco, no marca):** "Alfa Co S.A.C.", RUC
+20601832390, `public/logo-alfaco.png`, las 15 áreas de `lib/areas.ts`, códigos
+LOG-*, IGV 18%, moneda, y el sitio estático `public/web-alfaco/`. Todo eso debe
+volverse configuración por tenant — plan priorizado en `docs/SAAS-ROADMAP.md`.
+
+**Decisiones de copy (juego de palabras viejo "punto alfa"):** el título del
+slide del login pasó a "Tu abastecimiento, con trazabilidad total." y la
+`description` de la app se neutralizó (sin el pun "punto alfa"). Copy provisional
+— reemplazable cuando haya voz de marca definitiva de Trasaas.
+
+**Project ref de Supabase NO cambia:** `udrlswivsjywttktevci` sigue en env vars y
+en el proxy `/sbproxy` — no se toca.
+
+**Renombres manuales fuera del código (los hace Hernany):** repo de GitHub,
+organización, proyecto de Vercel y nombre visible del proyecto en Supabase — ver
+el detalle entregado en la sesión del rebranding.
+
+---
+
+# CHECKPOINT — AlfaSource (histórico previo al rebranding)
 
 ## 🧾 FASE 2.6 — CUADRO OFICIAL LOGFP0202 + APROBADOR INTERNO (19-jul)
 

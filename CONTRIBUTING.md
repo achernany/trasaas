@@ -1,6 +1,6 @@
 # Convenciones de trabajo
 
-Guía para cualquier persona (o agente) que mantenga o extienda AlfaSource.
+Guía para cualquier persona (o agente) que mantenga o extienda Trasaas.
 
 ## Flujo de cambios
 
@@ -26,7 +26,7 @@ Guía para cualquier persona (o agente) que mantenga o extienda AlfaSource.
   únicamente en código server-side (`app/api/*`, páginas server que lo justifiquen).
 - Nunca commitear secretos. `.env.local` está en `.gitignore`; `.env.local.example`
   documenta las variables sin valores sensibles.
-- La cookie de sesión se llama `sb-alfasource-auth` en `lib/supabase/client.ts`,
+- La cookie de sesión se llama `sb-trasaas-auth` en `lib/supabase/client.ts`,
   `lib/supabase/server.ts` y `middleware.ts`. Renombrarla invalida todas las sesiones.
 - Todo acceso del navegador a Supabase pasa por el proxy `/sbproxy` (compatibilidad
   con firewalls corporativos). No introducir llamadas directas a `*.supabase.co`

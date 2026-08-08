@@ -34,7 +34,7 @@ export default function GlobalError({
             />
           </svg>
           <h1 style={{ fontSize: 22, margin: "18px 0 8px" }}>
-            AlfaSource no pudo iniciar
+            Trasaas no pudo iniciar
           </h1>
           <p style={{ color: "rgba(255,255,255,.6)", fontSize: 14, maxWidth: 380 }}>
             Ocurrió un error inesperado en la aplicación. Reintenta; si

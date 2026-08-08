@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import UserMenu from "@/components/UserMenu";
-import { AlfaMark } from "@/components/Logo";
+import { TrasaasMark } from "@/components/Logo";
 import NavItem from "@/components/NavItem";
 
 export default async function PanelLayout({
@@ -55,9 +55,9 @@ export default async function PanelLayout({
       {/* Sidebar */}
       <aside className="no-print hidden w-[232px] shrink-0 flex-col bg-ink-950 md:flex">
         <Link href="/panel" className="flex items-center gap-2.5 px-5 pb-6 pt-5">
-          <AlfaMark size={28} />
+          <TrasaasMark size={28} />
           <span className="font-display text-[17px] font-bold tracking-[-0.5px] text-white">
-            AlfaSource
+            Trasaas
           </span>
         </Link>
 

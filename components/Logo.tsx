@@ -1,19 +1,19 @@
-/** Isólogo AlfaSource — dos chevrons en avance (contract.md §1) */
-export function AlfaMark({
+/** Isólogo Trasaas — dos chevrons en avance (contract.md §1) */
+export function TrasaasMark({
   size = 32,
   mono,
 }: {
   size?: number;
   mono?: "white" | "ink";
 }) {
-  const id = `alfa-g-${size}`;
+  const id = `trasaas-g-${size}`;
   return (
     <svg
       viewBox="0 0 120 120"
       width={size}
       height={size}
       role="img"
-      aria-label="AlfaSource"
+      aria-label="Trasaas"
     >
       {!mono && (
         <defs>
@@ -43,7 +43,7 @@ export function AlfaMark({
   );
 }
 
-export function AlfaLockup({
+export function TrasaasLockup({
   invertido,
   conEndoso,
 }: {
@@ -52,12 +52,12 @@ export function AlfaLockup({
 }) {
   return (
     <span className="inline-flex items-center gap-2">
-      <AlfaMark size={28} mono={invertido ? "white" : undefined} />
+      <TrasaasMark size={28} mono={invertido ? "white" : undefined} />
       <span className="flex flex-col leading-none">
         <span
           className={`font-display text-[17px] font-bold tracking-[-0.5px] ${invertido ? "text-white" : "text-ink-900"}`}
         >
-          AlfaSource
+          Trasaas
         </span>
         {conEndoso && (
           <span

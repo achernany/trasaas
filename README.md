@@ -1,7 +1,8 @@
-# AlfaSource — Procurement Scorecard
+# Trasaas — Procurement Scorecard
 
 Plataforma SaaS multi-tenant de **evaluación y selección de proveedores** con trazabilidad
 auditable, alineada a ISO 9001 e ISO 37001 (debida diligencia / antisoborno).
+Se comercializa white-label a constructoras y empresas con compras auditables.
 Cliente inicial: Alfa Co S.A.C. (Perú).
 
 **Producción:** https://procurement-scorecard-providers-erp.vercel.app
@@ -86,7 +87,7 @@ Los archivos de `db/` se ejecutan en el SQL Editor de Supabase **en orden**:
   RLS con la función `mi_empresa()`. La aplicación no filtra por tenant en código.
 - **Proxy first-party** (`/sbproxy/*` → Supabase, ver `next.config.mjs`): permite operar
   detrás de firewalls corporativos que bloquean `*.supabase.co`. La cookie de sesión usa
-  el nombre fijo `sb-alfasource-auth` en cliente, servidor y middleware — **no renombrar**.
+  el nombre fijo `sb-trasaas-auth` en cliente, servidor y middleware — **no renombrar**.
 - **Matrices versionadas**: editar una matriz crea una nueva versión y archiva la
   anterior; cada evaluación referencia la matriz exacta con la que se ejecutó
   (requisito de auditoría).
