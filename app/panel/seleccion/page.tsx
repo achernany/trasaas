@@ -1,6 +1,5 @@
 import { CheckCircle2, Shield, ShieldAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdmin } from "@supabase/supabase-js";
 import SeleccionTabla from "@/components/SeleccionTabla";
 import Hint from "@/components/Hint";
 import Link from "next/link";
@@ -34,12 +33,8 @@ export default async function SeleccionPage({
 
   let rows = (provs ?? []) as any[];
 
-  // Cadena documental: docs que el proveedor subió en su registro (por RUC)
-  const admin = createAdmin(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  const { data: regs } = await admin
+  // Cadena documental por tenant vía RLS (cliente autenticado, sin service role)
+  const { data: regs } = await supabase
     .from("proveedor_registros")
     .select("form_data, proveedor_documentos(id, tipo, archivo_url)")
     .in("estado", ["enviado", "validado"]);
@@ -51,7 +46,7 @@ export default async function SeleccionPage({
     const ruc = r.form_data?.ruc;
     if (!ruc) continue;
     for (const d of r.proveedor_documentos ?? []) {
-      const { data: firmada } = await admin.storage
+      const { data: firmada } = await supabase.storage
         .from("registro-docs")
         .createSignedUrl(d.archivo_url, 3600);
       if (!firmada?.signedUrl) continue;

@@ -1,4 +1,3 @@
-import { createClient as createAdmin } from "@supabase/supabase-js";
 import { FileText, Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -22,12 +21,8 @@ export default async function RegistrosPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // lectura completa + URLs firmadas con service role (server-side)
-  const admin = createAdmin(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  const { data: registros } = await admin
+  // lectura por tenant vía RLS (cliente autenticado, sin service role)
+  const { data: registros } = await supabase
     .from("proveedor_registros")
     .select(
       "id, token_acceso, estado, form_data, enviado_en, creado_en, proveedor_documentos(id, tipo, archivo_url, subido_en)"
@@ -39,7 +34,7 @@ export default async function RegistrosPage() {
     ((registros ?? []) as any[]).map(async (r) => {
       const docs = await Promise.all(
         (r.proveedor_documentos ?? []).map(async (d: any) => {
-          const { data } = await admin.storage
+          const { data } = await supabase.storage
             .from("registro-docs")
             .createSignedUrl(d.archivo_url, 3600);
           return { ...d, url: data?.signedUrl ?? null };
