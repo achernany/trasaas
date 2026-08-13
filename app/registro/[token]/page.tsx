@@ -26,7 +26,7 @@ export default async function RegistroPage({
       <Lobby>
         <Aviso
           titulo="Enlace no válido"
-          texto="Este enlace de registro no existe o fue desactivado. Solicite uno nuevo al área de Logística de Alfa Co S.A.C."
+          texto="Este enlace de registro no existe o fue desactivado. Solicite uno nuevo al área de Logística."
         />
       </Lobby>
     );
@@ -99,8 +99,7 @@ function Lobby({ children }: { children: React.ReactNode }) {
                 Registro de Proveedores y Debida Diligencia
               </h1>
               <p className="truncate text-[11px] leading-4 text-white/50">
-                Alfa Co S.A.C. · LOG-GN-F-P02-09 · ~30 min · Carácter de
-                Declaración Jurada
+                LOG-GN-F-P02-09 · ~30 min · Carácter de Declaración Jurada
               </p>
             </div>
           </div>

@@ -123,8 +123,7 @@ export default function LoginPage() {
             </button>
           </form>
           <p className="mt-8 text-[11px] text-ink-400">
-            © 2026 Trasaas · Módulo de procurement de Alfa Co S.A.C. · ISO
-            9001
+            © 2026 Trasaas · Compras y proveedores auditables
           </p>
         </div>
       </div>

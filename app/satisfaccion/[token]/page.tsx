@@ -64,7 +64,7 @@ export default async function SatisfaccionPage({
           </div>
         )}
         <p className="mt-6 text-center text-[11px] text-ink-400">
-          Trasaas · Evaluación de proveedores de Alfa Co S.A.C.
+          Trasaas · Evaluación de proveedores
         </p>
       </div>
     </main>
