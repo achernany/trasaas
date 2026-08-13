@@ -94,7 +94,7 @@ export default function AprobadoresAdmin({
           />
           <input
             className="input h-9 text-[13px]"
-            placeholder="correo@alfaco.com.pe"
+            placeholder="correo@empresa.com"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}

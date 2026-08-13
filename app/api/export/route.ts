@@ -12,7 +12,7 @@ const CAL_LABEL: Record<string, string> = {
   no_confiable: "No confiable",
 };
 
-/** Exportación membretada a Excel (.xlsx) con logo de Alfaco y periodo */
+/** Exportación membretada a Excel (.xlsx) con logo del tenant y periodo */
 export async function GET(req: Request) {
   const supabase = createClient();
   const {

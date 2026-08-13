@@ -63,7 +63,7 @@ export function TrasaasLockup({
           <span
             className={`mt-0.5 font-mono text-[8px] uppercase tracking-[3px] ${invertido ? "text-white/50" : "text-ink-400"}`}
           >
-            Módulo de Alfaco
+            Compras auditables
           </span>
         )}
       </span>

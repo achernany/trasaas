@@ -69,7 +69,7 @@ export default async function ConfiguracionPage() {
       href: "#",
       Icon: FileBadge,
       titulo: "Documentos corporativos",
-      desc: "Membrete y logo institucional para actas y reportes en PDF. Disponible al recibir la plantilla oficial de Alfaco.",
+      desc: "Membrete y logo institucional del tenant para actas y reportes en PDF.",
       deshabilitado: true,
     },
   ];

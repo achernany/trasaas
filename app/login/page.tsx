@@ -7,19 +7,16 @@ import { TrasaasMark, TrasaasLockup } from "@/components/Logo";
 
 const SLIDES = [
   {
-    img: "https://alfaco.com.pe/wp-content/uploads/2024/05/alfaco-multifamiliares-constructoras-06.jpg",
     titulo: "Tu abastecimiento, con trazabilidad total.",
     texto:
       "Registro de proveedores, evaluación con matriz y trazabilidad completa para tus auditorías.",
   },
   {
-    img: "https://alfaco.com.pe/wp-content/uploads/2023/03/alfaco-800x600-A3.jpg",
     titulo: "Solo proveedores aprobados en tus compras.",
     texto:
       "El comparativo aplica el procedimiento por ti: mínimo 3 cotizaciones y matriz ponderada automática.",
   },
   {
-    img: "https://alfaco.com.pe/wp-content/uploads/2023/04/alfaco-800x600-B12.jpg",
     titulo: "Auditorías sin sustos.",
     texto:
       "Cada evaluación queda con ficha firmada, historial y re-evaluación programada según su calificación.",
@@ -137,18 +134,6 @@ export default function LoginPage() {
         <div className="relative h-full w-full overflow-hidden rounded-3xl bg-ink-950 shadow-brand">
           {/* gradiente animado de marca */}
           <div className="anim-gradient absolute inset-0" />
-          {/* fotos del carrusel */}
-          {SLIDES.map((s, i) => (
-            <img
-              key={s.img}
-              src={s.img}
-              alt=""
-              loading={i === 0 ? "eager" : "lazy"}
-              className={`absolute inset-0 h-full w-full object-cover mix-blend-luminosity transition-opacity duration-1000 ${
-                i === slide ? "opacity-30" : "opacity-0"
-              }`}
-            />
-          ))}
           {/* chevrons gigantes */}
           <div className="pointer-events-none absolute -right-16 -top-16 opacity-15">
             <TrasaasMark size={420} mono="white" />
@@ -190,7 +175,7 @@ export default function LoginPage() {
               </div>
 
               <p className="mt-5 font-mono text-[10px] uppercase tracking-[3px] text-white/50">
-                Alfaco · alfaco.com.pe
+                Trasaas · Compras auditables
               </p>
             </div>
           </div>
