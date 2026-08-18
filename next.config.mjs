@@ -5,10 +5,6 @@ const nextConfig = {
     // dominio, inmune a firewalls corporativos que bloquean *.supabase.co
     return [
       {
-        source: "/web-alfaco",
-        destination: "/web-alfaco/index.html",
-      },
-      {
         source: "/sbproxy/:path*",
         destination: "https://udrlswivsjywttktevci.supabase.co/:path*",
       },
